@@ -1,0 +1,74 @@
+import 'package:flutter/material.dart';
+import 'package:booking/models/movie_model.dart';
+import 'package:booking/models/booking_model.dart';
+import 'package:booking/widgets/bottom_nav_bar.dart';
+import 'package:booking/screens/movie_detail/movie_detail_screen.dart';
+import 'package:booking/screens/seat_selection/seat_selection_screen.dart';
+import 'package:booking/screens/booking_detail/booking_detail_screen.dart';
+import 'package:booking/screens/payment/payment_screen.dart';
+import 'package:booking/screens/owner/main/owner_main_screen.dart';
+
+/// ============================================================
+/// App Router — Named route definitions
+/// ============================================================
+
+class AppRouter {
+  static const String home = '/';
+  static const String movieDetail = '/movie-detail';
+  static const String seatSelection = '/seat-selection';
+  static const String payment = '/payment';
+  static const String bookingDetail = '/booking-detail';
+  static const String owner = '/owner';
+
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case home:
+        return MaterialPageRoute(
+          builder: (_) => const BottomNavBar(),
+        );
+
+      case movieDetail:
+        final movie = settings.arguments as MovieModel;
+        return MaterialPageRoute(
+          builder: (_) => MovieDetailScreen(movie: movie),
+        );
+
+      case seatSelection:
+        final args = settings.arguments as Map<String, String>;
+        return MaterialPageRoute(
+          builder: (_) => SeatSelectionScreen(
+            movieTitle: args['movieTitle'] ?? '',
+            showtime: args['showtime'] ?? '',
+            cinema: args['cinema'] ?? '',
+            format: args['format'] ?? '',
+          ),
+        );
+
+      case payment:
+        final booking = settings.arguments as BookingModel;
+        return MaterialPageRoute(
+          builder: (_) => PaymentScreen(booking: booking),
+        );
+
+      case bookingDetail:
+        final booking = settings.arguments as BookingModel;
+        return MaterialPageRoute(
+          builder: (_) => BookingDetailScreen(booking: booking),
+        );
+
+      case owner:
+        return MaterialPageRoute(
+          builder: (_) => const OwnerMainScreen(),
+        );
+
+      default:
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(
+              child: Text('No route defined for ${settings.name}'),
+            ),
+          ),
+        );
+    }
+  }
+}
