@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
+import 'package:booking/screens/owner/dashboard/owner_dashboard_screen.dart';
 import 'package:booking/screens/owner/screens_management/owner_screens_list_screen.dart';
 import 'package:booking/screens/owner/movies_management/owner_movies_screen.dart';
-import 'package:booking/screens/owner/schedule_management/owner_schedule_screen.dart';
 
 class OwnerMainScreen extends StatefulWidget {
   const OwnerMainScreen({super.key});
@@ -21,11 +21,13 @@ class _OwnerMainScreenState extends State<OwnerMainScreen> {
   }
 
   // Screens for each tab
-  final List<Widget> _screens = const [
-    OwnerScreensListScreen(),
-    OwnerMoviesScreen(),
-    OwnerScheduleScreen(),
-    Center(child: Text("Profile (Admin)")),
+  List<Widget> get _screens => [
+    OwnerDashboardScreen(
+      onNavigateToMovies: () => setIndex(1),
+    ),
+    const OwnerMoviesScreen(),
+    const OwnerScreensListScreen(),
+    const Center(child: Text("Profile (Admin)")),
   ];
 
   @override
@@ -56,9 +58,9 @@ class _OwnerMainScreenState extends State<OwnerMainScreen> {
           showUnselectedLabels: true,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view),
-              activeIcon: Icon(Icons.grid_view_rounded),
-              label: 'Screens',
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.movie_creation_outlined),
@@ -66,9 +68,9 @@ class _OwnerMainScreenState extends State<OwnerMainScreen> {
               label: 'Movies',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_outlined),
-              activeIcon: Icon(Icons.calendar_today),
-              label: 'Schedule',
+              icon: Icon(Icons.grid_view),
+              activeIcon: Icon(Icons.grid_view_rounded),
+              label: 'Screens',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),

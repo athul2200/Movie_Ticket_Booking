@@ -42,6 +42,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
               'Movie Management',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
                   ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -59,12 +60,12 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.shadowColor.withOpacity(0.05),
+                    color: AppColors.shadowColor.withValues(alpha: 0.05),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
                 ],
-                border: Border.all(color: AppColors.divider.withOpacity(0.5)),
+                border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +167,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primaryDark.withOpacity(0.9),
+                      AppColors.primaryDark.withValues(alpha: 0.9),
                       Colors.transparent,
                     ],
                     begin: Alignment.bottomCenter,
@@ -189,7 +190,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                     Text(
                       'Add up to 50 active listings per theater.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textWhite.withOpacity(0.9),
+                            color: AppColors.textWhite.withValues(alpha: 0.9),
                           ),
                     ),
                   ],
@@ -312,7 +313,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
         borderRadius: BorderRadius.circular(AppRadius.md),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadowColor.withOpacity(0.05),
+            color: AppColors.shadowColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -339,7 +340,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isLive ? AppColors.textWhite : AppColors.textWhite.withOpacity(0.9),
+                      color: isLive ? AppColors.textWhite : AppColors.textWhite.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: Text(

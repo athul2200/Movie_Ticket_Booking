@@ -54,7 +54,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.xs),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
                     child: const Icon(
@@ -127,7 +127,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: Text(
@@ -172,7 +172,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                         color: AppColors.primary,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.5),
+                            color: AppColors.primary.withValues(alpha: 0.5),
                             blurRadius: 10,
                             spreadRadius: 2,
                           ),
@@ -296,7 +296,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   Text(
                     'NOW EDITING',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textWhite.withOpacity(0.8),
+                          color: AppColors.textWhite.withValues(alpha: 0.8),
                           letterSpacing: 1.0,
                         ),
                   ),

@@ -63,12 +63,12 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.shadowColor.withOpacity(0.05),
+                    color: AppColors.shadowColor.withValues(alpha: 0.05),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
                 ],
-                border: Border.all(color: AppColors.divider.withOpacity(0.5)),
+                border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,9 +227,9 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.05),
+                color: AppColors.primary.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

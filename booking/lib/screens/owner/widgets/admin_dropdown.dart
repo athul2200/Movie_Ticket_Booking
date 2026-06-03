@@ -21,7 +21,7 @@ class AdminDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       items: items,
       onChanged: onChanged,
       icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
