@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
@@ -6,7 +7,8 @@ import 'package:booking/models/movie_model.dart';
 
 /// ============================================================
 /// Hero Banner — Full-width carousel with movie poster,
-/// gradient overlay, genre tags, title, description & CTA
+/// gradient overlay, genre tags, title, description & CTA.
+/// Auto-slides every 4 seconds with smooth animation.
 /// ============================================================
 
 class HeroBanner extends StatefulWidget {
@@ -24,31 +26,39 @@ class HeroBanner extends StatefulWidget {
 }
 
 class _HeroBannerState extends State<HeroBanner> {
-  final PageController _pageController = PageController();
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  int _currentPage = 0;
 
   @override
   Widget build(BuildContext context) {
+    if (widget.movies.isEmpty) {
+      return const SizedBox(height: AppSizes.heroBannerHeight);
+    }
+
     return SizedBox(
       height: AppSizes.heroBannerHeight,
       child: Stack(
         children: [
           // ── Page view of movie banners ──
-          PageView.builder(
-            controller: _pageController,
-            itemCount: widget.movies.length,
-            itemBuilder: (context, index) {
-              final movie = widget.movies[index];
+          CarouselSlider(
+            options: CarouselOptions(
+              height: AppSizes.heroBannerHeight,
+              viewportFraction: 1.0,
+              autoPlay: true,
+              autoPlayInterval: const Duration(seconds: 4),
+              autoPlayAnimationDuration: const Duration(milliseconds: 600),
+              autoPlayCurve: Curves.easeInOut,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+            ),
+            items: widget.movies.map((movie) {
               return _BannerSlide(
                 movie: movie,
                 onBookNow: () => widget.onBookNow?.call(movie),
               );
-            },
+            }).toList(),
           ),
 
           // ── Page indicator dots ──
@@ -57,8 +67,8 @@ class _HeroBannerState extends State<HeroBanner> {
             left: 0,
             right: 0,
             child: Center(
-              child: SmoothPageIndicator(
-                controller: _pageController,
+              child: AnimatedSmoothIndicator(
+                activeIndex: _currentPage,
                 count: widget.movies.length,
                 effect: const ExpandingDotsEffect(
                   dotHeight: 6,
