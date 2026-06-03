@@ -1,6 +1,6 @@
 {
-    "name": "theatorbook",
-    "short_name": "theatorbook",
+    "name": "booking",
+    "short_name": "booking",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
