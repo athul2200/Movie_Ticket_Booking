@@ -23,9 +23,7 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case home:
-        return MaterialPageRoute(
-          builder: (_) => const BottomNavBar(),
-        );
+        return MaterialPageRoute(builder: (_) => const BottomNavBar());
 
       case movieDetail:
         final movie = settings.arguments as MovieModel;
@@ -57,16 +55,12 @@ class AppRouter {
         );
 
       case owner:
-        return MaterialPageRoute(
-          builder: (_) => const OwnerMainScreen(),
-        );
+        return MaterialPageRoute(builder: (_) => const OwnerMainScreen());
 
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
-            body: Center(
-              child: Text('No route defined for ${settings.name}'),
-            ),
+            body: Center(child: Text('No route defined for ${settings.name}')),
           ),
         );
     }

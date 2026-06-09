@@ -19,10 +19,7 @@ import 'package:booking/models/booking_model.dart';
 class BookingDetailScreen extends StatelessWidget {
   final BookingModel booking;
 
-  const BookingDetailScreen({
-    super.key,
-    required this.booking,
-  });
+  const BookingDetailScreen({super.key, required this.booking});
 
   @override
   Widget build(BuildContext context) {
@@ -45,14 +42,18 @@ class BookingDetailScreen extends StatelessWidget {
 
                     // ── Booking details card ──
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
                       child: _buildBookingInfoCard(context),
                     ),
                     const SizedBox(height: AppSpacing.xxl),
 
                     // ── Download Ticket button ──
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
                       child: _buildDownloadButton(context),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -63,7 +64,9 @@ class BookingDetailScreen extends StatelessWidget {
 
                     // ── Important Information ──
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
                       child: _buildImportantInfo(context),
                     ),
                     const SizedBox(height: AppSpacing.xxxl),
@@ -98,10 +101,10 @@ class BookingDetailScreen extends StatelessWidget {
           Text(
             'CinePremium',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
-                ),
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+            ),
           ),
           GestureDetector(
             onTap: () {
@@ -182,7 +185,10 @@ class BookingDetailScreen extends StatelessWidget {
                         width: 70,
                         height: 90,
                         color: AppColors.surface,
-                        child: const Icon(Icons.movie, color: AppColors.textHint),
+                        child: const Icon(
+                          Icons.movie,
+                          color: AppColors.textHint,
+                        ),
                       ),
                     ),
                   ),
@@ -197,7 +203,8 @@ class BookingDetailScreen extends StatelessWidget {
                         // NOW PLAYING badge
                         Text(
                           'NOW PLAYING',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 11,
@@ -209,7 +216,8 @@ class BookingDetailScreen extends StatelessWidget {
                         // Movie title
                         Text(
                           booking.movieTitle,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
                                 color: AppColors.textPrimary,
@@ -231,7 +239,8 @@ class BookingDetailScreen extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               'Confirmed Booking',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
                                     color: AppColors.textSecondary,
                                     fontSize: 12,
                                   ),
@@ -265,11 +274,14 @@ class BookingDetailScreen extends StatelessWidget {
           // ── Date & Time row ──
           Row(
             children: [
+              Expanded(child: _infoColumn(context, 'DATE', booking.date)),
               Expanded(
-                child: _infoColumn(context, 'DATE', booking.date),
-              ),
-              Expanded(
-                child: _infoColumn(context, 'TIME', booking.time, crossAxisAlignment: CrossAxisAlignment.end),
+                child: _infoColumn(
+                  context,
+                  'TIME',
+                  booking.time,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                ),
               ),
             ],
           ),
@@ -282,9 +294,7 @@ class BookingDetailScreen extends StatelessWidget {
           // ── Cinema & Seats row ──
           Row(
             children: [
-              Expanded(
-                child: _infoColumn(context, 'CINEMA', booking.cinema),
-              ),
+              Expanded(child: _infoColumn(context, 'CINEMA', booking.cinema)),
               Expanded(
                 child: _infoColumn(
                   context,
@@ -320,10 +330,10 @@ class BookingDetailScreen extends StatelessWidget {
           Text(
             'ID: ${booking.id}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  letterSpacing: 0.5,
-                ),
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
 
@@ -341,25 +351,28 @@ class BookingDetailScreen extends StatelessWidget {
                   Text(
                     'Total Amount Paid',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                        ),
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '\$${booking.totalAmount.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 17,
-                          color: AppColors.textPrimary,
-                        ),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 17,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ],
               ),
 
               // Experience badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -367,11 +380,11 @@ class BookingDetailScreen extends StatelessWidget {
                 child: Text(
                   booking.experience,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 9,
-                        letterSpacing: 0.5,
-                      ),
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 9,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ],
@@ -395,20 +408,20 @@ class BookingDetailScreen extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-                letterSpacing: 1.0,
-              ),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+            letterSpacing: 1.0,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
           value,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-                color: valueColor ?? AppColors.textPrimary,
-              ),
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            color: valueColor ?? AppColors.textPrimary,
+          ),
         ),
       ],
     );
@@ -432,9 +445,9 @@ class BookingDetailScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-              ),
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
           elevation: 0,
         ),
       ),
@@ -451,19 +464,15 @@ class BookingDetailScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.cancel_outlined,
-            size: 18,
-            color: AppColors.textSecondary,
-          ),
+          Icon(Icons.cancel_outlined, size: 18, color: AppColors.textSecondary),
           const SizedBox(width: 6),
           Text(
             'Cancel Booking',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                ),
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -485,19 +494,15 @@ class BookingDetailScreen extends StatelessWidget {
           // Header with icon
           Row(
             children: [
-              Icon(
-                Icons.info_outline,
-                size: 18,
-                color: AppColors.textPrimary,
-              ),
+              Icon(Icons.info_outline, size: 18, color: AppColors.textPrimary),
               const SizedBox(width: 8),
               Text(
                 'Important Information',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -507,10 +512,10 @@ class BookingDetailScreen extends StatelessWidget {
           Text(
             'Please arrive at least 15 minutes before the showtime. You can present this digital ticket at the entrance for scanning. Cancellations are permitted up to 2 hours before the movie starts.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  height: 1.6,
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
+              height: 1.6,
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),

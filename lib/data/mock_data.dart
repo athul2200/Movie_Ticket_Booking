@@ -19,8 +19,10 @@ class MockData {
       duration: '2h 36m',
       rating: 4.9,
       certification: 'UA',
-      posterUrl: 'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
-      bannerUrl: 'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
+      posterUrl:
+          'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
+      bannerUrl:
+          'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
     ),
     MovieModel(
       id: '2',
@@ -31,8 +33,10 @@ class MockData {
       duration: '2h 7m',
       rating: 4.9,
       certification: 'UA',
-      posterUrl: 'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
-      bannerUrl: 'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
+      posterUrl:
+          'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
+      bannerUrl:
+          'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
     ),
     MovieModel(
       id: '3',
@@ -43,8 +47,10 @@ class MockData {
       duration: '1h 59m',
       rating: 4.9,
       certification: 'A',
-      posterUrl: 'https://mir-s3-cdn-cf.behance.net/project_modules/1400_webp/172db4236457869.6a1a99d1dd2ca.jpg',
-      bannerUrl: 'https://static.toiimg.com/thumb/resizemode-4,width-1280,height-720,msid-131402320/131402320.jpg',
+      posterUrl:
+          'https://mir-s3-cdn-cf.behance.net/project_modules/1400_webp/172db4236457869.6a1a99d1dd2ca.jpg',
+      bannerUrl:
+          'https://static.toiimg.com/thumb/resizemode-4,width-1280,height-720,msid-131402320/131402320.jpg',
     ),
     MovieModel(
       id: '4',
@@ -71,19 +77,24 @@ class MockData {
       duration: '2h 36m',
       rating: 4.9,
       certification: 'UA',
-      posterUrl: 'https://cdn.district.in/movies-assets/images/cinema/Drishyam-3_Poster-0d2290e0-4469-11f1-9e72-b3859bd2479f%20(1)-6495a2d0-5360-11f1-8c65-299184906c19.jpg',
-      bannerUrl: 'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
+      posterUrl:
+          'https://cdn.district.in/movies-assets/images/cinema/Drishyam-3_Poster-0d2290e0-4469-11f1-9e72-b3859bd2479f%20(1)-6495a2d0-5360-11f1-8c65-299184906c19.jpg',
+      bannerUrl:
+          'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
     ),
     MovieModel(
       id: '2',
       title: 'Michael',
-      description: 'The biographical musical drama Michael (2026) traces the life of American singer-songwriter Michael Jackson.',
+      description:
+          'The biographical musical drama Michael (2026) traces the life of American singer-songwriter Michael Jackson.',
       genres: ['Drama '],
       duration: '2h 7m',
       rating: 4.7,
       certification: 'UA',
-      posterUrl: 'https://m.media-amazon.com/images/M/MV5BNzllNmRlN2EtMDQyOC00ODJjLTg4OWQtZDNmNGU3YzlkNjc1XkEyXkFqcGc@._V1_QL75_UX190_CR0,0,190,281_.jpg',
-      bannerUrl: 'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
+      posterUrl:
+          'https://m.media-amazon.com/images/M/MV5BNzllNmRlN2EtMDQyOC00ODJjLTg4OWQtZDNmNGU3YzlkNjc1XkEyXkFqcGc@._V1_QL75_UX190_CR0,0,190,281_.jpg',
+      bannerUrl:
+          'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
     ),
     MovieModel(
       id: '3',
@@ -94,8 +105,10 @@ class MockData {
       duration: '1h 59m',
       rating: 4.5,
       certification: 'A',
-      posterUrl: 'https://m.media-amazon.com/images/M/MV5BOWFhNWNjN2MtOThjMi00ZTFmLWE1MmMtNDI1N2FhYzk2NmQ3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
-      bannerUrl: 'https://static.toiimg.com/thumb/resizemode-4,width-1280,height-720,msid-131402320/131402320.jpg',
+      posterUrl:
+          'https://m.media-amazon.com/images/M/MV5BOWFhNWNjN2MtOThjMi00ZTFmLWE1MmMtNDI1N2FhYzk2NmQ3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
+      bannerUrl:
+          'https://static.toiimg.com/thumb/resizemode-4,width-1280,height-720,msid-131402320/131402320.jpg',
     ),
     MovieModel(
       id: '4',
@@ -119,7 +132,6 @@ class MockData {
     'Crime-Thriller',
     'Sci-Fi',
     'Animation',
-    
   ];
 
   // ── Cast & Crew for detail screen ──
@@ -211,4 +223,3 @@ class MockData {
     ),
   ];
 }
-

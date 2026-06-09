@@ -28,8 +28,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   @override
   Widget build(BuildContext context) {
     // Filter bookings based on active tab
-    final upcomingBookings = MockData.bookings.where((b) => !b.isHistory).toList();
-    final historyBookings = MockData.bookings.where((b) => b.isHistory).toList();
+    final upcomingBookings = MockData.bookings
+        .where((b) => !b.isHistory)
+        .toList();
+    final historyBookings = MockData.bookings
+        .where((b) => b.isHistory)
+        .toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -76,10 +80,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           Text(
             'CinePremium',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
-                ),
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+            ),
           ),
           const Spacer(),
 
@@ -142,10 +146,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             child: Text(
               label,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                fontSize: 14,
+              ),
             ),
           ),
           Container(
@@ -159,13 +163,18 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
   Widget _buildUpcomingList(BuildContext context, List<BookingModel> bookings) {
     if (bookings.isEmpty) {
-      return _buildEmptyState(context, 'No upcoming bookings', 'Find your next movie premiere on the home tab');
+      return _buildEmptyState(
+        context,
+        'No upcoming bookings',
+        'Find your next movie premiere on the home tab',
+      );
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.lg),
       itemCount: bookings.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.lg),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.lg),
       itemBuilder: (context, index) {
         return _TicketStubCard(booking: bookings[index]);
       },
@@ -175,13 +184,18 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   /// Historical Bookings Content List
   Widget _buildHistoryList(BuildContext context, List<BookingModel> bookings) {
     if (bookings.isEmpty) {
-      return _buildEmptyState(context, 'No past bookings', 'Your booking history will be saved here');
+      return _buildEmptyState(
+        context,
+        'No past bookings',
+        'Your booking history will be saved here',
+      );
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.lg),
       itemCount: bookings.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.md),
       itemBuilder: (context, index) {
         return HistoryBookingCard(booking: bookings[index]);
       },
@@ -204,17 +218,17 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             Text(
               title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textHint,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textHint),
               textAlign: TextAlign.center,
             ),
           ],
@@ -237,246 +251,277 @@ class _TicketStubCard extends StatelessWidget {
       children: [
         // Base grey ticket container
         Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFF7E7E7E), // Figma slate-grey card background
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.shadowColor,
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Top Ticket Section ──
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Poster Thumbnail
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                        child: Image.network(
-                          booking.moviePosterUrl,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color(0xFF7E7E7E), // Figma slate-grey card background
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadowColor,
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Top Ticket Section ──
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Poster Thumbnail
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      child: Image.network(
+                        booking.moviePosterUrl,
+                        width: 85,
+                        height: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
                           width: 85,
                           height: 120,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            width: 85,
-                            height: 120,
-                            color: Colors.black26,
-                            child: const Icon(Icons.movie, color: AppColors.textWhite),
+                          color: Colors.black26,
+                          child: const Icon(
+                            Icons.movie,
+                            color: AppColors.textWhite,
                           ),
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.md),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
 
-                      // Movie Info details
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    booking.movieTitle,
-                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                          color: AppColors.textWhite,
-                                        ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                    // Movie Info details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  booking.movieTitle,
+                                  style: Theme.of(context).textTheme.titleSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                        color: AppColors.textWhite,
+                                      ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.background.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    booking.experience.contains('IMAX 2D') ? 'IMAX 2D' : 'IMAX 3D',
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                          color: AppColors.textWhite,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 9,
-                                        ),
-                                  ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  booking.experience.contains('IMAX 2D')
+                                      ? 'IMAX 2D'
+                                      : 'IMAX 3D',
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
+                                        color: AppColors.textWhite,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 9,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
 
-                            // Date Info
-                            Row(
-                              children: [
-                                const Icon(Icons.calendar_today, size: 12, color: AppColors.textWhite),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${booking.date} • ${booking.time}',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: AppColors.textWhite.withValues(alpha: 0.9),
-                                        fontSize: 12,
+                          // Date Info
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.calendar_today,
+                                size: 12,
+                                color: AppColors.textWhite,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${booking.date} • ${booking.time}',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: AppColors.textWhite.withValues(
+                                        alpha: 0.9,
                                       ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
+                                      fontSize: 12,
+                                    ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
 
-                            const Divider(color: Colors.white24, height: 1),
-                            const SizedBox(height: 12),
+                          const Divider(color: Colors.white24, height: 1),
+                          const SizedBox(height: 12),
 
-                            // Cinema & Seats Row
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'CINEMA',
-                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                              fontSize: 9,
-                                              color: AppColors.textWhite.withValues(alpha: 0.6),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        booking.cinema,
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.textWhite,
-                                              fontSize: 12,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
+                          // Cinema & Seats Row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'CINEMA',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            fontSize: 9,
+                                            color: AppColors.textWhite
+                                                .withValues(alpha: 0.6),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      booking.cinema,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.textWhite,
+                                            fontSize: 12,
+                                          ),
+                                    ),
+                                  ],
                                 ),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'SEATS',
-                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                              fontSize: 9,
-                                              color: AppColors.textWhite.withValues(alpha: 0.6),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        booking.seatsFormatted,
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.primary,
-                                              fontSize: 12,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'SEATS',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            fontSize: 9,
+                                            color: AppColors.textWhite
+                                                .withValues(alpha: 0.6),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      booking.seatsFormatted,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.primary,
+                                            fontSize: 12,
+                                          ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Dashed Divider Segment ──
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                child: DashedDivider(
+                  color: Colors.white30,
+                  height: 1.5,
+                  dashWidth: 6,
+                  dashGap: 4,
+                ),
+              ),
+
+              // ── Bottom QR Stub Section ──
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // White square containing QR icon
+                      Container(
+                        width: 130,
+                        height: 130,
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.qr_code_2,
+                            size: 100,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Scan at the entrance of ${booking.cinema}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textWhite.withValues(alpha: 0.7),
+                          fontSize: 11,
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                // ── Dashed Divider Segment ──
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                  child: DashedDivider(
-                    color: Colors.white30,
-                    height: 1.5,
-                    dashWidth: 6,
-                    dashGap: 4,
-                  ),
-                ),
-
-                // ── Bottom QR Stub Section ──
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // White square containing QR icon
-                        Container(
-                          width: 130,
-                          height: 130,
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          decoration: BoxDecoration(
-                            color: AppColors.background,
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.qr_code_2,
-                              size: 100,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          'Scan at the entrance of ${booking.cinema}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textWhite.withValues(alpha: 0.7),
-                                fontSize: 11,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Circular Edge Notch Masking ──
-          // Left Notch Cutout
-          Positioned(
-            left: -8,
-            top: 147, // Centered precisely with the dashed divider
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: const BoxDecoration(
-                color: AppColors.background,
-                shape: BoxShape.circle,
               ),
+            ],
+          ),
+        ),
+
+        // ── Circular Edge Notch Masking ──
+        // Left Notch Cutout
+        Positioned(
+          left: -8,
+          top: 147, // Centered precisely with the dashed divider
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: const BoxDecoration(
+              color: AppColors.background,
+              shape: BoxShape.circle,
             ),
           ),
-          // Right Notch Cutout
-          Positioned(
-            right: -8,
-            top: 147,
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: const BoxDecoration(
-                color: AppColors.background,
-                shape: BoxShape.circle,
-              ),
+        ),
+        // Right Notch Cutout
+        Positioned(
+          right: -8,
+          top: 147,
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: const BoxDecoration(
+              color: AppColors.background,
+              shape: BoxShape.circle,
             ),
           ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
   }
-
-
+}
 
 /// History booking card featuring the horizontal split layout and "Details" button
 class HistoryBookingCard extends StatelessWidget {
@@ -527,14 +572,22 @@ class HistoryBookingCard extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.2),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  booking.experience.contains('IMAX') ? 'IMAX 3D' : 'STANDARD',
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  booking.experience.contains('IMAX')
+                                      ? 'IMAX 3D'
+                                      : 'STANDARD',
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
                                         color: AppColors.primary,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 8,
@@ -551,7 +604,8 @@ class HistoryBookingCard extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             booking.movieTitle,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
                                   color: AppColors.textWhite,
@@ -562,12 +616,19 @@ class HistoryBookingCard extends StatelessWidget {
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              const Icon(Icons.calendar_today, size: 10, color: AppColors.textWhite),
+                              const Icon(
+                                Icons.calendar_today,
+                                size: 10,
+                                color: AppColors.textWhite,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '${booking.date} • ${booking.time}',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.textWhite.withValues(alpha: 0.8),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: AppColors.textWhite.withValues(
+                                        alpha: 0.8,
+                                      ),
                                       fontSize: 11,
                                     ),
                               ),
@@ -588,15 +649,19 @@ class HistoryBookingCard extends StatelessWidget {
                             children: [
                               Text(
                                 'SEATS',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
                                       fontSize: 8,
-                                      color: AppColors.textWhite.withValues(alpha: 0.6),
+                                      color: AppColors.textWhite.withValues(
+                                        alpha: 0.6,
+                                      ),
                                       fontWeight: FontWeight.w600,
                                     ),
                               ),
                               Text(
                                 booking.seatsFormatted,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.textWhite,
                                       fontSize: 12,
@@ -604,7 +669,7 @@ class HistoryBookingCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          
+
                           // Details CTA button
                           SizedBox(
                             height: 28,
@@ -617,12 +682,17 @@ class HistoryBookingCard extends StatelessWidget {
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.background.withValues(alpha: 0.2),
+                                backgroundColor: AppColors.background
+                                    .withValues(alpha: 0.2),
                                 foregroundColor: AppColors.textWhite,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.sm,
+                                  ),
                                 ),
                               ),
                               child: const Text(

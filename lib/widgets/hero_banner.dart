@@ -15,11 +15,7 @@ class HeroBanner extends StatefulWidget {
   final List<MovieModel> movies;
   final void Function(MovieModel movie)? onBookNow;
 
-  const HeroBanner({
-    super.key,
-    required this.movies,
-    this.onBookNow,
-  });
+  const HeroBanner({super.key, required this.movies, this.onBookNow});
 
   @override
   State<HeroBanner> createState() => _HeroBannerState();
@@ -92,10 +88,7 @@ class _BannerSlide extends StatelessWidget {
   final MovieModel movie;
   final VoidCallback? onBookNow;
 
-  const _BannerSlide({
-    required this.movie,
-    this.onBookNow,
-  });
+  const _BannerSlide({required this.movie, this.onBookNow});
 
   @override
   Widget build(BuildContext context) {
@@ -157,9 +150,9 @@ class _BannerSlide extends StatelessWidget {
                     child: Text(
                       genre,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.genreTagText,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: AppColors.genreTagText,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -178,9 +171,9 @@ class _BannerSlide extends StatelessWidget {
               // Description
               Text(
                 movie.description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textHint,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.textHint),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

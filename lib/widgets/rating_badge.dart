@@ -35,19 +35,15 @@ class RatingBadge extends StatelessWidget {
           children: [
             // ── Value or Icon ──
             if (icon != null)
-              Icon(
-                icon,
-                size: 24,
-                color: iconColor ?? AppColors.primary,
-              )
+              Icon(icon, size: 24, color: iconColor ?? AppColors.primary)
             else
               Text(
                 value,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             const SizedBox(height: AppSpacing.xs),
 
@@ -55,11 +51,11 @@ class RatingBadge extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                    letterSpacing: 0.5,
-                  ),
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+                letterSpacing: 0.5,
+              ),
             ),
           ],
         ),

@@ -30,23 +30,11 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(
         title,
         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w800,
-              fontSize: 20,
-            ),
+          color: AppColors.primary,
+          fontWeight: FontWeight.w800,
+          fontSize: 20,
+        ),
       ),
-      actions: [
-        if (!showBackButton)
-          const Padding(
-            padding: EdgeInsets.only(right: AppSpacing.lg),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundImage: NetworkImage(
-                'https://i.pravatar.cc/150?img=11', // Placeholder admin avatar
-              ),
-            ),
-          ),
-      ],
     );
   }
 

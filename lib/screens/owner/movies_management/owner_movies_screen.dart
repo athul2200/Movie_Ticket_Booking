@@ -41,9 +41,9 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
             Text(
               'Movie Management',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
@@ -65,50 +65,72 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                     spreadRadius: 2,
                   ),
                 ],
-                border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AppColors.divider.withValues(alpha: 0.5),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.add_circle_outline, color: AppColors.primary, size: 24),
+                      const Icon(
+                        Icons.add_circle_outline,
+                        color: AppColors.primary,
+                        size: 24,
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
                         'Add New Movie',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  
-                  Text('Movie Name', style: Theme.of(context).textTheme.bodyMedium),
+
+                  Text(
+                    'Movie Name',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: AppSpacing.xs),
                   AdminTextField(
                     controller: _movieNameCtrl,
                     hintText: 'e.g. Interstellar',
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  
+
                   Row(
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Language', style: Theme.of(context).textTheme.bodyMedium),
+                            Text(
+                              'Language',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
                             const SizedBox(height: AppSpacing.xs),
                             AdminDropdown<String>(
                               value: _selectedLanguage,
                               items: const [
-                                DropdownMenuItem(value: 'English', child: Text('English')),
-                                DropdownMenuItem(value: 'Malayalam', child: Text('Malayalam')),
-                                DropdownMenuItem(value: 'Tamil', child: Text('Tamil')),
+                                DropdownMenuItem(
+                                  value: 'English',
+                                  child: Text('English'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Malayalam',
+                                  child: Text('Malayalam'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Tamil',
+                                  child: Text('Tamil'),
+                                ),
                               ],
                               onChanged: (val) {
-                                if (val != null) setState(() => _selectedLanguage = val);
+                                if (val != null)
+                                  setState(() => _selectedLanguage = val);
                               },
                             ),
                           ],
@@ -119,12 +141,19 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Duration', style: Theme.of(context).textTheme.bodyMedium),
+                            Text(
+                              'Duration',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
                             const SizedBox(height: AppSpacing.xs),
                             AdminTextField(
                               controller: _durationCtrl,
                               hintText: 'HH:MM',
-                              suffixIcon: const Icon(Icons.access_time, color: AppColors.textSecondary, size: 20),
+                              suffixIcon: const Icon(
+                                Icons.access_time,
+                                color: AppColors.textSecondary,
+                                size: 20,
+                              ),
                             ),
                           ],
                         ),
@@ -132,20 +161,24 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  
-                  Text('YouTube Trailer Link', style: Theme.of(context).textTheme.bodyMedium),
+
+                  Text(
+                    'YouTube Trailer Link',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: AppSpacing.xs),
                   AdminTextField(
                     controller: _trailerCtrl,
                     hintText: 'https://youtube.com/watch?v=...',
-                    prefixIcon: const Icon(Icons.play_circle_outline, color: AppColors.textSecondary, size: 20),
+                    prefixIcon: const Icon(
+                      Icons.play_circle_outline,
+                      color: AppColors.textSecondary,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  
-                  AdminButton(
-                    text: 'Save Movie',
-                    onPressed: () {},
-                  ),
+
+                  AdminButton(text: 'Save Movie', onPressed: () {}),
                 ],
               ),
             ),
@@ -158,7 +191,9 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadius.md),
                 image: const DecorationImage(
-                  image: NetworkImage('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop'), // Cinema hall abstract
+                  image: NetworkImage(
+                    'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop',
+                  ), // Cinema hall abstract
                   fit: BoxFit.cover,
                 ),
               ),
@@ -182,16 +217,16 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                     Text(
                       'Expand Your Library',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppColors.textWhite,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        color: AppColors.textWhite,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Add up to 50 active listings per theater.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textWhite.withValues(alpha: 0.9),
-                          ),
+                        color: AppColors.textWhite.withValues(alpha: 0.9),
+                      ),
                     ),
                   ],
                 ),
@@ -206,8 +241,8 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                 Text(
                   'Currently Managed',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Row(
                   children: [
@@ -217,12 +252,20 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Icon(Icons.grid_view, size: 20, color: AppColors.textSecondary),
+                      child: const Icon(
+                        Icons.grid_view,
+                        size: 20,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Container(
                       padding: const EdgeInsets.all(6),
-                      child: const Icon(Icons.format_list_bulleted, size: 20, color: AppColors.textSecondary),
+                      child: const Icon(
+                        Icons.format_list_bulleted,
+                        size: 20,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -235,7 +278,8 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
               title: 'Cosmic Horizon',
               language: 'English',
               duration: '02:15',
-              imageUrl: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop',
+              imageUrl:
+                  'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop',
               badgeText: 'Live Now',
               isLive: true,
             ),
@@ -244,7 +288,8 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
               title: 'Midnight Rain',
               language: 'French',
               duration: '01:48',
-              imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop',
+              imageUrl:
+                  'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop',
               badgeText: 'Scheduled',
               isLive: false,
             ),
@@ -253,7 +298,8 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
               title: 'Dust Runners',
               language: 'English',
               duration: '02:30',
-              imageUrl: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=1000&auto=format&fit=crop',
+              imageUrl:
+                  'https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=1000&auto=format&fit=crop',
               badgeText: null,
               isLive: false,
             ),
@@ -265,7 +311,10 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 60),
                 backgroundColor: AppColors.background,
-                side: const BorderSide(color: AppColors.divider, style: BorderStyle.solid),
+                side: const BorderSide(
+                  color: AppColors.divider,
+                  style: BorderStyle.solid,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
@@ -279,15 +328,19 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                       color: AppColors.surface,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.add, color: AppColors.textPrimary, size: 20),
+                    child: const Icon(
+                      Icons.add,
+                      color: AppColors.textPrimary,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     'Add More Movies',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -325,7 +378,9 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.md)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppRadius.md),
+                ),
                 child: Image.network(
                   imageUrl,
                   height: 140,
@@ -338,17 +393,24 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                   top: AppSpacing.sm,
                   right: AppSpacing.sm,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: isLive ? AppColors.textWhite : AppColors.textWhite.withValues(alpha: 0.9),
+                      color: isLive
+                          ? AppColors.textWhite
+                          : AppColors.textWhite.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: Text(
                       badgeText,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: isLive ? AppColors.primary : AppColors.textSecondary,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        color: isLive
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -365,8 +427,8 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                     Text(
                       title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -375,7 +437,11 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                     ),
                   ],
                 ),
-                const Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
+                const Icon(
+                  Icons.edit_outlined,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
               ],
             ),
           ),

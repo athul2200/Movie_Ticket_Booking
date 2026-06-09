@@ -31,22 +31,22 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             Text(
               'THEATER MANAGER DASHBOARD',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                  ),
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               'Welcome back,\nGrand Cinema',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                    height: 1.1,
-                  ),
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+                height: 1.1,
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            
+
             // ── Action Buttons ──
             Row(
               children: [
@@ -59,7 +59,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       } else {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const OwnerMoviesScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const OwnerMoviesScreen(),
+                          ),
                         );
                       }
                     },
@@ -72,17 +74,23 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const OwnerScheduleScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const OwnerScheduleScreen(),
+                        ),
                       );
                     },
-                    icon: const Icon(Icons.calendar_today, size: 18, color: AppColors.textPrimary),
+                    icon: const Icon(
+                      Icons.calendar_today,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
                     label: Text(
                       'Schedule\nShows',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontSize: 13,
-                          ),
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                      ),
                     ),
                     style: OutlinedButton.styleFrom(
                       backgroundColor: AppColors.background,
@@ -107,7 +115,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const OwnerScreensStatusScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const OwnerScreensStatusScreen(),
+                  ),
                 );
               },
             ),
@@ -126,7 +136,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               badgeText: 'Today',
             ),
             const SizedBox(height: AppSpacing.md),
-            
+
             // Total Revenue Card
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
@@ -143,12 +153,19 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.account_balance_wallet_outlined, color: AppColors.textWhite, size: 20),
+                          const Icon(
+                            Icons.account_balance_wallet_outlined,
+                            color: AppColors.textWhite,
+                            size: 20,
+                          ),
                           const SizedBox(width: AppSpacing.sm),
                           Text(
                             'Total Revenue',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.textWhite.withValues(alpha: 0.9),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.textWhite.withValues(
+                                    alpha: 0.9,
+                                  ),
                                 ),
                           ),
                         ],
@@ -156,7 +173,8 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         '\$14.2k',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        style: Theme.of(context).textTheme.headlineLarge
+                            ?.copyWith(
                               color: AppColors.textWhite,
                               fontWeight: FontWeight.w800,
                             ),
@@ -164,7 +182,10 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.textWhite.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -172,8 +193,8 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     child: Text(
                       'Daily Est',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.textWhite,
-                          ),
+                        color: AppColors.textWhite,
+                      ),
                     ),
                   ),
                 ],
@@ -188,9 +209,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                 Text(
                   'Current Screen\nStatus',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        height: 1.1,
-                      ),
+                    fontWeight: FontWeight.w700,
+                    height: 1.1,
+                  ),
                 ),
                 TextButton(
                   onPressed: () {},
@@ -198,19 +219,20 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     'View All\nScreens',
                     textAlign: TextAlign.right,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
-            
+
             _buildScreenStatusCard(
               movieTitle: 'Dune: Part Two',
               screenName: 'SCREEN 01 - IMAX',
-              imageUrl: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop', // Sand dunes visual
+              imageUrl:
+                  'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop', // Sand dunes visual
               occupancy: 0.73,
               timeLabel: 'Ends at',
               timeValue: '14:45',
@@ -219,7 +241,8 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             _buildScreenStatusCard(
               movieTitle: 'Oppenheimer',
               screenName: 'SCREEN 02 - STANDARD',
-              imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop', // Abstract lights visual
+              imageUrl:
+                  'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop', // Abstract lights visual
               occupancy: 0.30,
               timeLabel: 'Next Show',
               timeValue: '15:15',
@@ -233,15 +256,15 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                 Text(
                   'Staff on Duty',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   '12 Active',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
@@ -250,15 +273,41 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               decoration: BoxDecoration(
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AppColors.divider.withValues(alpha: 0.5),
+                ),
               ),
               child: Column(
                 children: [
-                  _buildStaffItem('JD', 'Jane Doe', 'Floor Manager • Screen 01-04', 'ON SHIFT', AppColors.greenAccent),
-                  Divider(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
-                  _buildStaffItem('MS', 'Marcus Smith', 'Technician • Projection Room', 'ON SHIFT', AppColors.greenAccent),
-                  Divider(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
-                  _buildStaffItem('SL', 'Sarah Lee', 'Concessions • Main Lobby', 'BREAK', Colors.orange),
+                  _buildStaffItem(
+                    'JD',
+                    'Jane Doe',
+                    'Floor Manager • Screen 01-04',
+                    'ON SHIFT',
+                    AppColors.greenAccent,
+                  ),
+                  Divider(
+                    height: 1,
+                    color: AppColors.divider.withValues(alpha: 0.5),
+                  ),
+                  _buildStaffItem(
+                    'MS',
+                    'Marcus Smith',
+                    'Technician • Projection Room',
+                    'ON SHIFT',
+                    AppColors.greenAccent,
+                  ),
+                  Divider(
+                    height: 1,
+                    color: AppColors.divider.withValues(alpha: 0.5),
+                  ),
+                  _buildStaffItem(
+                    'SL',
+                    'Sarah Lee',
+                    'Concessions • Main Lobby',
+                    'BREAK',
+                    Colors.orange,
+                  ),
                 ],
               ),
             ),
@@ -267,9 +316,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             // ── Daily Insights ──
             Text(
               'Daily Insights',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.md),
             Container(
@@ -277,13 +326,25 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               decoration: BoxDecoration(
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AppColors.divider.withValues(alpha: 0.5),
+                ),
               ),
               child: Column(
                 children: [
-                  _buildInsightBar('Concessions Revenue', '\$3,420', 0.8, AppColors.primaryDark),
+                  _buildInsightBar(
+                    'Concessions Revenue',
+                    '\$3,420',
+                    0.8,
+                    AppColors.primaryDark,
+                  ),
                   const SizedBox(height: AppSpacing.lg),
-                  _buildInsightBar('Ticket Sales Target', '620/1000', 0.62, AppColors.textSecondary),
+                  _buildInsightBar(
+                    'Ticket Sales Target',
+                    '620/1000',
+                    0.62,
+                    AppColors.textSecondary,
+                  ),
                 ],
               ),
             ),
@@ -292,9 +353,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             // ── Top Performing Movie ──
             Text(
               'Top Performing Movie',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.md),
             Container(
@@ -302,7 +363,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               decoration: BoxDecoration(
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AppColors.divider.withValues(alpha: 0.5),
+                ),
               ),
               child: Row(
                 children: [
@@ -322,14 +385,14 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       children: [
                         Text(
                           'Blade Runner 2049',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'RE-RELEASE • IMAX',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -353,20 +416,26 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF8F9FA),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AppColors.divider.withValues(alpha: 0.5),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.warning_amber_rounded, color: AppColors.primary, size: 20),
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
                       const SizedBox(width: AppSpacing.xs),
                       Text(
                         'Support Alert',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -379,8 +448,12 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                   OutlinedButton(
                     onPressed: () {},
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-                      side: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.3)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xl,
+                      ),
+                      side: BorderSide(
+                        color: AppColors.textSecondary.withValues(alpha: 0.3),
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadius.sm),
                       ),
@@ -388,8 +461,8 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     child: Text(
                       'Acknowledge',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
                 ],
@@ -441,8 +514,8 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                 Text(
                   value,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),
@@ -501,7 +574,10 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.textWhite,
                         borderRadius: BorderRadius.circular(AppRadius.full),
@@ -509,19 +585,21 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       child: Text(
                         screenName,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w800,
-                            ),
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       movieTitle,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppColors.textWhite,
-                            fontWeight: FontWeight.w700,
-                            shadows: [const Shadow(color: Colors.black54, blurRadius: 4)],
-                          ),
+                        color: AppColors.textWhite,
+                        fontWeight: FontWeight.w700,
+                        shadows: [
+                          const Shadow(color: Colors.black54, blurRadius: 4),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -536,7 +614,10 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Occupancy', style: Theme.of(context).textTheme.labelSmall),
+                      Text(
+                        'Occupancy',
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                       const SizedBox(height: AppSpacing.xs),
                       Row(
                         children: [
@@ -544,13 +625,19 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                             child: LinearProgressIndicator(
                               value: occupancy,
                               backgroundColor: AppColors.divider,
-                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryDark),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColors.primaryDark,
+                              ),
                               minHeight: 4,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
-                          Text('${(occupancy * 100).toInt()}%', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700)),
+                          Text(
+                            '${(occupancy * 100).toInt()}%',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
                         ],
                       ),
                     ],
@@ -560,11 +647,16 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(timeLabel, style: Theme.of(context).textTheme.labelSmall),
+                    Text(
+                      timeLabel,
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       timeValue,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -576,7 +668,13 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  Widget _buildStaffItem(String initials, String name, String role, String status, Color statusColor) {
+  Widget _buildStaffItem(
+    String initials,
+    String name,
+    String role,
+    String status,
+    Color statusColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
@@ -586,7 +684,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             radius: 20,
             child: Text(
               initials,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.textSecondary),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(color: AppColors.textSecondary),
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -596,12 +696,11 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               children: [
                 Text(
                   name,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
-                Text(
-                  role,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text(role, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
@@ -614,9 +713,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             child: Text(
               status,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.w800,
-                  ),
+                color: statusColor,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],
@@ -624,15 +723,30 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  Widget _buildInsightBar(String label, String value, double progress, Color color) {
+  Widget _buildInsightBar(
+    String label,
+    String value,
+    double progress,
+    Color color,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600)),
-            Text(value, style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800)),
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              value,
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
           ],
         ),
         const SizedBox(height: AppSpacing.xs),

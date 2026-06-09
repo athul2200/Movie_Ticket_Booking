@@ -32,14 +32,14 @@ class AdminTextField extends StatelessWidget {
       obscureText: obscureText,
       readOnly: readOnly,
       onTap: onTap,
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppColors.textPrimary,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.bodyLarge?.copyWith(color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textHint,
-            ),
+        hintStyle: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: AppColors.textHint),
         filled: true,
         fillColor: AppColors.surface, // Very light grey
         prefixIcon: prefixIcon,

@@ -24,15 +24,18 @@ class AdminDropdown<T> extends StatelessWidget {
       initialValue: value,
       items: items,
       onChanged: onChanged,
-      icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppColors.textPrimary,
-          ),
+      icon: const Icon(
+        Icons.keyboard_arrow_down,
+        color: AppColors.textSecondary,
+      ),
+      style: Theme.of(
+        context,
+      ).textTheme.bodyLarge?.copyWith(color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textHint,
-            ),
+        hintStyle: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: AppColors.textHint),
         filled: true,
         fillColor: AppColors.surface,
         prefixIcon: prefixIcon,

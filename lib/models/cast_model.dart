@@ -4,8 +4,8 @@
 
 class CastModel {
   final String name;
-  final String role;       // e.g., "ACTOR", "DIRECTOR"
-  final String imageUrl;   // Network image URL for avatar
+  final String role; // e.g., "ACTOR", "DIRECTOR"
+  final String imageUrl; // Network image URL for avatar
 
   const CastModel({
     required this.name,

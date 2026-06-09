@@ -22,22 +22,16 @@ class _OwnerMainScreenState extends State<OwnerMainScreen> {
 
   // Screens for each tab
   List<Widget> get _screens => [
-    OwnerDashboardScreen(
-      onNavigateToMovies: () => setIndex(1),
-    ),
+    OwnerDashboardScreen(onNavigateToMovies: () => setIndex(1)),
     const OwnerMoviesScreen(),
     const OwnerScreensListScreen(),
-    const Center(child: Text("Profile (Admin)")),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.background,
@@ -71,11 +65,6 @@ class _OwnerMainScreenState extends State<OwnerMainScreen> {
               icon: Icon(Icons.grid_view),
               activeIcon: Icon(Icons.grid_view_rounded),
               label: 'Screens',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
             ),
           ],
         ),

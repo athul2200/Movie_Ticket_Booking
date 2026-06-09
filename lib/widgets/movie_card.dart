@@ -15,11 +15,7 @@ class MovieCard extends StatelessWidget {
   final MovieModel movie;
   final VoidCallback? onTap;
 
-  const MovieCard({
-    super.key,
-    required this.movie,
-    this.onTap,
-  });
+  const MovieCard({super.key, required this.movie, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +29,9 @@ class MovieCard extends StatelessWidget {
             children: [
               // Poster
               ClipRRect(
-                borderRadius: BorderRadius.circular(AppSizes.movieCardPosterRadius),
+                borderRadius: BorderRadius.circular(
+                  AppSizes.movieCardPosterRadius,
+                ),
                 child: AspectRatio(
                   aspectRatio: 0.72,
                   child: Image.network(
@@ -42,7 +40,11 @@ class MovieCard extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: AppColors.surface,
                       child: const Center(
-                        child: Icon(Icons.movie, size: 40, color: AppColors.textHint),
+                        child: Icon(
+                          Icons.movie,
+                          size: 40,
+                          color: AppColors.textHint,
+                        ),
                       ),
                     ),
                   ),
@@ -54,7 +56,10 @@ class MovieCard extends StatelessWidget {
                 bottom: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(6),
@@ -71,10 +76,10 @@ class MovieCard extends StatelessWidget {
                       Text(
                         movie.rating.toString(),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.textWhite,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
+                          color: AppColors.textWhite,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -86,7 +91,10 @@ class MovieCard extends StatelessWidget {
                 bottom: 8,
                 right: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(6),
@@ -94,10 +102,10 @@ class MovieCard extends StatelessWidget {
                   child: Text(
                     movie.certification,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textWhite,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
+                      color: AppColors.textWhite,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ),
@@ -109,9 +117,9 @@ class MovieCard extends StatelessWidget {
           Text(
             '${movie.genres.first} • ${movie.duration}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

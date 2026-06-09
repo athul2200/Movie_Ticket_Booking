@@ -11,10 +11,7 @@ import 'package:booking/models/cast_model.dart';
 class CastAvatar extends StatelessWidget {
   final CastModel cast;
 
-  const CastAvatar({
-    super.key,
-    required this.cast,
-  });
+  const CastAvatar({super.key, required this.cast});
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +26,7 @@ class CastAvatar extends StatelessWidget {
             height: AppSizes.castAvatarSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.divider,
-                width: 2,
-              ),
+              border: Border.all(color: AppColors.divider, width: 2),
               image: DecorationImage(
                 image: NetworkImage(cast.imageUrl),
                 fit: BoxFit.cover,
@@ -60,10 +54,10 @@ class CastAvatar extends StatelessWidget {
           Text(
             cast.name,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                  fontSize: 11,
-                ),
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+              fontSize: 11,
+            ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -74,11 +68,11 @@ class CastAvatar extends StatelessWidget {
           Text(
             cast.role,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontSize: 9,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
-                ),
+              fontSize: 9,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+            ),
             textAlign: TextAlign.center,
           ),
         ],

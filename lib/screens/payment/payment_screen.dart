@@ -16,10 +16,7 @@ import 'package:booking/models/booking_model.dart';
 class PaymentScreen extends StatefulWidget {
   final BookingModel booking;
 
-  const PaymentScreen({
-    super.key,
-    required this.booking,
-  });
+  const PaymentScreen({super.key, required this.booking});
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -97,10 +94,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
           Text(
             'CinePremium',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
-                ),
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+            ),
           ),
           const Spacer(),
 
@@ -136,7 +133,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           isActive: true,
           isCompleted: true,
         ),
-        
+
         // Connecting Line 1 (Red)
         Expanded(
           child: Container(
@@ -190,7 +187,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: isActive 
+            color: isActive
                 ? (isCompleted ? AppColors.primary : AppColors.primary)
                 : AppColors.surface,
             shape: BoxShape.circle,
@@ -211,10 +208,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
-                fontSize: 11,
-              ),
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+            fontSize: 11,
+          ),
         ),
       ],
     );
@@ -235,10 +232,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
           Text(
             'Payment Methods',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textWhite,
-                  fontSize: 14,
-                ),
+              fontWeight: FontWeight.w600,
+              color: AppColors.textWhite,
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
 
@@ -282,8 +279,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? const Color(0xFFFEEBED).withValues(alpha: 0.15) // Highlighted transparent red
+          color: isSelected
+              ? const Color(0xFFFEEBED).withValues(
+                  alpha: 0.15,
+                ) // Highlighted transparent red
               : AppColors.background,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
@@ -297,7 +296,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             Container(
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: isSelected 
+                color: isSelected
                     ? AppColors.primary.withValues(alpha: 0.1)
                     : AppColors.surface,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -318,20 +317,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                          color: isSelected ? AppColors.textWhite : AppColors.textPrimary,
-                        ),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: isSelected
+                          ? AppColors.textWhite
+                          : AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: 11,
-                          color: isSelected 
-                              ? AppColors.textWhite.withValues(alpha: 0.8) 
-                              : AppColors.textSecondary,
-                        ),
+                      fontSize: 11,
+                      color: isSelected
+                          ? AppColors.textWhite.withValues(alpha: 0.8)
+                          : AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -348,7 +349,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   width: 2,
                 ),
               ),
-              child: isSelected 
+              child: isSelected
                   ? Center(
                       child: Container(
                         width: 9,
@@ -370,9 +371,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
   /// Movie booking summary card showing projector graphic + price details
   Widget _buildBookingSummary(BuildContext context) {
     // Generate cinema text Row H (2 Seats) etc.
-    final rowLetter = widget.booking.seats.isNotEmpty ? widget.booking.seats.first[0] : 'H';
+    final rowLetter = widget.booking.seats.isNotEmpty
+        ? widget.booking.seats.first[0]
+        : 'H';
     final seatsCount = widget.booking.seats.length;
-    final formattedDetail = '${widget.booking.cinema.replaceAll(' • ', ' • ')} • Row $rowLetter ($seatsCount Seats)';
+    final formattedDetail =
+        '${widget.booking.cinema.replaceAll(' • ', ' • ')} • Row $rowLetter ($seatsCount Seats)';
 
     return Container(
       width: double.infinity,
@@ -385,7 +389,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
         children: [
           // Top projection image banner
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppRadius.lg),
+            ),
             child: Image.network(
               'https://picsum.photos/seed/projector/600/300',
               height: 120,
@@ -395,7 +401,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 height: 120,
                 color: Colors.black26,
                 child: const Center(
-                  child: Icon(Icons.videocam_outlined, color: AppColors.textWhite, size: 40),
+                  child: Icon(
+                    Icons.videocam_outlined,
+                    color: AppColors.textWhite,
+                    size: 40,
+                  ),
                 ),
               ),
             ),
@@ -415,18 +425,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       Text(
                         widget.booking.movieTitle,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: AppColors.textWhite,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
+                          color: AppColors.textWhite,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         formattedDetail,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textWhite.withValues(alpha: 0.8),
-                              fontSize: 11,
-                            ),
+                          color: AppColors.textWhite.withValues(alpha: 0.8),
+                          fontSize: 11,
+                        ),
                       ),
                     ],
                   ),
@@ -440,20 +450,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     Text(
                       'TOTAL AMOUNT',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.textWhite.withValues(alpha: 0.8),
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
+                        color: AppColors.textWhite.withValues(alpha: 0.8),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '\$${widget.booking.totalAmount.toStringAsFixed(2)}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
                     ),
                   ],
                 ),
@@ -499,9 +509,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-              ),
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
         ),
         child: const Text('Pay Securely'),
       ),

@@ -37,10 +37,14 @@ class CategoryChips extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.chipSelectedBg : AppColors.background,
+                color: isSelected
+                    ? AppColors.chipSelectedBg
+                    : AppColors.background,
                 borderRadius: BorderRadius.circular(AppRadius.full),
                 border: Border.all(
-                  color: isSelected ? AppColors.chipSelectedBg : AppColors.chipOutline,
+                  color: isSelected
+                      ? AppColors.chipSelectedBg
+                      : AppColors.chipOutline,
                   width: 1.5,
                 ),
               ),
@@ -48,10 +52,12 @@ class CategoryChips extends StatelessWidget {
                 child: Text(
                   categories[index],
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: isSelected ? AppColors.textWhite : AppColors.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: isSelected
+                        ? AppColors.textWhite
+                        : AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),

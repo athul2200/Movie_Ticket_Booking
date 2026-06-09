@@ -9,9 +9,9 @@ class MovieModel {
   final List<String> genres;
   final String duration;
   final double rating;
-  final String certification;  // UA, U, A
-  final String posterUrl;      // Network image URL
-  final String bannerUrl;      // Network image URL for hero banner
+  final String certification; // UA, U, A
+  final String posterUrl; // Network image URL
+  final String bannerUrl; // Network image URL for hero banner
 
   const MovieModel({
     required this.id,

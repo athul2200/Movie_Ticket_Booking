@@ -7,7 +7,8 @@ class OwnerScreenDetailsScreen extends StatefulWidget {
   const OwnerScreenDetailsScreen({super.key});
 
   @override
-  State<OwnerScreenDetailsScreen> createState() => _OwnerScreenDetailsScreenState();
+  State<OwnerScreenDetailsScreen> createState() =>
+      _OwnerScreenDetailsScreenState();
 }
 
 class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
@@ -25,25 +26,29 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
             Text(
               'AUDITORIUM DETAILS',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                  ),
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               'Screen 01 - IMAX',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
                 _buildBadge('LIVE NOW', AppColors.primary, AppColors.textWhite),
                 const SizedBox(width: AppSpacing.sm),
-                _buildBadge('4K LASER', AppColors.divider, AppColors.textSecondary),
+                _buildBadge(
+                  '4K LASER',
+                  AppColors.divider,
+                  AppColors.textSecondary,
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -65,7 +70,9 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(AppRadius.lg),
+                    ),
                     child: Image.network(
                       'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop',
                       height: 180,
@@ -83,18 +90,24 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                           children: [
                             Text(
                               'Dune: Part Two',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              style: Theme.of(context).textTheme.headlineMedium
+                                  ?.copyWith(
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.primaryDark,
                                   ),
                             ),
                             Row(
                               children: [
-                                const Icon(Icons.star, color: AppColors.primary, size: 16),
+                                const Icon(
+                                  Icons.star,
+                                  color: AppColors.primary,
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '4.9',
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  style: Theme.of(context).textTheme.titleSmall
+                                      ?.copyWith(
                                         color: AppColors.primaryDark,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -106,11 +119,16 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         const SizedBox(height: AppSpacing.md),
                         Row(
                           children: [
-                            const Icon(Icons.access_time, color: AppColors.textSecondary, size: 18),
+                            const Icon(
+                              Icons.access_time,
+                              color: AppColors.textSecondary,
+                              size: 18,
+                            ),
                             const SizedBox(width: AppSpacing.sm),
                             Text(
                               '14:45 - 17:30',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -125,13 +143,16 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         const SizedBox(height: AppSpacing.sm),
                         Row(
                           children: [
-                            const Icon(Icons.masks_outlined, color: AppColors.textSecondary, size: 18),
+                            const Icon(
+                              Icons.masks_outlined,
+                              color: AppColors.textSecondary,
+                              size: 18,
+                            ),
                             const SizedBox(width: AppSpacing.sm),
                             Text(
                               'Sci-Fi, Adventure, Drama',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -174,14 +195,15 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                       Text(
                         'SHOW REVENUE',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.textWhite.withValues(alpha: 0.8),
-                              letterSpacing: 1.2,
-                            ),
+                          color: AppColors.textWhite.withValues(alpha: 0.8),
+                          letterSpacing: 1.2,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         '\$2,450.00',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        style: Theme.of(context).textTheme.headlineLarge
+                            ?.copyWith(
                               color: AppColors.textWhite,
                               fontWeight: FontWeight.w800,
                               fontSize: 32,
@@ -193,13 +215,17 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         children: [
                           Text(
                             'Quota Progress',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: AppColors.textWhite.withValues(alpha: 0.8),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: AppColors.textWhite.withValues(
+                                    alpha: 0.8,
+                                  ),
                                 ),
                           ),
                           Text(
                             '82%',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
                                   color: AppColors.textWhite,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -210,7 +236,9 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                       LinearProgressIndicator(
                         value: 0.82,
                         backgroundColor: AppColors.primaryDark,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.textWhite),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.textWhite,
+                        ),
                         minHeight: 6,
                         borderRadius: BorderRadius.circular(3),
                       ),
@@ -230,15 +258,19 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                   child: Text(
                     'Seating\nOccupancy',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          height: 1.1,
-                        ),
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                    ),
                   ),
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildLegendItem(AppColors.background, 'Available', isOutlined: true),
+                    _buildLegendItem(
+                      AppColors.background,
+                      'Available',
+                      isOutlined: true,
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     _buildLegendItem(AppColors.primaryDark, 'Booked'),
                     const SizedBox(width: AppSpacing.sm),
@@ -248,7 +280,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
-            
+
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
@@ -287,26 +319,30 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  
+
                   // Seating Rows
                   _buildSeatingRow('A', [1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0]),
                   const SizedBox(height: AppSpacing.md),
                   _buildSeatingRow('B', [1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1]),
                   const SizedBox(height: AppSpacing.md),
                   _buildSeatingRow('C', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-                  
+
                   const SizedBox(height: AppSpacing.xl),
                   Divider(color: AppColors.divider.withValues(alpha: 0.5)),
                   const SizedBox(height: AppSpacing.sm),
                   TextButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.open_in_new, size: 16, color: AppColors.primary),
+                    icon: const Icon(
+                      Icons.open_in_new,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
                     label: Text(
                       'Open Full Interactive Seating Chart',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -320,16 +356,18 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
               decoration: BoxDecoration(
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AppColors.divider.withValues(alpha: 0.5),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'AVAILABILITY BREAKDOWN',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          letterSpacing: 1.0,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelSmall?.copyWith(letterSpacing: 1.0),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
@@ -340,11 +378,13 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         children: [
                           Text(
                             '120',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.w800),
                           ),
-                          Text('Total Capacity', style: Theme.of(context).textTheme.bodySmall),
+                          Text(
+                            'Total Capacity',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         ],
                       ),
                       Column(
@@ -352,12 +392,16 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         children: [
                           Text(
                             '85',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.primaryDark,
                                 ),
                           ),
-                          Text('Booked (71%)', style: Theme.of(context).textTheme.bodySmall),
+                          Text(
+                            'Booked (71%)',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         ],
                       ),
                     ],
@@ -366,7 +410,9 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                   LinearProgressIndicator(
                     value: 0.71,
                     backgroundColor: AppColors.surface,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryDark),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primaryDark,
+                    ),
                     minHeight: 12,
                     borderRadius: BorderRadius.circular(6),
                   ),
@@ -390,14 +436,18 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w800,
-            ),
+          color: textColor,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
 
-  Widget _buildLegendItem(Color color, String label, {bool isOutlined = false}) {
+  Widget _buildLegendItem(
+    Color color,
+    String label, {
+    bool isOutlined = false,
+  }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -413,9 +463,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 10,
-              ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
         ),
       ],
     );
@@ -428,15 +476,12 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
       children: [
         SizedBox(
           width: 20,
-          child: Text(
-            rowLabel,
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
+          child: Text(rowLabel, style: Theme.of(context).textTheme.labelSmall),
         ),
         ...seatStatuses.map((status) {
           Color bgColor;
           bool isOutlined = false;
-          
+
           if (status == 1) {
             bgColor = AppColors.primaryDark;
           } else if (status == 2) {

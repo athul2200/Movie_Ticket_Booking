@@ -14,7 +14,9 @@ class OwnerAddScreen extends StatefulWidget {
 
 class _OwnerAddScreenState extends State<OwnerAddScreen> {
   final TextEditingController _nameCtrl = TextEditingController();
-  final TextEditingController _capacityCtrl = TextEditingController(text: '120');
+  final TextEditingController _capacityCtrl = TextEditingController(
+    text: '120',
+  );
   String _selectedProjection = 'IMAX Laser';
 
   @override
@@ -37,13 +39,17 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
           child: Row(
             children: [
               const SizedBox(width: AppSpacing.md),
-              const Icon(Icons.arrow_back, color: AppColors.textSecondary, size: 20),
+              const Icon(
+                Icons.arrow_back,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
               const SizedBox(width: AppSpacing.xs),
               Text(
                 'Back to Screens',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -53,7 +59,10 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
             padding: const EdgeInsets.only(right: AppSpacing.lg),
             child: Row(
               children: [
-                const Icon(Icons.notifications_none, color: AppColors.textPrimary),
+                const Icon(
+                  Icons.notifications_none,
+                  color: AppColors.textPrimary,
+                ),
                 const SizedBox(width: AppSpacing.md),
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.xs),
@@ -64,9 +73,9 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                   child: Text(
                     'JD',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textWhite,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: AppColors.textWhite,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -82,9 +91,9 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
             // ── Header ──
             Text(
               'Add New Screen',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
@@ -105,46 +114,73 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                      const Icon(
+                        Icons.info_outline,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
                       const SizedBox(width: AppSpacing.xs),
                       Text(
                         'Screen Details',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  
-                  Text('Screen Name', style: Theme.of(context).textTheme.bodyMedium),
+
+                  Text(
+                    'Screen Name',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: AppSpacing.xs),
                   AdminTextField(
                     controller: _nameCtrl,
                     hintText: 'e.g., Screen 04',
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  
-                  Text('Total Capacity', style: Theme.of(context).textTheme.bodyMedium),
+
+                  Text(
+                    'Total Capacity',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: AppSpacing.xs),
                   AdminTextField(
                     controller: _capacityCtrl,
                     keyboardType: TextInputType.number,
-                    suffixIcon: const Icon(Icons.chair_outlined, color: AppColors.textSecondary, size: 20),
+                    suffixIcon: const Icon(
+                      Icons.chair_outlined,
+                      color: AppColors.textSecondary,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  
-                  Text('Projection Type', style: Theme.of(context).textTheme.bodyMedium),
+
+                  Text(
+                    'Projection Type',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: AppSpacing.xs),
                   AdminDropdown<String>(
                     value: _selectedProjection,
                     items: const [
-                      DropdownMenuItem(value: 'IMAX Laser', child: Text('IMAX Laser')),
-                      DropdownMenuItem(value: 'Standard 2D', child: Text('Standard 2D')),
-                      DropdownMenuItem(value: 'Dolby Cinema', child: Text('Dolby Cinema')),
+                      DropdownMenuItem(
+                        value: 'IMAX Laser',
+                        child: Text('IMAX Laser'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Standard 2D',
+                        child: Text('Standard 2D'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Dolby Cinema',
+                        child: Text('Dolby Cinema'),
+                      ),
                     ],
                     onChanged: (val) {
-                      if (val != null) setState(() => _selectedProjection = val);
+                      if (val != null)
+                        setState(() => _selectedProjection = val);
                     },
                   ),
                 ],
@@ -166,13 +202,13 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                     child: Text(
                       'SEATING CONFIGURATION',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            letterSpacing: 1.2,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  
+
                   // Screen visual
                   Center(
                     child: Container(
@@ -195,9 +231,9 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                     child: Text(
                       'SCREEN',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.primary,
-                            letterSpacing: 2.0,
-                          ),
+                        color: AppColors.primary,
+                        letterSpacing: 2.0,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
@@ -217,7 +253,10 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                     onPressed: () {},
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 50),
-                      side: const BorderSide(color: AppColors.divider, style: BorderStyle.solid),
+                      side: const BorderSide(
+                        color: AppColors.divider,
+                        style: BorderStyle.solid,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
@@ -225,12 +264,12 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                     child: Text(
                       '+ Add Row',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  
+
                   // Create Screen Button
                   AdminButton(
                     text: 'Create Screen',

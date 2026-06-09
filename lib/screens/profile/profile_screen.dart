@@ -1,5 +1,7 @@
 import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
@@ -28,12 +30,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
 
+  final ImagePicker _picker = ImagePicker();
+  String? _profileImagePath;
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _profileImagePath = image.path;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error picking image: $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: 'Alexander Sterling');
-    _emailController = TextEditingController(text: 'alex.sterling@cinema.com');
-    _phoneController = TextEditingController(text: '+1 (555) 0123-456');
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
   }
 
   @override
@@ -47,7 +65,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     // Filter history bookings for history card list
-    final historyBookings = MockData.bookings.where((b) => b.isHistory).toList();
+    final historyBookings = MockData.bookings
+        .where((b) => b.isHistory)
+        .toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -72,7 +92,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // ── Title Header ──
                     Text(
                       'Profile Settings',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                             fontSize: 20,
@@ -93,10 +114,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: AppSpacing.md),
 
                     // ── History Bookings Cards ──
-                    ...historyBookings.map((booking) => Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                          child: HistoryBookingCard(booking: booking),
-                        )),
+                    ...historyBookings.map(
+                      (booking) => Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: HistoryBookingCard(booking: booking),
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
 
                     // ── Dashed Browse Banner ──
@@ -110,12 +133,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onPressed: () {
                           Navigator.pushNamed(context, '/owner');
                         },
-                        icon: const Icon(Icons.admin_panel_settings, color: AppColors.primary),
+                        icon: const Icon(
+                          Icons.admin_panel_settings,
+                          color: AppColors.primary,
+                        ),
                         label: const Text('Switch to Owner View'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
                           side: const BorderSide(color: AppColors.primary),
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.md,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                           ),
@@ -153,10 +181,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             'CinePremium',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
-                ),
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+            ),
           ),
           const Spacer(),
 
@@ -192,9 +220,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: CircleAvatar(
               radius: 54,
               backgroundColor: AppColors.divider,
-              backgroundImage: const NetworkImage(
-                'https://picsum.photos/seed/alexander/200/200',
-              ),
+              backgroundImage: _profileImagePath != null
+                  ? FileImage(File(_profileImagePath!)) as ImageProvider
+                  : const NetworkImage(
+                      'https://picsum.photos/seed/alexander/200/200',
+                    ),
             ),
           ),
 
@@ -202,21 +232,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Positioned(
             right: 0,
             bottom: 4,
-            child: Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.background,
-                  width: 2.0,
+            child: GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.background, width: 2.0),
                 ),
-              ),
-              child: const Icon(
-                Icons.edit,
-                color: AppColors.textWhite,
-                size: 14,
+                child: const Icon(
+                  Icons.edit,
+                  color: AppColors.textWhite,
+                  size: 14,
+                ),
               ),
             ),
           ),
@@ -265,20 +295,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-                fontSize: 11,
-              ),
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+            fontSize: 11,
+          ),
         ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           keyboardType: keyboardType,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surface,
@@ -328,9 +358,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-              ),
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
         ),
         child: const Text('Save Changes'),
       ),
@@ -345,10 +375,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'My Bookings',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-                fontSize: 16,
-              ),
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            fontSize: 16,
+          ),
         ),
         GestureDetector(
           onTap: () {
@@ -358,10 +388,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Text(
             'View History',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                  fontSize: 13,
-                ),
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+              fontSize: 13,
+            ),
           ),
         ),
       ],
@@ -392,25 +422,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Text(
               'No upcoming premieres? Time to find\nyour next movie.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                    fontSize: 12,
-                  ),
+                color: AppColors.textSecondary,
+                height: 1.4,
+                fontSize: 12,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm + 2),
             GestureDetector(
               onTap: () {
                 // Navigate back to the Home/Discover Movies tab (index 0)
-                context.findAncestorStateOfType<BottomNavBarState>()?.setIndex(0);
+                context.findAncestorStateOfType<BottomNavBarState>()?.setIndex(
+                  0,
+                );
               },
               child: Text(
                 'Browse Now',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
               ),
             ),
           ],
@@ -444,10 +476,12 @@ class _DashedBorderPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        Radius.circular(radius),
-      ));
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          Radius.circular(radius),
+        ),
+      );
 
     final dashPath = _buildDashPath(path, dash, gap);
     canvas.drawPath(dashPath, paint);

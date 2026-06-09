@@ -62,9 +62,9 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
                 child: Text(
                   widget.theater.name,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -73,7 +73,10 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
 
               // Type badge (IMAX / Standard)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.textSecondary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -81,10 +84,10 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
                 child: Text(
                   widget.theater.type,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],
@@ -108,10 +111,14 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
                   height: AppSizes.showtimeChipHeight,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : AppColors.background,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.background,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                     border: Border.all(
-                      color: isSelected ? AppColors.primary : AppColors.chipOutline,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.chipOutline,
                       width: 1.5,
                     ),
                   ),
@@ -119,12 +126,12 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
                     child: Text(
                       widget.theater.showtimes[index],
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: isSelected
-                                ? AppColors.textWhite
-                                : AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
+                        color: isSelected
+                            ? AppColors.textWhite
+                            : AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ),

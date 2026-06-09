@@ -14,8 +14,12 @@ class OwnerScreensListScreen extends StatefulWidget {
 }
 
 class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
-  final TextEditingController _premiumRateCtrl = TextEditingController(text: '22.50');
-  final TextEditingController _standardRateCtrl = TextEditingController(text: '14.00');
+  final TextEditingController _premiumRateCtrl = TextEditingController(
+    text: '22.50',
+  );
+  final TextEditingController _standardRateCtrl = TextEditingController(
+    text: '14.00',
+  );
 
   @override
   void dispose() {
@@ -41,8 +45,8 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                 Text(
                   'Screens',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 GestureDetector(
                   onTap: () {
@@ -69,46 +73,45 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // ── Screens List ──
-            _buildScreenCard(
-              title: 'Screen 01',
-              seats: 124,
-              isActive: true,
-            ),
+            _buildScreenCard(title: 'Screen 01', seats: 124, isActive: true),
             const SizedBox(height: AppSpacing.md),
-            _buildScreenCard(
-              title: 'Screen 02',
-              seats: 88,
-              isActive: false,
-            ),
+            _buildScreenCard(title: 'Screen 02', seats: 88, isActive: false),
             const SizedBox(height: AppSpacing.xl),
 
             // ── Set Pricing Section ──
             Text(
               'Set Pricing',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
-            Text('Premium Rate (\$)', style: Theme.of(context).textTheme.bodyMedium),
+            Text(
+              'Premium Rate (\$)',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             const SizedBox(height: AppSpacing.xs),
             AdminTextField(
               controller: _premiumRateCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
-            Text('Standard Rate (\$)', style: Theme.of(context).textTheme.bodyMedium),
+            Text(
+              'Standard Rate (\$)',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             const SizedBox(height: AppSpacing.xs),
             AdminTextField(
               controller: _standardRateCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            AdminButton(
-              text: 'Update Rates',
-              onPressed: () {},
-            ),
+            AdminButton(text: 'Update Rates', onPressed: () {}),
             const SizedBox(height: AppSpacing.xxl),
 
             // ── Layout Editor Section ──
@@ -133,18 +136,18 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                     child: Text(
                       'Layout Editor',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     'Screen 01\nConfiguration',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          height: 1.2,
-                        ),
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
@@ -152,7 +155,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  
+
                   // Legend
                   Row(
                     children: [
@@ -184,16 +187,16 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   Center(
                     child: Text(
                       'S C R E E N   T H I S   W A Y',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            letterSpacing: 2.0,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelSmall?.copyWith(letterSpacing: 2.0),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
 
                   // Seating grid (mock)
                   _buildSeatingGrid(),
-                  
+
                   const SizedBox(height: AppSpacing.xl),
                   Align(
                     alignment: Alignment.centerRight,
@@ -209,7 +212,8 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                       child: Text(
                         'Reset\nLayout',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
@@ -217,7 +221,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  
+
                   // Capacity summary
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.md),
@@ -231,13 +235,30 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('PREMIUM\nCAPACITY', style: Theme.of(context).textTheme.labelSmall),
+                              Text(
+                                'PREMIUM\nCAPACITY',
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
                               const SizedBox(height: AppSpacing.xs),
                               RichText(
                                 text: TextSpan(
                                   children: [
-                                    TextSpan(text: '32 ', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, fontSize: 18)),
-                                    TextSpan(text: 'seats', style: Theme.of(context).textTheme.bodyMedium),
+                                    TextSpan(
+                                      text: '32 ',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 18,
+                                          ),
+                                    ),
+                                    TextSpan(
+                                      text: 'seats',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -248,13 +269,30 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('STANDARD\nCAPACITY', style: Theme.of(context).textTheme.labelSmall),
+                              Text(
+                                'STANDARD\nCAPACITY',
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
                               const SizedBox(height: AppSpacing.xs),
                               RichText(
                                 text: TextSpan(
                                   children: [
-                                    TextSpan(text: '92 ', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, fontSize: 18)),
-                                    TextSpan(text: 'seats', style: Theme.of(context).textTheme.bodyMedium),
+                                    TextSpan(
+                                      text: '92 ',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 18,
+                                          ),
+                                    ),
+                                    TextSpan(
+                                      text: 'seats',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -296,18 +334,20 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   Text(
                     'NOW EDITING',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textWhite.withValues(alpha: 0.8),
-                          letterSpacing: 1.0,
-                        ),
+                      color: AppColors.textWhite.withValues(alpha: 0.8),
+                      letterSpacing: 1.0,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                 ],
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: isActive ? AppColors.textWhite : AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: isActive
+                        ? AppColors.textWhite
+                        : AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Row(
@@ -315,14 +355,18 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                     Icon(
                       Icons.chair_outlined,
                       size: AppSizes.iconSm,
-                      color: isActive ? AppColors.textWhite : AppColors.textSecondary,
+                      color: isActive
+                          ? AppColors.textWhite
+                          : AppColors.textSecondary,
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
                       '$seats Seats Total',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: isActive ? AppColors.textWhite : AppColors.textSecondary,
-                          ),
+                        color: isActive
+                            ? AppColors.textWhite
+                            : AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -374,20 +418,28 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
     );
   }
 
-  Widget _buildRow(String label, int count, List<int> premiumIndices, bool isPremiumArea, {int offset = 0}) {
+  Widget _buildRow(
+    String label,
+    int count,
+    List<int> premiumIndices,
+    bool isPremiumArea, {
+    int offset = 0,
+  }) {
     List<Widget> seats = [];
     for (int i = 0; i < count; i++) {
       bool isPremium = premiumIndices.contains(i);
-      seats.add(Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: isPremium ? AppColors.primaryDark : Colors.transparent,
-          borderRadius: BorderRadius.circular(4),
-          border: isPremium ? null : Border.all(color: AppColors.divider),
+      seats.add(
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: isPremium ? AppColors.primaryDark : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+            border: isPremium ? null : Border.all(color: AppColors.divider),
+          ),
         ),
-      ));
+      );
     }
 
     return Padding(
@@ -397,13 +449,26 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
         children: [
           SizedBox(
             width: 20,
-            child: Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
           SizedBox(width: offset * 32.0), // Spacer
           ...seats,
           SizedBox(
             width: 20,
-            child: Text(label, textAlign: TextAlign.right, style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+            child: Text(
+              label,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
         ],
       ),

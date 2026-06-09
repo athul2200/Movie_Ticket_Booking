@@ -22,10 +22,7 @@ import 'package:booking/widgets/rating_badge.dart';
 class MovieDetailScreen extends StatelessWidget {
   final MovieModel movie;
 
-  const MovieDetailScreen({
-    super.key,
-    required this.movie,
-  });
+  const MovieDetailScreen({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
@@ -37,14 +34,14 @@ class MovieDetailScreen extends StatelessWidget {
           CustomScrollView(
             slivers: [
               // ── Hero banner with app bar overlay ──
-              SliverToBoxAdapter(
-                child: _buildHeroBanner(context),
-              ),
+              SliverToBoxAdapter(child: _buildHeroBanner(context)),
 
               // ── Main content ──
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -68,10 +65,10 @@ class MovieDetailScreen extends StatelessWidget {
                             ? movie.description
                             : 'In a world where memories can be bought and sold, a detective uncovers a long-buried secret that could plunge what\'s left of society into chaos. Neon Echoes is a visually stunning journey through a future that feels all too real, exploring the boundaries of humanity and artificial existence in a high-stakes race against time.',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              height: 1.6,
-                              color: AppColors.textPrimary,
-                              fontSize: 14,
-                            ),
+                          height: 1.6,
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.xxl),
 
@@ -216,11 +213,11 @@ class MovieDetailScreen extends StatelessWidget {
           child: Text(
             genre.toUpperCase(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  fontSize: 11,
-                  letterSpacing: 0.5,
-                ),
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              fontSize: 11,
+              letterSpacing: 0.5,
+            ),
           ),
         );
       }).toList(),
@@ -237,10 +234,10 @@ class MovieDetailScreen extends StatelessWidget {
         Text(
           '${movie.rating} / 10',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: AppColors.textPrimary,
-              ),
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            color: AppColors.textPrimary,
+          ),
         ),
         const SizedBox(width: AppSpacing.lg),
 
@@ -250,9 +247,9 @@ class MovieDetailScreen extends StatelessWidget {
         Text(
           movie.duration,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
-              ),
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+          ),
         ),
       ],
     );
@@ -276,10 +273,10 @@ class MovieDetailScreen extends StatelessWidget {
           Text(
             'Play Trailer',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.greenAccent,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
+              color: AppColors.greenAccent,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -294,9 +291,9 @@ class MovieDetailScreen extends StatelessWidget {
         Text(
           'Cast & Crew',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
         ),
         const SizedBox(height: AppSpacing.lg),
 
@@ -328,17 +325,17 @@ class MovieDetailScreen extends StatelessWidget {
             Text(
               'Available Showtimes',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
             ),
             Text(
               'Today, Oct 12',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                  ),
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
             ),
           ],
         ),
@@ -350,9 +347,7 @@ class MovieDetailScreen extends StatelessWidget {
           final theater = entry.value;
           return Padding(
             padding: EdgeInsets.only(
-              bottom: index < MockData.theaters.length - 1
-                  ? AppSpacing.md
-                  : 0,
+              bottom: index < MockData.theaters.length - 1 ? AppSpacing.md : 0,
             ),
             child: ShowtimeCard(
               theater: theater,
@@ -439,7 +434,7 @@ class MovieDetailScreen extends StatelessWidget {
                     },
                   );
                 },
-                // icon: const Icon(Icons.confirmation_number_outlined, size: 20), 
+                // icon: const Icon(Icons.confirmation_number_outlined, size: 20),
                 label: const Text('Select Seats'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -448,9 +443,9 @@ class MovieDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                   elevation: 0,
                 ),
               ),

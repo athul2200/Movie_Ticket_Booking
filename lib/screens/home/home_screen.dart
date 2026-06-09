@@ -32,9 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: CustomScrollView(
           slivers: [
             // ── App Bar ──
-            SliverToBoxAdapter(
-              child: _buildAppBar(context),
-            ),
+            SliverToBoxAdapter(child: _buildAppBar(context)),
 
             // ── Hero Carousel Banner ──
             SliverToBoxAdapter(
@@ -51,9 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // ── Spacing ──
-            const SliverToBoxAdapter(
-              child: SizedBox(height: AppSpacing.xl),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
 
             // ── Category Chips ──
             SliverToBoxAdapter(
@@ -86,9 +82,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       'View All',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -105,29 +101,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisSpacing: AppSpacing.lg,
                   mainAxisSpacing: AppSpacing.lg,
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final movie = MockData.allMovies[index];
-                    return MovieCard(
-                      movie: movie,
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/movie-detail',
-                          arguments: movie,
-                        );
-                      },
-                    );
-                  },
-                  childCount: MockData.allMovies.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final movie = MockData.allMovies[index];
+                  return MovieCard(
+                    movie: movie,
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/movie-detail',
+                        arguments: movie,
+                      );
+                    },
+                  );
+                }, childCount: MockData.allMovies.length),
               ),
             ),
 
             // ── Bottom padding ──
-            const SliverToBoxAdapter(
-              child: SizedBox(height: AppSpacing.xxl),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
           ],
         ),
       ),
@@ -157,10 +148,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 'Los Angeles, CA',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
@@ -171,10 +162,10 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             'CinePremium',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
-                ),
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+            ),
           ),
 
           const Spacer(),
