@@ -81,16 +81,13 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
               itemCount: 12,
               itemBuilder: (context, index) {
                 // Mock data variations
-                bool isImax = index % 3 == 0;
                 String screenName =
-                    'SCREEN ${index + 1 < 10 ? '0${index + 1}' : index + 1} - ${isImax ? 'IMAX' : 'STANDARD'}';
-                String movieTitle = isImax ? 'Dune: Part Two' : 'Oppenheimer';
-                String imageUrl = isImax
-                    ? 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop'
-                    : 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop';
+                    'SCREEN ${index + 1 < 10 ? '0${index + 1}' : index + 1}';
+                String movieTitle = 'Dune: Part Two';
+                String imageUrl = 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop';
                 double occupancy = 0.3 + ((index * 0.17) % 0.6);
                 String timeLabel = index % 2 == 0 ? 'Ends at' : 'Next Show';
-                String timeValue = index % 2 == 0 ? '14:45' : '15:15';
+                String timeValue = index % 2 == 0 ? '02:45 PM' : '03:15 PM';
 
                 return _buildScreenListItem(
                   screenName: screenName,

@@ -325,9 +325,7 @@ class _TicketStubCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  booking.experience.contains('IMAX 2D')
-                                      ? 'IMAX 2D'
-                                      : 'IMAX 3D',
+                                  'STANDARD',
                                   style: Theme.of(context).textTheme.labelSmall
                                       ?.copyWith(
                                         color: AppColors.textWhite,
@@ -583,9 +581,7 @@ class HistoryBookingCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  booking.experience.contains('IMAX')
-                                      ? 'IMAX 3D'
-                                      : 'STANDARD',
+                                  'STANDARD',
                                   style: Theme.of(context).textTheme.labelSmall
                                       ?.copyWith(
                                         color: AppColors.primary,

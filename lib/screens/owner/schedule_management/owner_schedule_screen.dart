@@ -15,20 +15,19 @@ class OwnerScheduleScreen extends StatefulWidget {
 
 class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
   String _selectedMovie = 'Oppenheimer';
-  String _selectedScreen = 'Screen 01 (IMAX)';
+  String _selectedScreen = 'Screen 01';
   final TextEditingController _dateCtrl = TextEditingController(
     text: '11/24/2023',
   );
 
   final List<String> _timeSlots = [
-    '10:00 AM',
+    '10:40 AM',
     '01:30 PM',
-    '04:45 PM',
-    '08:00 PM',
-    '11:15 PM',
-    '02:00 AM',
+    '04:30 PM',
+    '07:30 PM',
+    '10:15 PM',
   ];
-  String _selectedTime = '04:45 PM';
+  String _selectedTime = '04:30 PM';
 
   @override
   void dispose() {
@@ -119,8 +118,8 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                     ),
                     items: const [
                       DropdownMenuItem(
-                        value: 'Screen 01 (IMAX)',
-                        child: Text('Screen 01 (IMAX)'),
+                        value: 'Screen 01',
+                        child: Text('Screen 01'),
                       ),
                       DropdownMenuItem(
                         value: 'Screen 02',
@@ -158,7 +157,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                     runSpacing: AppSpacing.sm,
                     children: _timeSlots.map((time) {
                       bool isSelected = time == _selectedTime;
-                      bool isOccupied = time == '02:00 AM'; // Mock occupied
+                      bool isOccupied = time == '10:15 PM'; // Mock occupied
 
                       return GestureDetector(
                         onTap: isOccupied
@@ -280,7 +279,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             _buildTimelineRow(
               'SCR 01',
               'Oppenheimer',
-              '10:00 - 13:00',
+              '10:00 AM - 01:00 PM',
               0.3,
               0.4,
               true,
@@ -289,7 +288,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             _buildTimelineRow(
               'SCR 02',
               'Barbie',
-              '11:15 - 13:15',
+              '11:15 AM - 01:15 PM',
               0.5,
               0.3,
               false,
@@ -298,7 +297,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             _buildTimelineRow(
               'SCR 03',
               'Dune 2',
-              '09:00 - 11:45',
+              '09:00 AM - 11:45 AM',
               0.1,
               0.35,
               false,
@@ -338,7 +337,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
-                          'The selected time slot (04:45 PM)\nonly leaves 15 minutes for cleaning\nafter the previous show.\nRecommended buffer: 30 mins.',
+                          'The selected time slot (04:30 PM)\nonly leaves 15 minutes for cleaning\nafter the previous show.\nRecommended buffer: 30 mins.',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 color: AppColors.textPrimary,

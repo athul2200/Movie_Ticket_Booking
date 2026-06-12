@@ -14,16 +14,13 @@ class OwnerScreensListScreen extends StatefulWidget {
 }
 
 class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
-  final TextEditingController _premiumRateCtrl = TextEditingController(
-    text: '22.50',
-  );
+
   final TextEditingController _standardRateCtrl = TextEditingController(
     text: '14.00',
   );
 
   @override
   void dispose() {
-    _premiumRateCtrl.dispose();
     _standardRateCtrl.dispose();
     super.dispose();
   }
@@ -87,18 +84,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            Text(
-              'Premium Rate (\$)',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            AdminTextField(
-              controller: _premiumRateCtrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
+
             Text(
               'Standard Rate (\$)',
               style: Theme.of(context).textTheme.bodyMedium,
@@ -159,8 +145,6 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   // Legend
                   Row(
                     children: [
-                      _buildLegendItem(AppColors.primary, 'Premium'),
-                      const SizedBox(width: AppSpacing.lg),
                       _buildLegendItem(Colors.transparent, 'Standard', true),
                     ],
                   ),
@@ -236,40 +220,6 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'PREMIUM\nCAPACITY',
-                                style: Theme.of(context).textTheme.labelSmall,
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: '32 ',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 18,
-                                          ),
-                                    ),
-                                    TextSpan(
-                                      text: 'seats',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyMedium,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
                                 'STANDARD\nCAPACITY',
                                 style: Theme.of(context).textTheme.labelSmall,
                               ),
@@ -278,7 +228,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: '92 ',
+                                      text: '124 ',
                                       style: Theme.of(context)
                                           .textTheme
                                           .titleMedium
@@ -404,39 +354,36 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
     // This is a static visual representation of the seating grid from Figma
     return Column(
       children: [
-        _buildRow('A', 6, [0, 1, 2, 3, 5], true),
-        _buildRow('', 3, [0, 1, 2], true, offset: 2),
-        _buildRow('B', 6, [0, 1, 2, 3, 5], true),
-        _buildRow('', 3, [0, 1, 2], true, offset: 2),
-        _buildRow('C', 6, [], false),
-        _buildRow('', 2, [], false, offset: 3),
-        _buildRow('D', 6, [], false),
-        _buildRow('', 2, [], false, offset: 3),
-        _buildRow('E', 6, [], false),
-        _buildRow('', 2, [], false, offset: 3),
+        _buildRow('A', 6),
+        _buildRow('', 3, offset: 2),
+        _buildRow('B', 6),
+        _buildRow('', 3, offset: 2),
+        _buildRow('C', 6),
+        _buildRow('', 2, offset: 3),
+        _buildRow('D', 6),
+        _buildRow('', 2, offset: 3),
+        _buildRow('E', 6),
+        _buildRow('', 2, offset: 3),
       ],
     );
   }
 
   Widget _buildRow(
     String label,
-    int count,
-    List<int> premiumIndices,
-    bool isPremiumArea, {
+    int count, {
     int offset = 0,
   }) {
     List<Widget> seats = [];
     for (int i = 0; i < count; i++) {
-      bool isPremium = premiumIndices.contains(i);
       seats.add(
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
           width: 24,
           height: 24,
           decoration: BoxDecoration(
-            color: isPremium ? AppColors.primaryDark : Colors.transparent,
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(4),
-            border: isPremium ? null : Border.all(color: AppColors.divider),
+            border: Border.all(color: AppColors.divider),
           ),
         ),
       );

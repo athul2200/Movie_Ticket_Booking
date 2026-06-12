@@ -76,7 +76,7 @@ class MovieCard extends StatelessWidget {
                       Text(
                         movie.rating.toString(),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textWhite,
+                          color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
                         ),
@@ -102,7 +102,7 @@ class MovieCard extends StatelessWidget {
                   child: Text(
                     movie.certification,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textWhite,
+                      color: Colors.white,
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
                     ),

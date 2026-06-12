@@ -71,7 +71,7 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
               ),
               const SizedBox(width: AppSpacing.sm),
 
-              // Type badge (IMAX / Standard)
+              // Type badge (Standard)
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -122,17 +122,21 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
                       width: 1.5,
                     ),
                   ),
-                  child: Center(
-                    child: Text(
-                      widget.theater.showtimes[index],
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: isSelected
-                            ? AppColors.textWhite
-                            : AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.theater.showtimes[index],
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isSelected
+                              ? AppColors.textWhite
+                              : AppColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               );

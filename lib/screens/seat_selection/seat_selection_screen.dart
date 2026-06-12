@@ -473,9 +473,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               cinema: '${widget.cinema} • ${widget.format}',
               seats: seatsList,
               totalAmount: totalAmount,
-              experience: widget.format.toUpperCase().contains('IMAX')
-                  ? 'IMAX 3D EXPERIENCE'
-                  : 'STANDARD 2D EXPERIENCE',
+              experience: 'STANDARD EXPERIENCE',
               isConfirmed: true,
             );
 

@@ -33,7 +33,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Screen 01 - IMAX',
+              'Screen 01',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
@@ -126,7 +126,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                             ),
                             const SizedBox(width: AppSpacing.sm),
                             Text(
-                              '14:45 - 17:30',
+                              '02:45 PM - 05:30 PM',
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     color: AppColors.textPrimary,
@@ -315,7 +315,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'IMAX CURVED SCREEN',
+                    'STANDARD SCREEN',
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                   const SizedBox(height: AppSpacing.xl),

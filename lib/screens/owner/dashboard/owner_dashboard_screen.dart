@@ -230,12 +230,12 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
 
             _buildScreenStatusCard(
               movieTitle: 'Dune: Part Two',
-              screenName: 'SCREEN 01 - IMAX',
+              screenName: 'SCREEN 01',
               imageUrl:
                   'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop', // Sand dunes visual
               occupancy: 0.73,
               timeLabel: 'Ends at',
-              timeValue: '14:45',
+              timeValue: '02:45 PM',
             ),
             const SizedBox(height: AppSpacing.md),
             _buildScreenStatusCard(
@@ -245,7 +245,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                   'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop', // Abstract lights visual
               occupancy: 0.30,
               timeLabel: 'Next Show',
-              timeValue: '15:15',
+              timeValue: '03:15 PM',
             ),
             const SizedBox(height: AppSpacing.xl),
 
@@ -390,7 +390,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'RE-RELEASE • IMAX',
+                          'RE-RELEASE',
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: AppColors.primary,
@@ -433,16 +433,16 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       const SizedBox(width: AppSpacing.xs),
                       Text(
                         'Support Alert',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style:TextStyle(color:Colors.black,fontWeight: FontWeight.w700)
+                          
+                        
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     'Maintenance scheduled for Screen 02 projector at 02:00 AM tonight.',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: TextStyle(color:Colors.black)
                   ),
                   const SizedBox(height: AppSpacing.md),
                   OutlinedButton(
@@ -460,9 +460,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     ),
                     child: Text(
                       'Acknowledge',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
+                      style: TextStyle(color:Colors.black)
                     ),
                   ),
                 ],

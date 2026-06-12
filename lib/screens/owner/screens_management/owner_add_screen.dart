@@ -17,7 +17,7 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
   final TextEditingController _capacityCtrl = TextEditingController(
     text: '120',
   );
-  String _selectedProjection = 'IMAX Laser';
+  String _selectedProjection = 'Standard 2D';
 
   @override
   void dispose() {
@@ -166,8 +166,8 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                     value: _selectedProjection,
                     items: const [
                       DropdownMenuItem(
-                        value: 'IMAX Laser',
-                        child: Text('IMAX Laser'),
+                        value: 'Standard Laser',
+                        child: Text('Standard Laser'),
                       ),
                       DropdownMenuItem(
                         value: 'Standard 2D',
@@ -179,8 +179,9 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                       ),
                     ],
                     onChanged: (val) {
-                      if (val != null)
+                      if (val != null) {
                         setState(() => _selectedProjection = val);
+                      }
                     },
                   ),
                 ],
@@ -239,13 +240,13 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                   const SizedBox(height: AppSpacing.xl),
 
                   // Rows
-                  _buildRowConfig('A', 12, false),
+                  _buildRowConfig('A', 12),
                   const SizedBox(height: AppSpacing.lg),
-                  _buildRowConfig('B', 12, false),
+                  _buildRowConfig('B', 12),
                   const SizedBox(height: AppSpacing.lg),
-                  _buildRowConfig('C', 12, false),
+                  _buildRowConfig('C', 12),
                   const SizedBox(height: AppSpacing.lg),
-                  _buildRowConfig('D', 12, false),
+                  _buildRowConfig('D', 12),
                   const SizedBox(height: AppSpacing.xl),
 
                   // Add Row Button
@@ -287,7 +288,7 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
     );
   }
 
-  Widget _buildRowConfig(String letter, int seats, bool isPremium) {
+  Widget _buildRowConfig(String letter, int seats) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -357,22 +358,7 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                 ),
               ),
             ),
-            Row(
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: Checkbox(
-                    value: isPremium,
-                    onChanged: (val) {},
-                    activeColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.textHint),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text('Premium', style: Theme.of(context).textTheme.labelSmall),
-              ],
-            ),
+
           ],
         ),
       ],

@@ -15,7 +15,7 @@ class MockData {
       title: 'Drishyam 3',
       description:
           'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      genres: ['IMAX', 'Sci-Fi'],
+      genres: ['Sci-Fi'],
       duration: '2h 36m',
       rating: 4.9,
       certification: 'UA',
@@ -29,7 +29,7 @@ class MockData {
       title: 'Michael',
       description:
           'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      genres: ['IMAX', 'Sci-Fi'],
+      genres: ['Sci-Fi'],
       duration: '2h 7m',
       rating: 4.9,
       certification: 'UA',
@@ -43,7 +43,7 @@ class MockData {
       title: 'Kattalan',
       description:
           'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      genres: ['IMAX', 'Sci-Fi'],
+      genres: ['Sci-Fi'],
       duration: '1h 59m',
       rating: 4.9,
       certification: 'A',
@@ -156,14 +156,14 @@ class MockData {
   // ── Theaters & Showtimes ──
   static const List<TheaterModel> theaters = [
     TheaterModel(
-      name: 'CinePremium IMAX - Downtown',
-      type: 'IMAX',
-      showtimes: ['14:30', '17:45', '21:00'],
+      name: 'CinePremium - Downtown',
+      type: 'Standard',
+      showtimes: ['10:40 AM', '01:30 PM', '04:30 PM', '07:30 PM', '10:15 PM'],
     ),
     TheaterModel(
       name: 'Grand Screen Multiplex',
       type: 'Standard',
-      showtimes: ['16:00', '19:30', '22:15'],
+      showtimes: ['10:40 AM', '01:30 PM', '04:30 PM', '07:30 PM', '10:15 PM'],
     ),
   ];
 
@@ -174,11 +174,11 @@ class MockData {
       movieTitle: 'Neon Horizon',
       moviePosterUrl: 'https://picsum.photos/seed/neonhorizon/400/600',
       date: 'Oct 24, 2023',
-      time: '19:30',
+      time: '07:30 PM',
       cinema: 'Screen 04',
       seats: ['H12', 'H13'],
       totalAmount: 32.00,
-      experience: 'IMAX 2D EXPERIENCE',
+      experience: 'STANDARD EXPERIENCE',
       isConfirmed: true,
       isHistory: false,
     ),
@@ -187,7 +187,7 @@ class MockData {
       movieTitle: 'Midnight Jazz',
       moviePosterUrl: 'https://picsum.photos/seed/midnightjazz/400/600',
       date: 'Oct 28, 2023',
-      time: '21:00',
+      time: '09:00 PM',
       cinema: 'Lounge C',
       seats: ['B4'],
       totalAmount: 16.00,
@@ -201,10 +201,10 @@ class MockData {
       moviePosterUrl: 'https://picsum.photos/seed/interstellar/400/600',
       date: 'Oct 24, 2023',
       time: '08:30 PM',
-      cinema: 'Hall 04 • IMAX',
+      cinema: 'Hall 04',
       seats: ['H12', 'H13'],
       totalAmount: 32.00,
-      experience: 'IMAX 3D EXPERIENCE',
+      experience: 'STANDARD EXPERIENCE',
       isConfirmed: true,
       isHistory: true,
     ),

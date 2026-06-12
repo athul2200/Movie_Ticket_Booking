@@ -129,8 +129,9 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                                 ),
                               ],
                               onChanged: (val) {
-                                if (val != null)
+                                if (val != null) {
                                   setState(() => _selectedLanguage = val);
+                                }
                               },
                             ),
                           ],

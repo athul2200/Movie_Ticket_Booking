@@ -158,7 +158,7 @@ class MovieDetailScreen extends StatelessWidget {
                       onTap: () => Navigator.pop(context),
                       child: const Icon(
                         Icons.arrow_back,
-                        color: AppColors.textWhite,
+                        color: Colors.white,
                         size: AppSizes.iconLg,
                       ),
                     ),
@@ -180,7 +180,7 @@ class MovieDetailScreen extends StatelessWidget {
                       },
                       child: const Icon(
                         Icons.share_outlined,
-                        color: AppColors.textWhite,
+                        color: Colors.white,
                         size: AppSizes.iconLg,
                       ),
                     ),
@@ -428,9 +428,9 @@ class MovieDetailScreen extends StatelessWidget {
                     '/seat-selection',
                     arguments: {
                       'movieTitle': movie.title,
-                      'showtime': '20:30',
+                      'showtime': '07:30 PM',
                       'cinema': 'Cinema 4',
-                      'format': 'IMAX',
+                      'format': 'Standard',
                     },
                   );
                 },

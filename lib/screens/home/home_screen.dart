@@ -26,6 +26,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedCategory = MockData.categories[_selectedCategoryIndex];
+    final displayedMovies = selectedCategory == 'All Movies'
+        ? MockData.allMovies
+        : MockData.allMovies
+            .where((m) => m.genres.any((g) => g.trim() == selectedCategory.trim()))
+            .toList();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -64,32 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── "View All" Header ──
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                ),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      // TODO: Navigate to all movies
-                    },
-                    child: Text(
-                      'View All',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
 
             // ── Movie Grid (2 columns) ──
             SliverPadding(
@@ -102,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSpacing: AppSpacing.lg,
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  final movie = MockData.allMovies[index];
+                  final movie = displayedMovies[index];
                   return MovieCard(
                     movie: movie,
                     onTap: () {
@@ -113,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   );
-                }, childCount: MockData.allMovies.length),
+                }, childCount: displayedMovies.length),
               ),
             ),
 
