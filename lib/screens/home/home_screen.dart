@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Custom App Bar matching Figma:
-  /// [Location pin + "Los Angeles, CA"]  [CinePremium logo]  [Search icon]
+  /// [Location pin + "Los Angeles, CA"]  [Movix logo]  [Search icon]
   Widget _buildAppBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -140,9 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const Spacer(),
 
-          // ── CinePremium Logo (text) ──
+          // ── Movix Logo (text) ──
           Text(
-            'CinePremium',
+            'Movix',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w800,

@@ -1,4 +1,4 @@
-# CinePremium - Movie Ticket Booking App
+# Movix - Movie Ticket Booking App
 
 A modern, visually appealing movie ticket booking application built with Flutter. The application provides two distinct experiences: one for standard users to browse and book tickets, and another for theater owners to manage their inventory and schedules.
 

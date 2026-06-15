@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:booking/models/movie_model.dart';
 import 'package:booking/models/booking_model.dart';
 import 'package:booking/widgets/bottom_nav_bar.dart';
+import 'package:booking/screens/role_selection/role_selection_screen.dart';
 import 'package:booking/screens/movie_detail/movie_detail_screen.dart';
 import 'package:booking/screens/seat_selection/seat_selection_screen.dart';
 import 'package:booking/screens/booking_detail/booking_detail_screen.dart';
@@ -13,7 +14,8 @@ import 'package:booking/screens/owner/main/owner_main_screen.dart';
 /// ============================================================
 
 class AppRouter {
-  static const String home = '/';
+  static const String roleSelection = '/';
+  static const String home = '/home';
   static const String movieDetail = '/movie-detail';
   static const String seatSelection = '/seat-selection';
   static const String payment = '/payment';
@@ -22,6 +24,9 @@ class AppRouter {
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case roleSelection:
+        return MaterialPageRoute(builder: (_) => const RoleSelectionScreen());
+
       case home:
         return MaterialPageRoute(builder: (_) => const BottomNavBar());
 

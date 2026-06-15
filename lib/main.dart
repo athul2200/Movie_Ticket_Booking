@@ -3,7 +3,7 @@ import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/navigation/app_router.dart';
 
 /// ============================================================
-/// Main Entry Point — CinePremium Movie Booking App
+/// Main Entry Point — Movix Movie Booking App
 /// ============================================================
 
 void main() {
@@ -16,10 +16,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CinePremium',
+      title: 'Movix',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      initialRoute: AppRouter.home,
+      initialRoute: AppRouter.roleSelection,
       onGenerateRoute: AppRouter.generateRoute,
     );
   }

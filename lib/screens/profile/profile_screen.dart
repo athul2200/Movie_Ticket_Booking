@@ -10,7 +10,7 @@ import 'package:booking/screens/my_bookings/my_bookings_screen.dart';
 
 /// ============================================================
 /// Profile Screen — Complete profile settings view with:
-/// - Header matching the CinePremium theme
+/// - Header matching the Movix theme
 /// - Profile photo (Alexander Sterling) with red pencil edit icon
 /// - Interactive form fields (Name, Email, Phone) and Save button
 /// - Custom dashed-border browse banner that routes back to Home tab
@@ -126,30 +126,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildBrowseBanner(context),
                     const SizedBox(height: AppSpacing.xxl),
 
-                    // Switch to Admin Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/owner');
-                        },
-                        icon: const Icon(
-                          Icons.admin_panel_settings,
-                          color: AppColors.primary,
-                        ),
-                        label: const Text('Switch to Owner View'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.md,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: AppSpacing.xl),
                   ],
                 ),
@@ -161,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// App Bar matching design: [CinePremium] [Search]
+  /// App Bar matching design: [Movix] [Search]
   Widget _buildAppBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -170,7 +146,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Row(
         children: [
-          // Red Location icon & CinePremium centered
+          // Red Location icon & Movix centered
           const Icon(
             Icons.location_on,
             color: AppColors.primary,
@@ -179,7 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const Spacer(),
 
           Text(
-            'CinePremium',
+            'Movix',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w800,

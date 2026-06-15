@@ -70,7 +70,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  /// App Bar matching design: [Back] [CinePremium] [Location] [Search]
+  /// App Bar matching design: [Back] [Movix] [Location] [Search]
   Widget _buildAppBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -92,7 +92,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
           // Title
           Text(
-            'CinePremium',
+            'Movix',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w800,

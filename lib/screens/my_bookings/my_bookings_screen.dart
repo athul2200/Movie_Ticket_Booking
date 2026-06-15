@@ -59,7 +59,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     );
   }
 
-  /// App Bar matching layout: [Location Pin] [CinePremium] [Search]
+  /// App Bar matching layout: [Location Pin] [Movix] [Search]
   Widget _buildAppBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -76,9 +76,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           ),
           const Spacer(),
 
-          // Centered CinePremium text logo
+          // Centered Movix text logo
           Text(
-            'CinePremium',
+            'Movix',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w800,

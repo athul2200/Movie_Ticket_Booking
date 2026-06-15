@@ -162,7 +162,9 @@ class _BannerSlide extends StatelessWidget {
               // Movie title
               Text(
                 movie.title,
-                style: Theme.of(context).textTheme.headlineLarge,
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  color: Colors.white,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -171,9 +173,9 @@ class _BannerSlide extends StatelessWidget {
               // Description
               Text(
                 movie.description,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.textHint),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

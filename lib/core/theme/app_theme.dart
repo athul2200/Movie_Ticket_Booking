@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 /// ============================================================
 
 class AppColors {
-  // Primary brand color (CinePremium red)
+  // Primary brand color (Movix red)
   static const Color primary = Color(0xFFFFD700); // Yellow
   static const Color primaryDark = Color(0xFFFBC02D); // Dark yellow
 

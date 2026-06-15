@@ -4,7 +4,6 @@ import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/models/movie_model.dart';
 import 'package:booking/widgets/cast_avatar.dart';
-import 'package:booking/widgets/showtime_card.dart';
 import 'package:booking/widgets/rating_badge.dart';
 
 /// ============================================================
@@ -19,10 +18,38 @@ import 'package:booking/widgets/rating_badge.dart';
 /// - Book Tickets Now CTA
 /// ============================================================
 
-class MovieDetailScreen extends StatelessWidget {
+class MovieDetailScreen extends StatefulWidget {
   final MovieModel movie;
 
   const MovieDetailScreen({super.key, required this.movie});
+
+  @override
+  State<MovieDetailScreen> createState() => _MovieDetailScreenState();
+}
+
+class _MovieDetailScreenState extends State<MovieDetailScreen> {
+  final List<String> _availableDates = ['Jun 15 ', 'Jun 16 ', 'Jun 17 ', 'Jun 18 '];
+  String? _selectedDate;
+  String? _selectedCinema;
+  String? _selectedShowtime;
+  String? _selectedScreen;
+  String _selectedFormat = 'Standard';
+
+  // Mock theater → screens → times data
+  static const Map<String, Map<String, List<String>>> _theaterData = {
+    'Movix - Downtown': {
+      'Screen 3 · IMAX': ['10:00 AM', '01:30 PM', '04:30 PM', '08:00 PM'],
+      'Screen 7 · Dolby': ['11:15 AM', '03:00 PM', '06:45 PM'],
+    },
+    'Grand Cineplex': {
+      'Screen 1 · 4DX':  ['09:30 AM', '12:45 PM', '05:00 PM', '09:15 PM'],
+      'Screen 5 · Standard': ['10:30 AM', '02:15 PM', '07:00 PM'],
+    },
+    'PVR Elite': {
+      'Screen 2 · MX4D': ['11:00 AM', '03:30 PM', '07:30 PM'],
+      'Screen 4 · Standard': ['10:00 AM', '01:00 PM', '04:00 PM', '08:30 PM'],
+    },
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +86,9 @@ class MovieDetailScreen extends StatelessWidget {
                       _buildPlayTrailer(context),
                       const SizedBox(height: AppSpacing.xl),
 
-                      // ── Synopsis ──
                       Text(
-                        movie.description.isNotEmpty
-                            ? movie.description
+                        widget.movie.description.isNotEmpty
+                            ? widget.movie.description
                             : 'In a world where memories can be bought and sold, a detective uncovers a long-buried secret that could plunge what\'s left of society into chaos. Neon Echoes is a visually stunning journey through a future that feels all too real, exploring the boundaries of humanity and artificial existence in a high-stakes race against time.',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           height: 1.6,
@@ -113,7 +139,7 @@ class MovieDetailScreen extends StatelessWidget {
         children: [
           // ── Background image ──
           Image.network(
-            movie.bannerUrl,
+            widget.movie.bannerUrl,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) => Container(
               color: AppColors.textPrimary,
@@ -163,9 +189,9 @@ class MovieDetailScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // CinePremium logo
+                    // Movix logo
                     // Text(
-                    //   'CinePremium',
+                    //   'Movix',
                     //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     //         color: AppColors.primary,
                     //         fontWeight: FontWeight.w800,
@@ -194,12 +220,12 @@ class MovieDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Genre tags (SCI-FI, ADVENTURE, 4K UHD)
+  /// Genre tags
   Widget _buildGenreTags(BuildContext context) {
-    // Use the movie's genres, or fallback to detail-screen genres
-    final genres = movie.genres.length > 1
-        ? movie.genres
-        : ['SCI-FI', 'ADVENTURE', '4K UHD'];
+    // Use the movie's genres, or fallback to an empty list
+    final genres = widget.movie.genres.length > 1
+        ? widget.movie.genres
+        : <String>[];
 
     return Wrap(
       spacing: AppSpacing.sm,
@@ -232,7 +258,7 @@ class MovieDetailScreen extends StatelessWidget {
         const Icon(Icons.star, size: 18, color: AppColors.primary),
         const SizedBox(width: 4),
         Text(
-          '${movie.rating} / 10',
+          '${widget.movie.rating} / 10',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w700,
             fontSize: 14,
@@ -245,7 +271,7 @@ class MovieDetailScreen extends StatelessWidget {
         Icon(Icons.access_time, size: 16, color: AppColors.textSecondary),
         const SizedBox(width: 4),
         Text(
-          movie.duration,
+          widget.movie.duration,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w500,
             fontSize: 13,
@@ -313,50 +339,269 @@ class MovieDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Available Showtimes section
+  /// Available Showtimes section — 3-step progressive disclosure
   Widget _buildShowtimes(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Header row ──
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // ── Step 1: Date Selector ──
+        _buildSectionHeader(context, 'Select Date'),
+        const SizedBox(height: AppSpacing.sm),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: _availableDates.map((date) {
+              final isSelected = _selectedDate == date;
+              return Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedDate = isSelected ? null : date;
+                      // Reset downstream selections
+                      _selectedCinema = null;
+                      _selectedScreen = null;
+                      _selectedShowtime = null;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primary : AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : AppColors.divider,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.35), blurRadius: 8, offset: const Offset(0, 3))]
+                          : [],
+                    ),
+                    child: Text(
+                      date,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+
+        // ── Step 2: Theaters (visible after date selection) ──
+        if (_selectedDate != null) ...[
+          const SizedBox(height: AppSpacing.xl),
+          _buildSectionHeader(context, 'Select Theater'),
+          const SizedBox(height: AppSpacing.sm),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Column(
+              key: ValueKey(_selectedDate),
+              children: _theaterData.keys.map((cinema) {
+                final isSelected = _selectedCinema == cinema;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: _buildTheaterCard(context, cinema: cinema, isSelected: isSelected),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+
+        // ── Step 3: Screens & Times (visible after theater selection) ──
+        if (_selectedCinema != null) ...[
+          const SizedBox(height: AppSpacing.xl),
+          _buildSectionHeader(context, 'Select Screen & Time'),
+          const SizedBox(height: AppSpacing.sm),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Column(
+              key: ValueKey(_selectedCinema),
+              children: _theaterData[_selectedCinema]!.entries.map((entry) {
+                final screenName = entry.key;
+                final times = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                  child: _buildScreenCard(context, screenName: screenName, times: times),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+        fontSize: 16,
+      ),
+    );
+  }
+
+  Widget _buildTheaterCard(
+    BuildContext context, {
+    required String cinema,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCinema = isSelected ? null : cinema;
+          // Reset downstream
+          _selectedScreen = null;
+          _selectedShowtime = null;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.divider,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        child: Row(
           children: [
-            Text(
-              'Available Showtimes',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : AppColors.background,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Icon(
+                Icons.theater_comedy_outlined,
+                size: 20,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
               ),
             ),
-            Text(
-              'Today, Oct 12',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-                fontSize: 13,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    cinema,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${_theaterData[cinema]!.length} screens available',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
+            ),
+            Icon(
+              isSelected ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.lg),
+      ),
+    );
+  }
 
-        // ── Theater showtime cards ──
-        ...MockData.theaters.asMap().entries.map((entry) {
-          final index = entry.key;
-          final theater = entry.value;
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: index < MockData.theaters.length - 1 ? AppSpacing.md : 0,
-            ),
-            child: ShowtimeCard(
-              theater: theater,
-              // First theater has the last time slot selected (21:00)
-              initialSelectedIndex: index == 0 ? 2 : -1,
-            ),
-          );
-        }),
-      ],
+  Widget _buildScreenCard(
+    BuildContext context, {
+    required String screenName,
+    required List<String> times,
+  }) {
+    final isScreenSelected = _selectedScreen == screenName;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: isScreenSelected ? AppColors.primary.withValues(alpha: 0.5) : AppColors.divider,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Screen label
+          Row(
+            children: [
+              const Icon(Icons.monitor_outlined, size: 16, color: AppColors.textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                screenName,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          // Time slots
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: times.map((time) {
+              final isTimeSelected = _selectedScreen == screenName && _selectedShowtime == time;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedScreen = screenName;
+                    _selectedShowtime = time;
+                    _selectedFormat = screenName.contains('IMAX')
+                        ? 'IMAX'
+                        : screenName.contains('Dolby')
+                            ? 'Dolby'
+                            : screenName.contains('4DX')
+                                ? '4DX'
+                                : screenName.contains('MX4D')
+                                    ? 'MX4D'
+                                    : 'Standard';
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isTimeSelected ? AppColors.primary : AppColors.background,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    border: Border.all(
+                      color: isTimeSelected ? AppColors.primary : AppColors.divider,
+                      width: isTimeSelected ? 2 : 1,
+                    ),
+                    boxShadow: isTimeSelected
+                        ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 6, offset: const Offset(0, 2))]
+                        : [],
+                  ),
+                  child: Text(
+                    time,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: isTimeSelected ? Colors.white : AppColors.textPrimary,
+                      fontWeight: isTimeSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -421,32 +666,47 @@ class MovieDetailScreen extends StatelessWidget {
           Expanded(
             child: SizedBox(
               height: 50,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/seat-selection',
-                    arguments: {
-                      'movieTitle': movie.title,
-                      'showtime': '07:30 PM',
-                      'cinema': 'Cinema 4',
-                      'format': 'Standard',
-                    },
-                  );
-                },
-                // icon: const Icon(Icons.confirmation_number_outlined, size: 20),
-                label: const Text('Select Seats'),
+              child: ElevatedButton(
+                onPressed: _selectedShowtime != null
+                    ? () {
+                        Navigator.pushNamed(
+                          context,
+                          '/seat-selection',
+                          arguments: {
+                            'movieTitle': widget.movie.title,
+                            'showtime': _selectedShowtime!,
+                            'cinema': _selectedCinema!,
+                            'screen': _selectedScreen!,
+                            'format': _selectedFormat,
+                          },
+                        );
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.textWhite,
+                  backgroundColor: _selectedShowtime != null
+                      ? AppColors.primary
+                      : AppColors.surface,
+                  foregroundColor: _selectedShowtime != null
+                      ? AppColors.textWhite
+                      : AppColors.textSecondary,
+                  disabledBackgroundColor: AppColors.surface,
+                  disabledForegroundColor: AppColors.textSecondary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.md),
+                    side: BorderSide(
+                      color: _selectedShowtime != null
+                          ? Colors.transparent
+                          : AppColors.divider,
+                    ),
                   ),
                   textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
                   elevation: 0,
+                ),
+                child: Text(
+                  _selectedShowtime != null ? 'Select Seats' : 'Pick a Date & Time',
                 ),
               ),
             ),

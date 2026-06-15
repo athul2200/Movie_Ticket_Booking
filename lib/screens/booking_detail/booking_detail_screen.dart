@@ -80,7 +80,7 @@ class BookingDetailScreen extends StatelessWidget {
     );
   }
 
-  /// App bar: back arrow, CinePremium, share icon
+  /// App bar: back arrow, Movix, share icon
   Widget _buildAppBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -99,7 +99,7 @@ class BookingDetailScreen extends StatelessWidget {
             ),
           ),
           Text(
-            'CinePremium',
+            'Movix',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w800,

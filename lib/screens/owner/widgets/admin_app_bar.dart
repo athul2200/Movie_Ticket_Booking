@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
-import 'package:booking/core/constants/app_constants.dart';
 
 class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

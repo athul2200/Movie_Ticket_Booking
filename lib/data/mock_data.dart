@@ -15,7 +15,6 @@ class MockData {
       title: 'Drishyam 3',
       description:
           'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      genres: ['Sci-Fi'],
       duration: '2h 36m',
       rating: 4.9,
       certification: 'UA',
@@ -29,7 +28,6 @@ class MockData {
       title: 'Michael',
       description:
           'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      genres: ['Sci-Fi'],
       duration: '2h 7m',
       rating: 4.9,
       certification: 'UA',
@@ -43,7 +41,6 @@ class MockData {
       title: 'Kattalan',
       description:
           'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      genres: ['Sci-Fi'],
       duration: '1h 59m',
       rating: 4.9,
       certification: 'A',
@@ -57,7 +54,6 @@ class MockData {
       title: 'Karuppu',
       description:
           'In a world where memories can be bought and sold, a detective uncovers a long-buried secret that could plunge what\'s left of society into chaos.',
-      genres: ['SCI-FI', 'ADVENTURE', '4K UHD'],
       duration: '2h 36m',
       rating: 9.2,
       certification: 'UA',
@@ -156,7 +152,7 @@ class MockData {
   // ── Theaters & Showtimes ──
   static const List<TheaterModel> theaters = [
     TheaterModel(
-      name: 'CinePremium - Downtown',
+      name: 'Movix - Downtown',
       type: 'Standard',
       showtimes: ['10:40 AM', '01:30 PM', '04:30 PM', '07:30 PM', '10:15 PM'],
     ),

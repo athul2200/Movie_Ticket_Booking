@@ -11,11 +11,13 @@ import 'package:booking/models/theater_model.dart';
 class ShowtimeCard extends StatefulWidget {
   final TheaterModel theater;
   final int initialSelectedIndex;
+  final ValueChanged<String>? onTimeSelected;
 
   const ShowtimeCard({
     super.key,
     required this.theater,
     this.initialSelectedIndex = -1,
+    this.onTimeSelected,
   });
 
   @override
@@ -105,6 +107,9 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
                   setState(() {
                     _selectedIndex = index;
                   });
+                  if (widget.onTimeSelected != null) {
+                    widget.onTimeSelected!(widget.theater.showtimes[index]);
+                  }
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),

@@ -17,7 +17,7 @@ class MovieModel {
     required this.id,
     required this.title,
     required this.description,
-    required this.genres,
+    this.genres = const [],
     required this.duration,
     required this.rating,
     required this.certification,
