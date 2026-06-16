@@ -8,6 +8,7 @@ import 'package:booking/screens/seat_selection/seat_selection_screen.dart';
 import 'package:booking/screens/booking_detail/booking_detail_screen.dart';
 import 'package:booking/screens/payment/payment_screen.dart';
 import 'package:booking/screens/owner/main/owner_main_screen.dart';
+import 'package:booking/screens/admin/admin_dashboard.dart';
 
 /// ============================================================
 /// App Router — Named route definitions
@@ -21,6 +22,7 @@ class AppRouter {
   static const String payment = '/payment';
   static const String bookingDetail = '/booking-detail';
   static const String owner = '/owner';
+  static const String admin = '/admin';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -61,6 +63,9 @@ class AppRouter {
 
       case owner:
         return MaterialPageRoute(builder: (_) => const OwnerMainScreen());
+
+      case admin:
+        return MaterialPageRoute(builder: (_) => const AdminDashboard());
 
       default:
         return MaterialPageRoute(

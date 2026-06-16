@@ -39,7 +39,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AdminAppBar(),
+      appBar: const AdminAppBar(showBackButton: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(

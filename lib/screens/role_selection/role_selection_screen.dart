@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
+import 'package:booking/core/utils/url_helper.dart';
+
 
 /// ============================================================
 /// Role Selection Screen — Landing page to choose between
@@ -124,15 +126,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                       const Color(0xFF00C9A7),
                       const Color(0xFF00C9A7).withValues(alpha: 0.7),
                     ],
-                    onTap: () {
-                      // TODO: Admin screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Admin panel coming soon!'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    onTap: openAdminWebPage,
                   ),
 
                   const Spacer(),
@@ -222,12 +216,11 @@ class _RoleCardState extends State<_RoleCard>
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTapDown: (_) => setState(() => _isPressed = true),
-          onTapUp: (_) {
-            setState(() => _isPressed = false);
-            widget.onTap();
-          },
+          onTapUp: (_) => setState(() => _isPressed = false),
           onTapCancel: () => setState(() => _isPressed = false),
+          onTap: widget.onTap,
           child: AnimatedScale(
             scale: _isPressed ? 0.97 : 1.0,
             duration: const Duration(milliseconds: 120),

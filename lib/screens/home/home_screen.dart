@@ -117,6 +117,17 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
+          // ── Back Button ──
+          GestureDetector(
+            onTap: () => Navigator.pushReplacementNamed(context, '/'),
+            child: const Icon(
+              Icons.arrow_back,
+              size: AppSizes.iconMd,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          
           // ── Location ──
           Row(
             mainAxisSize: MainAxisSize.min,
