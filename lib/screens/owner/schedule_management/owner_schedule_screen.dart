@@ -14,25 +14,85 @@ class OwnerScheduleScreen extends StatefulWidget {
 }
 
 class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
-  String _selectedMovie = 'Oppenheimer';
+  String _selectedMovie = 'Drishyam 3';
+  String _selectedTheater = 'Kairali';
   String _selectedScreen = 'Screen 01';
-  final TextEditingController _dateCtrl = TextEditingController(
-    text: '11/24/2023',
-  );
 
-  final List<String> _timeSlots = [
-    '10:40 AM',
-    '01:30 PM',
-    '04:30 PM',
-    '07:30 PM',
-    '10:15 PM',
-  ];
-  String _selectedTime = '04:30 PM';
+  late final TextEditingController _dateCtrl;
+
+  // Occupied slots per screen (mock data — per-screen)
+  final Map<String, Set<String>> _occupiedSlots = {
+    'Screen 01': {'10:15 PM'},
+    'Screen 02': {'10:40 AM'},
+  };
+
+  // Schedule preview state — updates when user confirms
+  final Map<String, Map<String, String>> _schedulePreview = {
+    'Screen 01': {'movie': 'Drishyam 3', 'time': '10:00 AM - 01:00 PM'},
+    'Screen 02': {'movie': 'Michael', 'time': '11:00 AM - 02:00 PM'},
+  };
+
+  static const Map<String, Map<String, List<String>>> _theaterData = {
+    'Kairali': {
+      'Screen 01': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
+      'Screen 02': ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
+    },
+    'Nila': {
+      'Screen 01': ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
+      'Screen 02': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
+    },
+  };
+
+  List<String> get _timeSlots {
+    return _theaterData[_selectedTheater]?[_selectedScreen] ?? [];
+  }
+
+  final Set<String> _selectedTimes = {};
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _dateCtrl = TextEditingController(
+      text:
+          '${now.month.toString().padLeft(2, '0')}/${now.day.toString().padLeft(2, '0')}/${now.year}',
+    );
+  }
 
   @override
   void dispose() {
     _dateCtrl.dispose();
     super.dispose();
+  }
+
+  bool _isOccupied(String time) {
+    return (_occupiedSlots[_selectedScreen] ?? {}).contains(time);
+  }
+
+  /// Returns true if any selected slot is adjacent to an occupied slot on the same screen
+  bool get _hasOverlapRisk {
+    final occupiedTimes = _occupiedSlots[_selectedScreen] ?? {};
+    for (final selectedTime in _selectedTimes) {
+      final selectedIdx = _timeSlots.indexOf(selectedTime);
+      for (final occ in occupiedTimes) {
+        final occIdx = _timeSlots.indexOf(occ);
+        if ((selectedIdx - occIdx).abs() == 1) return true;
+      }
+    }
+    return false;
+  }
+
+  /// First selected time that has an overlap risk (for display in warning)
+  String get _overlapRiskTime {
+    final occupiedTimes = _occupiedSlots[_selectedScreen] ?? {};
+    for (final selectedTime in _selectedTimes) {
+      final selectedIdx = _timeSlots.indexOf(selectedTime);
+      for (final occ in occupiedTimes) {
+        final occIdx = _timeSlots.indexOf(occ);
+        if ((selectedIdx - occIdx).abs() == 1) return selectedTime;
+      }
+    }
+    return _selectedTimes.isEmpty ? '' : _selectedTimes.first;
   }
 
   @override
@@ -93,14 +153,56 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                     ),
                     items: const [
                       DropdownMenuItem(
-                        value: 'Oppenheimer',
-                        child: Text('Oppenheimer'),
+                        value: 'Drishyam 3',
+                        child: Text('Drishyam 3'),
                       ),
-                      DropdownMenuItem(value: 'Barbie', child: Text('Barbie')),
-                      DropdownMenuItem(value: 'Dune 2', child: Text('Dune 2')),
+                      DropdownMenuItem(
+                        value: 'Michael',
+                        child: Text('Michael'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Kattalan',
+                        child: Text('Kattalan'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Karuppu',
+                        child: Text('Karuppu'),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) setState(() => _selectedMovie = val);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  Text(
+                    'Select Theater',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  AdminDropdown<String>(
+                    value: _selectedTheater,
+                    prefixIcon: const Icon(
+                      Icons.location_city_outlined,
+                      color: AppColors.textSecondary,
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'Kairali',
+                        child: Text('Kairali'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Nila',
+                        child: Text('Nila'),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _selectedTheater = val;
+                          _selectedTimes.clear();
+                        });
+                      }
                     },
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -125,18 +227,22 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                         value: 'Screen 02',
                         child: Text('Screen 02'),
                       ),
-                      DropdownMenuItem(
-                        value: 'Screen 03',
-                        child: Text('Screen 03'),
-                      ),
                     ],
                     onChanged: (val) {
-                      if (val != null) setState(() => _selectedScreen = val);
+                      if (val != null) {
+                        setState(() {
+                          _selectedScreen = val;
+                          _selectedTimes.clear();
+                        });
+                      }
                     },
                   ),
                   const SizedBox(height: AppSpacing.md),
 
-                  Text('Date', style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    'Date',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                   const SizedBox(height: AppSpacing.xs),
                   AdminTextField(
                     controller: _dateCtrl,
@@ -147,27 +253,49 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                   ),
                   const SizedBox(height: AppSpacing.md),
 
-                  Text(
-                    'Available Time Slots',
-                    style: Theme.of(context).textTheme.titleSmall,
+                  Row(
+                    children: [
+                      Text(
+                        'Available Time Slots',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      
+                      const Spacer(),
+                      if (_selectedTimes.isNotEmpty)
+                        Text(
+                          '${_selectedTimes.length} selected',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
                     children: _timeSlots.map((time) {
-                      bool isSelected = time == _selectedTime;
-                      bool isOccupied = time == '10:15 PM'; // Mock occupied
+                      final bool isSelected = _selectedTimes.contains(time);
+                      final bool isOccupied = _isOccupied(time);
 
                       return GestureDetector(
                         onTap: isOccupied
                             ? null
                             : () {
                                 setState(() {
-                                  _selectedTime = time;
+                                  if (isSelected) {
+                                    // Don't allow deselecting the last one
+                                    if (_selectedTimes.length > 1) {
+                                      _selectedTimes.remove(time);
+                                    }
+                                  } else {
+                                    _selectedTimes.add(time);
+                                  }
                                 });
                               },
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
                           width:
                               (MediaQuery.of(context).size.width -
                                   (AppSpacing.lg * 4) -
@@ -175,6 +303,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                               3,
                           padding: const EdgeInsets.symmetric(
                             vertical: AppSpacing.sm,
+                            horizontal: 4,
                           ),
                           decoration: BoxDecoration(
                             color: isSelected
@@ -182,30 +311,46 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                 : isOccupied
                                 ? AppColors.surface
                                 : AppColors.background,
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.sm),
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.primary
                                   : isOccupied
                                   ? AppColors.surface
                                   : AppColors.divider,
+                              width: isSelected ? 1.5 : 1,
                             ),
                           ),
-                          child: Center(
-                            child: Text(
-                              time,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: isSelected
-                                        ? AppColors.textWhite
-                                        : isOccupied
-                                        ? AppColors.textHint
-                                        : AppColors.textPrimary,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                  ),
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (isSelected) ...[
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Colors.white,
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 3),
+                              ],
+                              Text(
+                                time,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: isSelected
+                                          ? AppColors.textWhite
+                                          : isOccupied
+                                          ? AppColors.textHint
+                                          : AppColors.textPrimary,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                      fontSize: 12,
+                                    ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -214,9 +359,64 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                   const SizedBox(height: AppSpacing.xl),
 
                   AdminButton(
-                    text: 'Confirm Schedule',
+                    text: 'Confirm Schedule (${_selectedTimes.length} slot${_selectedTimes.length > 1 ? 's' : ''})',
                     icon: Icons.event_available,
-                    onPressed: () {},
+                    onPressed: _selectedTimes.isEmpty
+                        ? null
+                        : () {
+                            final sortedTimes = _selectedTimes.toList()
+                              ..sort((a, b) {
+                                return _timeSlots.indexOf(a)
+                                    .compareTo(_timeSlots.indexOf(b));
+                              });
+                            final timeSummary = sortedTimes.join(', ');
+                            // Update the preview and mark all slots as occupied
+                            setState(() {
+                              _schedulePreview[_selectedScreen] = {
+                                'movie': _selectedMovie,
+                                'time': sortedTimes.first,
+                              };
+                              _occupiedSlots
+                                  .putIfAbsent(_selectedScreen, () => {})
+                                  .addAll(_selectedTimes);
+                              _selectedTimes.clear();
+                              _selectedTimes.add(
+                                _timeSlots.firstWhere(
+                                  (t) => !_isOccupied(t),
+                                  orElse: () => _timeSlots.first,
+                                ),
+                              );
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: AppColors.primary,
+                                behavior: SnackBarBehavior.floating,
+                                duration: const Duration(seconds: 3),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(AppRadius.sm),
+                                ),
+                                content: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.check_circle_outline,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        '$_selectedMovie on $_selectedScreen\n$timeSummary',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                   ),
                 ],
               ),
@@ -275,81 +475,80 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
 
-            // Timelines
+            // Timelines — driven by _schedulePreview and _selectedScreen
             _buildTimelineRow(
               'SCR 01',
-              'Oppenheimer',
-              '10:00 AM - 01:00 PM',
+              _schedulePreview['Screen 01']?['movie'] ?? 'Drishyam 3',
+              _schedulePreview['Screen 01']?['time'] ?? '10:00 AM - 01:00 PM',
               0.3,
               0.4,
-              true,
+              _selectedScreen == 'Screen 01',
             ),
             const SizedBox(height: AppSpacing.md),
             _buildTimelineRow(
               'SCR 02',
-              'Barbie',
-              '11:15 AM - 01:15 PM',
+              _schedulePreview['Screen 02']?['movie'] ?? 'Michael',
+              _schedulePreview['Screen 02']?['time'] ?? '11:15 AM - 01:15 PM',
               0.5,
               0.3,
-              false,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _buildTimelineRow(
-              'SCR 03',
-              'Dune 2',
-              '09:00 AM - 11:45 AM',
-              0.1,
-              0.35,
-              false,
+              _selectedScreen == 'Screen 02',
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
-            // ── Warning Alert ──
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
+            // ── Warning Alert — only shown when there's an overlap risk ──
+            if (_hasOverlapRisk)
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Schedule Overlap Risk',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color: AppColors.primaryDark,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'The selected time slot ($_overlapRiskTime) on '
+                            '$_selectedScreen only leaves 15 minutes for '
+                            'cleaning after the previous show.\n'
+                            'Recommended buffer: 30 mins.',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.textPrimary,
+                                  height: 1.4,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.warning_amber_rounded,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Schedule Overlap Risk',
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                color: AppColors.primaryDark,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          'The selected time slot (04:30 PM)\nonly leaves 15 minutes for cleaning\nafter the previous show.\nRecommended buffer: 30 mins.',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: AppColors.textPrimary,
-                                height: 1.4,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
             const SizedBox(height: AppSpacing.xxl),
           ],
@@ -389,7 +588,8 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
               Icon(
                 isSelected ? Icons.tv : Icons.tv_outlined,
                 size: 16,
-                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                color:
+                    isSelected ? AppColors.primary : AppColors.textPrimary,
               ),
               const SizedBox(width: 4),
               Text(
@@ -413,8 +613,10 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             child: Stack(
               children: [
                 Positioned(
-                  left: MediaQuery.of(context).size.width * 0.6 * startPct,
-                  width: MediaQuery.of(context).size.width * 0.6 * widthPct,
+                  left:
+                      MediaQuery.of(context).size.width * 0.6 * startPct,
+                  width:
+                      MediaQuery.of(context).size.width * 0.6 * widthPct,
                   top: 0,
                   bottom: 0,
                   child: Container(
@@ -423,7 +625,9 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.divider,
+                      color: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.2)
+                          : AppColors.divider,
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
                     child: Column(
@@ -432,10 +636,12 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                       children: [
                         Text(
                           movieTitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

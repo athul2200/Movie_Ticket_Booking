@@ -33,21 +33,17 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   String? _selectedCinema;
   String? _selectedShowtime;
   String? _selectedScreen;
-  String _selectedFormat = 'Standard';
+  String _selectedFormat = '';
 
   // Mock theater → screens → times data
   static const Map<String, Map<String, List<String>>> _theaterData = {
-    'Movix - Downtown': {
-      'Screen 3 · IMAX': ['10:00 AM', '01:30 PM', '04:30 PM', '08:00 PM'],
-      'Screen 7 · Dolby': ['11:15 AM', '03:00 PM', '06:45 PM'],
+    'Kairali': {
+      'Screen 1': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
+      'Screen 2': ['11:00 AM', '02:30 PM','05:30 PM', '08:30 PM','11:20 PM'],
     },
-    'Grand Cineplex': {
-      'Screen 1 · 4DX':  ['09:30 AM', '12:45 PM', '05:00 PM', '09:15 PM'],
-      'Screen 5 · Standard': ['10:30 AM', '02:15 PM', '07:00 PM'],
-    },
-    'PVR Elite': {
-      'Screen 2 · MX4D': ['11:00 AM', '03:30 PM', '07:30 PM'],
-      'Screen 4 · Standard': ['10:00 AM', '01:00 PM', '04:00 PM', '08:30 PM'],
+    'Nila': {
+      'Screen 1': ['11:00 AM', '02:30 PM','05:30 PM', '08:30 PM','11:20 PM'],
+      'Screen 2': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
     },
   };
 
@@ -357,11 +353,16 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _selectedDate = isSelected ? null : date;
-                      // Reset downstream selections
-                      _selectedCinema = null;
-                      _selectedScreen = null;
-                      _selectedShowtime = null;
+                      if (isSelected) {
+                        // Unselecting the date clears everything
+                        _selectedDate = null;
+                        _selectedCinema = null;
+                        _selectedScreen = null;
+                        _selectedShowtime = null;
+                      } else {
+                        // Selecting a new date preserves existing theater/time selections
+                        _selectedDate = date;
+                      }
                     });
                   },
                   child: AnimatedContainer(
@@ -561,17 +562,25 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               return GestureDetector(
                 onTap: () {
                   setState(() {
-                    _selectedScreen = screenName;
-                    _selectedShowtime = time;
-                    _selectedFormat = screenName.contains('IMAX')
-                        ? 'IMAX'
-                        : screenName.contains('Dolby')
-                            ? 'Dolby'
-                            : screenName.contains('4DX')
-                                ? '4DX'
-                                : screenName.contains('MX4D')
-                                    ? 'MX4D'
-                                    : 'Standard';
+                    if (isTimeSelected) {
+                      // Unselect if already selected
+                      _selectedScreen = null;
+                      _selectedShowtime = null;
+                      _selectedFormat = '';
+                    } else {
+                      // Select new time
+                      _selectedScreen = screenName;
+                      _selectedShowtime = time;
+                      _selectedFormat = screenName.contains('IMAX')
+                          ? 'IMAX'
+                          : screenName.contains('Dolby')
+                              ? 'Dolby'
+                              : screenName.contains('4DX')
+                                  ? '4DX'
+                                  : screenName.contains('MX4D')
+                                      ? 'MX4D'
+                                      : '';
+                    }
                   });
                 },
                 child: AnimatedContainer(
@@ -678,6 +687,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             'cinema': _selectedCinema!,
                             'screen': _selectedScreen!,
                             'format': _selectedFormat,
+                            'date': _selectedDate!.trim(),
                           },
                         );
                       }

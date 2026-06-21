@@ -31,4 +31,32 @@ class BookingModel {
 
   /// Seats formatted as a comma-separated string (e.g., "H12, H13")
   String get seatsFormatted => seats.join(', ');
+
+  BookingModel copyWith({
+    String? id,
+    String? movieTitle,
+    String? moviePosterUrl,
+    String? date,
+    String? time,
+    String? cinema,
+    List<String>? seats,
+    double? totalAmount,
+    String? experience,
+    bool? isConfirmed,
+    bool? isHistory,
+  }) {
+    return BookingModel(
+      id: id ?? this.id,
+      movieTitle: movieTitle ?? this.movieTitle,
+      moviePosterUrl: moviePosterUrl ?? this.moviePosterUrl,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      cinema: cinema ?? this.cinema,
+      seats: seats ?? this.seats,
+      totalAmount: totalAmount ?? this.totalAmount,
+      experience: experience ?? this.experience,
+      isConfirmed: isConfirmed ?? this.isConfirmed,
+      isHistory: isHistory ?? this.isHistory,
+    );
+  }
 }

@@ -23,6 +23,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
   String _currentSection = 'home';
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  static const List<String> _sections = [
+    'home',
+    'all_bookings',
+    'show_management',
+    'seat_blocking',
+    'user_directory',
+    'reviews',
+  ];
+
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = const [
+      _HomeDashboard(),
+      AllBookingsScreen(),
+      ShowManagementScreen(),
+      Padding(padding: EdgeInsets.all(24), child: SeatBlockingScreen()),
+      UserDirectoryScreen(),
+      ReviewsScreen(),
+    ];
+  }
+
   // ── Section title ─────────────────────────────────────────────
   String get _sectionTitle {
     switch (_currentSection) {
@@ -45,33 +69,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   // ── Content area ──────────────────────────────────────────────
   Widget _buildContent() {
-    Widget child;
-    switch (_currentSection) {
-      case 'all_bookings':
-        child = const AllBookingsScreen();
-        break;
-      case 'show_management':
-        child = const ShowManagementScreen();
-        break;
-      case 'seat_blocking':
-        child = const SeatBlockingScreen();
-        break;
-      case 'user_directory':
-        child = const UserDirectoryScreen();
-        break;
-      case 'reviews':
-        child = const ReviewsScreen();
-        break;
-      default:
-        child = const _HomeDashboard();
-    }
-
+    final index = _sections.indexOf(_currentSection);
     return Expanded(
       child: Container(
         color: AppTheme.background,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: child,
+        child: IndexedStack(
+          index: index != -1 ? index : 0,
+          children: _screens,
         ),
       ),
     );
@@ -133,12 +137,15 @@ class _HomeDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        UserTable(),
-        SizedBox(height: 24),
-        ReviewSection(),
-      ],
+    return const SingleChildScrollView(
+      padding: EdgeInsets.all(24),
+      child: Column(
+        children: [
+          UserTable(),
+          SizedBox(height: 24),
+          ReviewSection(),
+        ],
+      ),
     );
   }
 }

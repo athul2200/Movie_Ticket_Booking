@@ -13,14 +13,18 @@ class SeatSelectionScreen extends StatefulWidget {
   final String movieTitle;
   final String showtime;
   final String cinema;
+  final String screen;
   final String format;
+  final String date;
 
   const SeatSelectionScreen({
     super.key,
     required this.movieTitle,
     required this.showtime,
     required this.cinema,
+    required this.screen,
     required this.format,
+    required this.date,
   });
 
   @override
@@ -30,6 +34,19 @@ class SeatSelectionScreen extends StatefulWidget {
 class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   // Track selected seats as "row-section-col"
   final Set<String> _selectedSeats = {};
+  double get _seatPrice {
+    final cinema = widget.cinema.toLowerCase();
+    final screen = widget.screen.toLowerCase();
+    
+    if (cinema.contains('kairali')) {
+      if (screen.contains('1')) return 130.00;
+      if (screen.contains('2')) return 105.00;
+    } else if (cinema.contains('nila')) {
+      if (screen.contains('1')) return 105.00;
+      if (screen.contains('2')) return 130.00;
+    }
+    return 140.00; // Default fallback
+  }
 
   // Row labels top → bottom (J to A)
   static const List<String> _rowLabels = [
@@ -117,12 +134,28 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Today, ${widget.showtime} • ${widget.cinema} • ${widget.format}',
+          '${widget.date} • ${widget.showtime} • ${widget.cinema} ${widget.screen}${widget.format.isNotEmpty ? ' • ${widget.format}' : ''}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: AppColors.textSecondary,
             fontSize: 13,
           ),
           textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+          ),
+          child: Text(
+            '₹${_seatPrice.toStringAsFixed(0)}',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ],
     );
@@ -306,7 +339,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
   Widget _buildBottomCTA(BuildContext context) {
     final seatCount = _selectedSeats.length;
-    final total = seatCount * 16.00;
+    final total = seatCount * _seatPrice;
 
     return Container(
       padding: EdgeInsets.only(
@@ -340,7 +373,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   ),
                 ),
                 Text(
-                  '\$${total.toStringAsFixed(2)}',
+                  '₹${total.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: AppColors.primary,
@@ -381,18 +414,18 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   }).toList()
                     ..sort();
 
-                  final totalAmount = seatsList.length * 16.00;
+                  final totalAmount = seatsList.length * _seatPrice;
 
                   final booking = BookingModel(
                     id: 'CP-${1000 + DateTime.now().millisecond}-X${100 + DateTime.now().second}',
                     movieTitle: widget.movieTitle,
                     moviePosterUrl: matchingMovie.posterUrl,
-                    date: 'Today, Oct 12',
+                    date: widget.date,
                     time: widget.showtime,
-                    cinema: '${widget.cinema} • ${widget.format}',
+                    cinema: widget.format.isNotEmpty ? '${widget.cinema} • ${widget.format}' : widget.cinema,
                     seats: seatsList,
                     totalAmount: totalAmount,
-                    experience: 'STANDARD EXPERIENCE',
+                    experience: 'EXPERIENCE',
                     isConfirmed: true,
                   );
 

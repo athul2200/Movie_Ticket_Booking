@@ -86,7 +86,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
             const SizedBox(height: AppSpacing.md),
 
             Text(
-              'Standard Rate (\$)',
+              'Rate (₹)',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -145,7 +145,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   // Legend
                   Row(
                     children: [
-                      _buildLegendItem(Colors.transparent, 'Standard', true),
+                      _buildLegendItem(Colors.transparent, '2D', true),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xl),
@@ -220,7 +220,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'STANDARD\nCAPACITY',
+                                'CAPACITY',
                                 style: Theme.of(context).textTheme.labelSmall,
                               ),
                               const SizedBox(height: AppSpacing.xs),

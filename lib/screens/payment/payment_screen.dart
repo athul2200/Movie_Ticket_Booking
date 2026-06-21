@@ -370,13 +370,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   /// Movie booking summary card showing projector graphic + price details
   Widget _buildBookingSummary(BuildContext context) {
-    // Generate cinema text Row H (2 Seats) etc.
-    final rowLetter = widget.booking.seats.isNotEmpty
-        ? widget.booking.seats.first[0]
-        : 'H';
     final seatsCount = widget.booking.seats.length;
+    final seatsJoined = widget.booking.seats.join(',');
     final formattedDetail =
-        '${widget.booking.cinema.replaceAll(' • ', ' • ')} • Row $rowLetter ($seatsCount Seats)';
+        '${widget.booking.cinema} • $seatsJoined ($seatsCount Seats)';
+
+    final double ticketAmount = widget.booking.totalAmount;
+    final double convenienceFee = 20.00;
+    final double totalAmountToPay = ticketAmount + convenienceFee;
 
     return Container(
       width: double.infinity,
@@ -414,58 +415,116 @@ class _PaymentScreenState extends State<PaymentScreen> {
           // Detail Section
           Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Info block
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.booking.movieTitle,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppColors.textWhite,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        formattedDetail,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textWhite.withValues(alpha: 0.8),
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-
-                // Amount details
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'TOTAL AMOUNT',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.textWhite.withValues(alpha: 0.8),
-                        fontSize: 9,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '\$${widget.booking.totalAmount.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.booking.movieTitle,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: AppColors.textWhite,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            formattedDetail,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textWhite.withValues(alpha: 0.8),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
+                ),
+                
+                const SizedBox(height: AppSpacing.lg),
+                
+                // Price Breakdown
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Ticket Price',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textWhite.withValues(alpha: 0.8),
+                            ),
+                          ),
+                          Text(
+                            '₹${ticketAmount.toStringAsFixed(2)}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textWhite,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'GST & Convenience Fee',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textWhite.withValues(alpha: 0.8),
+                            ),
+                          ),
+                          Text(
+                            '₹${convenienceFee.toStringAsFixed(2)}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textWhite,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Divider(color: Colors.white.withValues(alpha: 0.2)),
+                      const SizedBox(height: AppSpacing.xs),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'TOTAL AMOUNT',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: AppColors.textWhite.withValues(alpha: 0.8),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Text(
+                            '₹${totalAmountToPay.toStringAsFixed(2)}',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -491,14 +550,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ),
       child: ElevatedButton(
         onPressed: () {
+          // Update total amount on the booking model before saving
+          final updatedBooking = widget.booking.copyWith(
+            totalAmount: widget.booking.totalAmount + 20.00,
+          );
+
           // Add the newly created booking record to MockData
-          MockData.bookings.insert(0, widget.booking);
+          MockData.bookings.insert(0, updatedBooking);
 
           // Route to booking detail screen (representing step 3: ticket)
           Navigator.pushNamed(
             context,
             '/booking-detail',
-            arguments: widget.booking,
+            arguments: updatedBooking,
           );
         },
         style: ElevatedButton.styleFrom(

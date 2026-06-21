@@ -45,7 +45,9 @@ class AppRouter {
             movieTitle: args['movieTitle'] ?? '',
             showtime: args['showtime'] ?? '',
             cinema: args['cinema'] ?? '',
+            screen: args['screen'] ?? '',
             format: args['format'] ?? '',
+            date: args['date'] ?? '',
           ),
         );
 

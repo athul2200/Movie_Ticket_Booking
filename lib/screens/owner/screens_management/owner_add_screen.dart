@@ -17,12 +17,23 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
   final TextEditingController _capacityCtrl = TextEditingController(
     text: '120',
   );
-  String _selectedProjection = 'Standard 2D';
+  
+  final Map<String, TextEditingController> _rowControllers = {
+    'A': TextEditingController(text: '12'),
+    'B': TextEditingController(text: '12'),
+    'C': TextEditingController(text: '12'),
+    'D': TextEditingController(text: '12'),
+  };
+
+  String _selectedProjection = '2D';
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _capacityCtrl.dispose();
+    for (final ctrl in _rowControllers.values) {
+      ctrl.dispose();
+    }
     super.dispose();
   }
 
@@ -166,12 +177,12 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
                     value: _selectedProjection,
                     items: const [
                       DropdownMenuItem(
-                        value: 'Standard Laser',
-                        child: Text('Standard Laser'),
+                        value: 'Laser',
+                        child: Text('Laser'),
                       ),
                       DropdownMenuItem(
-                        value: 'Standard 2D',
-                        child: Text('Standard 2D'),
+                        value: '2D',
+                        child: Text('2D'),
                       ),
                       DropdownMenuItem(
                         value: 'Dolby Cinema',
@@ -318,7 +329,7 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
               width: 60,
               height: 32,
               child: TextField(
-                controller: TextEditingController(text: seats.toString()),
+                controller: _rowControllers[letter],
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 14),

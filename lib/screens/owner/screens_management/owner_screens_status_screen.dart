@@ -13,6 +13,8 @@ class OwnerScreensStatusScreen extends StatefulWidget {
 }
 
 class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
+  List<int> _activeScreens = [1, 2];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +29,7 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total Active Screens : 12',
+                  'Total Active Screens : ${_activeScreens.length}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -78,16 +80,17 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
                 childAspectRatio:
                     0.85, // Makes it slightly taller than a perfect square to fit content
               ),
-              itemCount: 12,
+              itemCount: _activeScreens.length,
               itemBuilder: (context, index) {
+                final screenNum = _activeScreens[index];
                 // Mock data variations
                 String screenName =
-                    'SCREEN ${index + 1 < 10 ? '0${index + 1}' : index + 1}';
+                    'SCREEN ${screenNum < 10 ? '0$screenNum' : screenNum}';
                 String movieTitle = 'Dune: Part Two';
                 String imageUrl = 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop';
-                double occupancy = 0.3 + ((index * 0.17) % 0.6);
-                String timeLabel = index % 2 == 0 ? 'Ends at' : 'Next Show';
-                String timeValue = index % 2 == 0 ? '02:45 PM' : '03:15 PM';
+                double occupancy = 0.3 + (((screenNum - 1) * 0.17) % 0.6);
+                String timeLabel = (screenNum - 1) % 2 == 0 ? 'Ends at' : 'Next Show';
+                String timeValue = (screenNum - 1) % 2 == 0 ? '02:45 PM' : '03:15 PM';
 
                 return _buildScreenListItem(
                   screenName: screenName,
@@ -101,6 +104,31 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const OwnerScreenDetailsScreen(),
+                      ),
+                    );
+                  },
+                  onLongPress: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: AppColors.background,
+                        title: const Text('Delete Screen'),
+                        content: Text('Are you sure you want to delete $screenName?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _activeScreens.removeAt(index);
+                              });
+                              Navigator.pop(ctx);
+                            },
+                            child: const Text('Delete', style: TextStyle(color: AppColors.primary)),
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -121,9 +149,11 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
     required String timeLabel,
     required String timeValue,
     required VoidCallback onTap,
+    VoidCallback? onLongPress,
   }) {
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.background,

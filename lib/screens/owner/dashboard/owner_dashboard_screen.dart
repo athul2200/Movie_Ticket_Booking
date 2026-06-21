@@ -110,7 +110,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             _buildStatCard(
               icon: Icons.grid_view_rounded,
               title: 'Total Screens',
-              value: '12',
+              value: '2',
               badgeText: 'Real-time',
               onTap: () {
                 Navigator.push(
@@ -240,7 +240,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             const SizedBox(height: AppSpacing.md),
             _buildScreenStatusCard(
               movieTitle: 'Oppenheimer',
-              screenName: 'SCREEN 02 - STANDARD',
+              screenName: 'SCREEN 02',
               imageUrl:
                   'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop', // Abstract lights visual
               occupancy: 0.30,

@@ -4,7 +4,7 @@ import 'package:booking/core/constants/app_constants.dart';
 
 class AdminButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final IconData? icon;
   final bool isOutlined;
   final Color? backgroundColor;
@@ -23,33 +23,36 @@ class AdminButton extends StatelessWidget {
     final bgColor = backgroundColor ?? AppColors.primary;
     final textColor = isOutlined ? bgColor : AppColors.textWhite;
 
-    return SizedBox(
-      width: double.infinity,
-      child: isOutlined
-          ? OutlinedButton(
-              onPressed: onPressed,
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: bgColor, width: 1),
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
+    return Opacity(
+      opacity: onPressed == null ? 0.5 : 1.0,
+      child: SizedBox(
+        width: double.infinity,
+        child: isOutlined
+            ? OutlinedButton(
+                onPressed: onPressed,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: bgColor, width: 1),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
                 ),
-              ),
-              child: _buildContent(textColor),
-            )
-          : ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: bgColor,
-                foregroundColor: textColor,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                child: _buildContent(textColor),
+              )
+            : ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: bgColor,
+                  foregroundColor: textColor,
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  elevation: 0,
                 ),
-                elevation: 0,
+                child: _buildContent(textColor),
               ),
-              child: _buildContent(textColor),
-            ),
+      ),
     );
   }
 

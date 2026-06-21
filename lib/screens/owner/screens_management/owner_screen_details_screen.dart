@@ -126,7 +126,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                             ),
                             const SizedBox(width: AppSpacing.sm),
                             Text(
-                              '02:45 PM - 05:30 PM',
+                              '10:00 AM - 01:00 PM',
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     color: AppColors.textPrimary,
@@ -315,7 +315,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'STANDARD SCREEN',
+                    'SCREEN',
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                   const SizedBox(height: AppSpacing.xl),

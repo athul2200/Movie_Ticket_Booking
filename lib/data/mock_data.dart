@@ -152,14 +152,14 @@ class MockData {
   // ── Theaters & Showtimes ──
   static const List<TheaterModel> theaters = [
     TheaterModel(
-      name: 'Movix - Downtown',
-      type: 'Standard',
-      showtimes: ['10:40 AM', '01:30 PM', '04:30 PM', '07:30 PM', '10:15 PM'],
+      name: 'Kairali',
+      type: '',
+      showtimes: ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM'],
     ),
     TheaterModel(
-      name: 'Grand Screen Multiplex',
-      type: 'Standard',
-      showtimes: ['10:40 AM', '01:30 PM', '04:30 PM', '07:30 PM', '10:15 PM'],
+      name: 'Nila',
+      type: '',
+      showtimes: ['09:30 AM', '12:45 PM', '05:00 PM', '09:15 PM'],
     ),
   ];
 
@@ -187,7 +187,7 @@ class MockData {
       cinema: 'Lounge C',
       seats: ['B4'],
       totalAmount: 16.00,
-      experience: 'STANDARD EXPERIENCE',
+      experience: 'EXPERIENCE',
       isConfirmed: true,
       isHistory: false,
     ),

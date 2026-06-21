@@ -8,6 +8,7 @@ class UserDirectoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: _buildUserProfiles(context),
     );
   }

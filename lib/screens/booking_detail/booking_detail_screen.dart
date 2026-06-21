@@ -56,11 +56,7 @@ class BookingDetailScreen extends StatelessWidget {
                       ),
                       child: _buildDownloadButton(context),
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-
-                    // ── Cancel Booking ──
-                    _buildCancelBooking(context),
-                    const SizedBox(height: AppSpacing.xxl),
+                    // Removed Cancel Booking
 
                     // ── Important Information ──
                     Padding(
@@ -357,7 +353,7 @@ class BookingDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${booking.totalAmount.toStringAsFixed(2)}',
+                    '₹${booking.totalAmount.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: 17,
@@ -450,31 +446,6 @@ class BookingDetailScreen extends StatelessWidget {
           ),
           elevation: 0,
         ),
-      ),
-    );
-  }
-
-  /// Cancel Booking link
-  Widget _buildCancelBooking(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // TODO: Cancel booking flow
-      },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.cancel_outlined, size: 18, color: AppColors.textSecondary),
-          const SizedBox(width: 6),
-          Text(
-            'Cancel Booking',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
-          ),
-        ],
       ),
     );
   }

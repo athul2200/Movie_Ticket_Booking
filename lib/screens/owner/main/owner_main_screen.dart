@@ -13,19 +13,23 @@ class OwnerMainScreen extends StatefulWidget {
 
 class _OwnerMainScreenState extends State<OwnerMainScreen> {
   int _currentIndex = 0;
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      OwnerDashboardScreen(onNavigateToMovies: () => setIndex(1)),
+      const OwnerMoviesScreen(),
+      const OwnerScreensListScreen(),
+    ];
+  }
 
   void setIndex(int index) {
     setState(() {
       _currentIndex = index;
     });
   }
-
-  // Screens for each tab
-  List<Widget> get _screens => [
-    OwnerDashboardScreen(onNavigateToMovies: () => setIndex(1)),
-    const OwnerMoviesScreen(),
-    const OwnerScreensListScreen(),
-  ];
 
   @override
   Widget build(BuildContext context) {
