@@ -99,6 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+
             // ── Bottom padding ──
             const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
           ],

@@ -56,7 +56,15 @@ class BookingDetailScreen extends StatelessWidget {
                       ),
                       child: _buildDownloadButton(context),
                     ),
-                    // Removed Cancel Booking
+                    const SizedBox(height: AppSpacing.md),
+
+                    // ── Done Button ──
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
+                      child: _buildDoneButton(context),
+                    ),
 
                     // ── Important Information ──
                     Padding(
@@ -489,6 +497,35 @@ class BookingDetailScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Done button to go to home page
+  Widget _buildDoneButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton(
+        onPressed: () {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home',
+            (route) => false,
+          );
+        },
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.primary),
+          foregroundColor: AppColors.primary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
+        ),
+        child: const Text('Done'),
       ),
     );
   }

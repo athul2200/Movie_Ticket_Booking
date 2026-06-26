@@ -13,7 +13,7 @@ class OwnerScreensStatusScreen extends StatefulWidget {
 }
 
 class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
-  List<int> _activeScreens = [1, 2];
+  final List<int> _activeScreens = [1, 2];
 
   @override
   Widget build(BuildContext context) {

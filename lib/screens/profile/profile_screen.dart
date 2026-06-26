@@ -33,6 +33,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   String? _profileImagePath;
 
+  // ── Review state ──
+  int _reviewStars = 0;
+  final TextEditingController _reviewController = TextEditingController();
+  bool _reviewSubmitted = false;
+
   Future<void> _pickImage() async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -59,6 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _reviewController.dispose();
     super.dispose();
   }
 
@@ -117,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ...historyBookings.map(
                       (booking) => Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: HistoryBookingCard(booking: booking),
+                        child: BookingCard(booking: booking),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -125,6 +131,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // ── Dashed Browse Banner ──
                     _buildBrowseBanner(context),
                     const SizedBox(height: AppSpacing.xxl),
+
+                    // ── Review Section ──
+                    _buildReviewSection(context),
 
                     const SizedBox(height: AppSpacing.xl),
                   ],
@@ -424,6 +433,229 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// ── Review Section ──
+  Widget _buildReviewSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Title
+        Text(
+          'Leave a Review',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        // Warning Banner
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm + 4,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF3CD),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: const Color(0xFFFFD600), width: 1.2),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Color(0xFFB8860B), size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Please write a review only after watching the movie.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFF7A5C00),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        if (_reviewSubmitted) ...[
+          // Success State
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.greenAccent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: AppColors.greenAccent, width: 1),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.check_circle_outline, color: AppColors.greenAccent, size: 36),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Thank you for your review!',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.greenAccent,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    5,
+                    (i) => Icon(
+                      i < _reviewStars ? Icons.star : Icons.star_border,
+                      color: const Color(0xFFFFD600),
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Center(
+            child: TextButton(
+              onPressed: () => setState(() {
+                _reviewSubmitted = false;
+                _reviewStars = 0;
+                _reviewController.clear();
+              }),
+              child: Text(
+                'Write another review',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ] else ...[
+          // Star Rating
+          Text(
+            'Your Rating',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+              fontSize: 11,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: List.generate(5, (index) {
+              final starIndex = index + 1;
+              return GestureDetector(
+                onTap: () => setState(() => _reviewStars = starIndex),
+                child: AnimatedScale(
+                  scale: _reviewStars >= starIndex ? 1.15 : 1.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      _reviewStars >= starIndex ? Icons.star : Icons.star_border,
+                      color: _reviewStars >= starIndex
+                          ? const Color(0xFFFFD600)
+                          : AppColors.textHint,
+                      size: 34,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Review Text Field
+          Text(
+            'Your Review',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+              fontSize: 11,
+            ),
+          ),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _reviewController,
+            maxLines: 4,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Share your experience about the movie...',
+              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textHint,
+                fontSize: 13,
+              ),
+              filled: true,
+              fillColor: AppColors.surface,
+              contentPadding: const EdgeInsets.all(AppSpacing.md),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Submit Button
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                if (_reviewStars == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please select a star rating first.'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                if (_reviewController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please write a review before submitting.'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                setState(() => _reviewSubmitted = true);
+              },
+              icon: const Icon(Icons.send_rounded, size: 18),
+              label: const Text(
+                'Submit Review',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textWhite,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+              ),
+            ),
+          ),
+        ],
+
+        const SizedBox(height: AppSpacing.xxl),
+      ],
     );
   }
 }

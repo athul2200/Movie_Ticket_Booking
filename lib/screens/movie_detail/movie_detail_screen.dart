@@ -500,13 +500,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       color: isSelected ? AppColors.primary : AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${_theaterData[cinema]!.length} screens available',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+
                 ],
               ),
             ),

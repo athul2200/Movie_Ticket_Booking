@@ -1,12 +1,20 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/models/booking_model.dart';
+import 'package:booking/services/seat_reservation_service.dart';
 
 /// ============================================================
 /// Seat Selection Screen — 3-section cinema seat map:
-///   Left (3 seats) | Aisle | Center (6 seats) | Aisle | Right (3 seats)
+///   Left (4 seats) | Aisle | Center (8 seats) | Aisle | Right (4 seats)
+///
+/// Seat reservation logic:
+///   - Selecting a seat reserves it globally via SeatReservationService.
+///   - Other users (or returning to this screen) see reserved seats as "Booked".
+///   - Each reservation auto-cancels after 5 minutes.
+///   - A countdown timer is displayed when seats are selected.
 /// ============================================================
 
 class SeatSelectionScreen extends StatefulWidget {
@@ -32,12 +40,19 @@ class SeatSelectionScreen extends StatefulWidget {
 }
 
 class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
-  // Track selected seats as "row-section-col"
+  // Seats selected by THIS user in this session
   final Set<String> _selectedSeats = {};
+
+  // Key used for this specific show in the reservation service
+  late final String _screenKey;
+
+  // Countdown timer state
+  Timer? _countdownTimer;
+  int _secondsRemaining = SeatReservationService.reservationDuration.inSeconds;
+
   double get _seatPrice {
     final cinema = widget.cinema.toLowerCase();
     final screen = widget.screen.toLowerCase();
-    
     if (cinema.contains('kairali')) {
       if (screen.contains('1')) return 130.00;
       if (screen.contains('2')) return 105.00;
@@ -45,16 +60,102 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
       if (screen.contains('1')) return 105.00;
       if (screen.contains('2')) return 130.00;
     }
-    return 140.00; // Default fallback
+    return 140.00;
   }
 
-  // Row labels top → bottom (J to A)
   static const List<String> _rowLabels = [
-    'A','B','C','D','E','F','G','H','I','J',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
   ];
 
-  // Pre-booked seats
-  final Set<String> _bookedSeats = {};
+  @override
+  void initState() {
+    super.initState();
+    _screenKey = SeatReservationService.screenKey(
+      cinema: widget.cinema,
+      screen: widget.screen,
+      date: widget.date,
+      showtime: widget.showtime,
+    );
+    // Listen to reservation changes (other users releasing seats, expiry, etc.)
+    SeatReservationService.instance.addListener(_screenKey, _onReservationChanged);
+  }
+
+  @override
+  void dispose() {
+    SeatReservationService.instance.removeListener(_screenKey, _onReservationChanged);
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onReservationChanged() {
+    if (mounted) setState(() {});
+  }
+
+  // ── Seat tap logic ───────────────────────────────────────────
+
+  void _onSeatTap(String seatId) {
+    final service = SeatReservationService.instance;
+
+    setState(() {
+      if (_selectedSeats.contains(seatId)) {
+        // Deselect → release reservation
+        _selectedSeats.remove(seatId);
+        service.releaseSeat(_screenKey, seatId);
+      } else {
+        // Select → reserve
+        _selectedSeats.add(seatId);
+        service.reserveSeat(_screenKey, seatId);
+      }
+    });
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    _updateCountdown();
+  }
+
+  // ── Countdown timer ──────────────────────────────────────────
+
+  void _updateCountdown() {
+    _countdownTimer?.cancel();
+    if (_selectedSeats.isEmpty) return;
+
+    // Find the earliest expiry among selected seats
+    _refreshCountdownValue();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      _refreshCountdownValue();
+      if (_secondsRemaining <= 0) {
+        _countdownTimer?.cancel();
+        // Any seats that expired are already released by the service timer.
+        // Just sync selected seats with what's still reserved.
+        setState(() {
+          _selectedSeats.removeWhere((seatId) =>
+              !SeatReservationService.instance.reservedSeats(_screenKey).contains(seatId));
+        });
+      }
+    });
+  }
+
+  void _refreshCountdownValue() {
+    if (_selectedSeats.isEmpty) {
+      setState(() => _secondsRemaining = SeatReservationService.reservationDuration.inSeconds);
+      return;
+    }
+    // Show minimum remaining time across selected seats
+    int minRemaining = SeatReservationService.reservationDuration.inSeconds;
+    for (final seatId in _selectedSeats) {
+      final remaining = SeatReservationService.instance.secondsRemaining(_screenKey, seatId);
+      if (remaining < minRemaining) minRemaining = remaining;
+    }
+    setState(() => _secondsRemaining = minRemaining);
+  }
+
+  String get _countdownText {
+    final minutes = (_secondsRemaining ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_secondsRemaining % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  // ── Build ────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +173,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     const SizedBox(height: AppSpacing.lg),
                     _buildMovieInfo(context),
                     const SizedBox(height: AppSpacing.xl),
+                    // Countdown banner
+                    if (_selectedSeats.isNotEmpty) _buildCountdownBanner(context),
+                    if (_selectedSeats.isNotEmpty) const SizedBox(height: AppSpacing.md),
                     _buildSeatLegend(context),
                     const SizedBox(height: AppSpacing.xl),
                     _buildSeatGrid(context),
@@ -98,7 +202,13 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              // Release all seats this user selected when going back
+              for (final seatId in _selectedSeats) {
+                SeatReservationService.instance.releaseSeat(_screenKey, seatId);
+              }
+              Navigator.pop(context);
+            },
             child: const Icon(
               Icons.arrow_back,
               size: AppSizes.iconLg,
@@ -121,6 +231,45 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     );
   }
 
+  Widget _buildCountdownBanner(BuildContext context) {
+    final isUrgent = _secondsRemaining < 60;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
+      decoration: BoxDecoration(
+        color: isUrgent
+            ? Colors.red.withValues(alpha: 0.12)
+            : AppColors.primary.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: isUrgent ? Colors.red : AppColors.primary,
+          width: 1.2,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.timer_outlined,
+            size: 18,
+            color: isUrgent ? Colors.red : AppColors.primary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Seats reserved for $_countdownText — complete your booking before time runs out!',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: isUrgent ? Colors.red : AppColors.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMovieInfo(BuildContext context) {
     return Column(
       children: [
@@ -134,7 +283,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          '${widget.date} • ${widget.showtime} • ${widget.cinema} ${widget.screen}${widget.format.isNotEmpty ? ' • ${widget.format}' : ''}',
+          '${widget.date} • ${widget.showtime} • ${widget.cinema} ${widget.screen}'
+          '${widget.format.isNotEmpty ? ' • ${widget.format}' : ''}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: AppColors.textSecondary,
             fontSize: 13,
@@ -199,8 +349,19 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     );
   }
 
-  /// Full seat grid — 3 blocks per row: Left(3) | Center(6) | Right(3)
   Widget _buildSeatGrid(BuildContext context) {
+    final reservedSeats = SeatReservationService.instance.reservedSeats(_screenKey);
+    
+    // Also include seats that were fully paid/booked in MockData.bookings
+    final permanentlyBookedSeats = MockData.bookings
+        .where((b) =>
+            b.movieTitle == widget.movieTitle &&
+            b.date == widget.date &&
+            b.time == widget.showtime &&
+            (b.cinema == widget.cinema || b.cinema.startsWith('${widget.cinema} •')))
+        .expand((b) => b.seats)
+        .toSet();
+
     return Column(
       children: List.generate(_rowLabels.length, (rowIndex) {
         final row = _rowLabels[rowIndex];
@@ -209,7 +370,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Row label left
               SizedBox(
                 width: 16,
                 child: Text(
@@ -223,24 +383,12 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 ),
               ),
               const SizedBox(width: 3),
-
-              // Left block — 4 seats
-              _buildBlock(context, row, 'L', 4, 1),
-
-              // Aisle gap
+              _buildBlock(context, row, 'L', 4, 1, reservedSeats, permanentlyBookedSeats),
               const SizedBox(width: 10),
-
-              // Center block — 8 seats
-              _buildBlock(context, row, 'C', 8, 5),
-
-              // Aisle gap
+              _buildBlock(context, row, 'C', 8, 5, reservedSeats, permanentlyBookedSeats),
               const SizedBox(width: 10),
-
-              // Right block — 4 seats
-              _buildBlock(context, row, 'R', 4, 13),
-
+              _buildBlock(context, row, 'R', 4, 13, reservedSeats, permanentlyBookedSeats),
               const SizedBox(width: 3),
-              // Row label right
               SizedBox(
                 width: 16,
                 child: Text(
@@ -261,37 +409,42 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   }
 
   Widget _buildBlock(
-      BuildContext context, String row, String section, int count, int startCol) {
+    BuildContext context,
+    String row,
+    String section,
+    int count,
+    int startCol,
+    Set<String> reservedSeats,
+    Set<String> permanentlyBookedSeats,
+  ) {
     return Expanded(
       flex: count,
       child: Row(
         children: List.generate(count, (col) {
           final seatNumber = startCol + col;
           final seatId = '$row-$seatNumber';
-          final isBooked = _bookedSeats.contains(seatId);
-          final isSelected = _selectedSeats.contains(seatId);
+          
+          // Bookings are saved as A1 instead of A-1
+          final formattedSeatId = '$row$seatNumber';
+
+          final isSelectedByMe = _selectedSeats.contains(seatId);
+          final isPermanentlyBooked = permanentlyBookedSeats.contains(formattedSeatId);
+          // A seat is "booked" if someone else reserved it (not this user) or it is permanently booked
+          final isBookedByOther = (!isSelectedByMe && reservedSeats.contains(seatId)) || isPermanentlyBooked;
 
           return Expanded(
             child: GestureDetector(
-              onTap: isBooked
+              onTap: isBookedByOther
                   ? null
-                  : () {
-                      setState(() {
-                        if (isSelected) {
-                          _selectedSeats.remove(seatId);
-                        } else {
-                          _selectedSeats.add(seatId);
-                        }
-                      });
-                    },
+                  : () => _onSeatTap(seatId),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 1.5),
                 height: 22,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: isSelected
+                  color: isSelectedByMe
                       ? AppColors.primary
-                      : isBooked
+                      : isBookedByOther
                           ? AppColors.divider
                           : AppColors.surface,
                   borderRadius: BorderRadius.circular(4),
@@ -301,7 +454,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontSize: 8,
                     fontWeight: FontWeight.w700,
-                    color: isSelected || isBooked ? Colors.white : AppColors.textPrimary,
+                    color: isSelectedByMe || isBookedByOther
+                        ? Colors.white
+                        : AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -312,7 +467,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     );
   }
 
-  /// Screen indicator at the bottom (matching the image — downward arrow + curve)
   Widget _buildScreenIndicator(BuildContext context) {
     return Column(
       children: [
@@ -394,7 +548,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                       const SnackBar(
                         content: Text('Please select at least one seat'),
                         behavior: SnackBarBehavior.floating,
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Colors.red,
                       ),
                     );
                     return;
@@ -422,12 +576,18 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     moviePosterUrl: matchingMovie.posterUrl,
                     date: widget.date,
                     time: widget.showtime,
-                    cinema: widget.format.isNotEmpty ? '${widget.cinema} • ${widget.format}' : widget.cinema,
+                    cinema: widget.format.isNotEmpty
+                        ? '${widget.cinema} • ${widget.format}'
+                        : widget.cinema,
                     seats: seatsList,
                     totalAmount: totalAmount,
                     experience: 'EXPERIENCE',
                     isConfirmed: true,
                   );
+
+                  // Release reservations once heading to payment
+                  // (payment completion should finalize the booking)
+                  _countdownTimer?.cancel();
 
                   Navigator.pushNamed(context, '/payment', arguments: booking);
                 },

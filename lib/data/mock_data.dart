@@ -165,57 +165,6 @@ class MockData {
 
   // ── Mock Bookings (matching Figma Booking Detail screen) ──
   static final List<BookingModel> bookings = [
-    const BookingModel(
-      id: 'CP-9928-X821',
-      movieTitle: 'Neon Horizon',
-      moviePosterUrl: 'https://picsum.photos/seed/neonhorizon/400/600',
-      date: 'Oct 24, 2023',
-      time: '07:30 PM',
-      cinema: 'Screen 04',
-      seats: ['H12', 'H13'],
-      totalAmount: 32.00,
-      experience: 'STANDARD EXPERIENCE',
-      isConfirmed: true,
-      isHistory: false,
-    ),
-    const BookingModel(
-      id: 'CP-9929-X822',
-      movieTitle: 'Midnight Jazz',
-      moviePosterUrl: 'https://picsum.photos/seed/midnightjazz/400/600',
-      date: 'Oct 28, 2023',
-      time: '09:00 PM',
-      cinema: 'Lounge C',
-      seats: ['B4'],
-      totalAmount: 16.00,
-      experience: 'EXPERIENCE',
-      isConfirmed: true,
-      isHistory: false,
-    ),
-    const BookingModel(
-      id: 'CP-9930-X823',
-      movieTitle: 'Interstellar Odyssey',
-      moviePosterUrl: 'https://picsum.photos/seed/interstellar/400/600',
-      date: 'Oct 24, 2023',
-      time: '08:30 PM',
-      cinema: 'Hall 04',
-      seats: ['H12', 'H13'],
-      totalAmount: 32.00,
-      experience: 'STANDARD EXPERIENCE',
-      isConfirmed: true,
-      isHistory: true,
-    ),
-    const BookingModel(
-      id: 'CP-9931-X824',
-      movieTitle: 'The Last Script',
-      moviePosterUrl: 'https://picsum.photos/seed/ritual4/400/600',
-      date: 'Oct 28, 2023',
-      time: '06:15 PM',
-      cinema: 'Screen 02',
-      seats: ['F04'],
-      totalAmount: 15.00,
-      experience: 'STANDARD EXPERIENCE',
-      isConfirmed: true,
-      isHistory: true,
-    ),
+
   ];
 }
