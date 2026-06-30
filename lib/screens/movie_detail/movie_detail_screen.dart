@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
+import 'package:booking/core/utils/ist_time_utils.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/models/movie_model.dart';
 import 'package:booking/widgets/cast_avatar.dart';
@@ -28,12 +31,17 @@ class MovieDetailScreen extends StatefulWidget {
 }
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
-  final List<String> _availableDates = ['Jun 15 ', 'Jun 16 ', 'Jun 17 ', 'Jun 18 '];
+  /// IST-based date labels: today, tomorrow, day-after-tomorrow.
+  late final List<String> _availableDates;
   String? _selectedDate;
   String? _selectedCinema;
   String? _selectedShowtime;
   String? _selectedScreen;
   String _selectedFormat = '';
+
+  /// Periodic timer that refreshes the UI every minute so expired shows
+  /// disappear automatically while the screen is open.
+  Timer? _refreshTimer;
 
   // Mock theater → screens → times data
   static const Map<String, Map<String, List<String>>> _theaterData = {
@@ -46,6 +54,32 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       'Screen 2': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
     },
   };
+
+  @override
+  void initState() {
+    super.initState();
+    // Generate today / tomorrow / day-after-tomorrow labels in IST.
+    _availableDates = IstTimeUtils.generateAvailableDates();
+    // Refresh every 60 seconds so expired shows vanish without user interaction.
+    _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      if (!mounted) return;
+      setState(() {
+        // If the currently selected showtime has expired, clear the selection.
+        if (_selectedShowtime != null &&
+            !IstTimeUtils.isShowtimeVisible(_selectedShowtime!)) {
+          _selectedScreen = null;
+          _selectedShowtime = null;
+          _selectedFormat = '';
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -420,16 +454,63 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           const SizedBox(height: AppSpacing.sm),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: Column(
+            child: Builder(
               key: ValueKey(_selectedCinema),
-              children: _theaterData[_selectedCinema]!.entries.map((entry) {
-                final screenName = entry.key;
-                final times = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: _buildScreenCard(context, screenName: screenName, times: times),
+              builder: (context) {
+                // Filter each screen's showtimes to only active (IST) ones.
+                final activeScreens = _theaterData[_selectedCinema]!.entries
+                    .map((entry) {
+                      final activeTimes =
+                          IstTimeUtils.filterActiveShowtimesForDate(
+                        entry.value,
+                        _selectedDate!,
+                      );
+                      return MapEntry(entry.key, activeTimes);
+                    })
+                    .where((entry) => entry.value.isNotEmpty)
+                    .toList();
+
+                if (activeScreens.isEmpty) {
+                  // All shows for this theater have started / are within 30 min.
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.schedule_outlined,
+                          size: 18,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            'No more shows available for today at this theater.',
+                            style:
+                                Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: activeScreens.map((entry) {
+                    return Padding(
+                      padding:
+                          const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: _buildScreenCard(
+                        context,
+                        screenName: entry.key,
+                        times: entry.value,
+                      ),
+                    );
+                  }).toList(),
                 );
-              }).toList(),
+              },
             ),
           ),
         ],
