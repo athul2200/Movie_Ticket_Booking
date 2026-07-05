@@ -9,6 +9,8 @@ import 'package:booking/screens/booking_detail/booking_detail_screen.dart';
 import 'package:booking/screens/payment/payment_screen.dart';
 import 'package:booking/screens/owner/main/owner_main_screen.dart';
 import 'package:booking/screens/admin/admin_dashboard.dart';
+import 'package:booking/screens/splash/splash_screen.dart';
+import 'package:booking/screens/network/no_internet_screen.dart';
 /// ============================================================
 /// App Router — Named route definitions
 /// ============================================================
@@ -22,9 +24,17 @@ class AppRouter {
   static const String bookingDetail = '/booking-detail';
   static const String owner = '/owner';
   static const String admin = '/admin';
+  static const String splash = '/splash';
+  static const String noInternet = '/no-internet';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case splash:
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
+
+      case noInternet:
+        return MaterialPageRoute(builder: (_) => const NoInternetScreen());
+
       case roleSelection:
         return MaterialPageRoute(builder: (_) => const RoleSelectionScreen());
 

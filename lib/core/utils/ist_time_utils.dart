@@ -34,7 +34,7 @@ class IstTimeUtils {
   static List<String> generateAvailableDates() {
     final today = nowInIst();
     return List.generate(3, (i) => _formatDateLabel(
-      DateTime(today.year, today.month, today.day + i),
+      DateTime.utc(today.year, today.month, today.day + i),
     ));
   }
 
@@ -74,8 +74,8 @@ class IstTimeUtils {
         if (hour != 12) hour += 12; // 1:xx PM → 13:xx, but 12 PM stays 12
       }
 
-      // Build the show's datetime on today's IST date.
-      return DateTime(now.year, now.month, now.day, hour, minute);
+      // Build the show's datetime on today's IST date (in UTC representation).
+      return DateTime.utc(now.year, now.month, now.day, hour, minute);
     } catch (_) {
       return null;
     }
