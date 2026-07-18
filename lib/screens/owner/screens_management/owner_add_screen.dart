@@ -6,7 +6,8 @@ import 'package:booking/screens/owner/widgets/admin_dropdown.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
 
 class OwnerAddScreen extends StatefulWidget {
-  const OwnerAddScreen({super.key});
+  final String theaterName;
+  const OwnerAddScreen({super.key, this.theaterName = 'Grand Cinema'});
 
   @override
   State<OwnerAddScreen> createState() => _OwnerAddScreenState();
@@ -44,6 +45,15 @@ class _OwnerAddScreenState extends State<OwnerAddScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        centerTitle: true,
+        title: Text(
+          widget.theaterName,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+          ),
+        ),
         leadingWidth: 200,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),

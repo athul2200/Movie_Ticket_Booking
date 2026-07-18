@@ -9,8 +9,13 @@ import 'package:booking/screens/owner/screens_management/owner_screens_status_sc
 
 class OwnerDashboardScreen extends StatefulWidget {
   final VoidCallback? onNavigateToMovies;
+  final String theaterName;
 
-  const OwnerDashboardScreen({super.key, this.onNavigateToMovies});
+  const OwnerDashboardScreen({
+    super.key,
+    this.onNavigateToMovies,
+    this.theaterName = 'Grand Cinema',
+  });
 
   @override
   State<OwnerDashboardScreen> createState() => _OwnerDashboardScreenState();
@@ -21,7 +26,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: const AdminAppBar(),
+      appBar: AdminAppBar(title: widget.theaterName),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -38,7 +43,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Welcome back,\nGrand Cinema',
+              'Welcome back,\n${widget.theaterName}',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
@@ -60,7 +65,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const OwnerMoviesScreen(),
+                            builder: (_) => OwnerMoviesScreen(theaterName: widget.theaterName),
                           ),
                         );
                       }
@@ -75,7 +80,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const OwnerScheduleScreen(),
+                          builder: (_) => OwnerScheduleScreen(theaterName: widget.theaterName),
                         ),
                       );
                     },
@@ -116,7 +121,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const OwnerScreensStatusScreen(),
+                    builder: (_) => OwnerScreensStatusScreen(theaterName: widget.theaterName),
                   ),
                 );
               },

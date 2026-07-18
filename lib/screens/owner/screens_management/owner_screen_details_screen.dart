@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
+import 'package:booking/screens/seat_selection/seat_selection_screen.dart';
 
 class OwnerScreenDetailsScreen extends StatefulWidget {
-  const OwnerScreenDetailsScreen({super.key});
+  final String theaterName;
+  const OwnerScreenDetailsScreen({super.key, this.theaterName = 'Grand Cinema'});
 
   @override
   State<OwnerScreenDetailsScreen> createState() =>
@@ -16,7 +18,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: const AdminAppBar(showBackButton: true),
+      appBar: AdminAppBar(title: widget.theaterName, showBackButton: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -45,7 +47,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                 _buildBadge('LIVE NOW', AppColors.primary, AppColors.textWhite),
                 const SizedBox(width: AppSpacing.sm),
                 _buildBadge(
-                  '4K LASER',
+                  '2D',
                   AppColors.divider,
                   AppColors.textSecondary,
                 ),
@@ -89,7 +91,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Dune: Part Two',
+                              'Drishyam 3',
                               style: Theme.of(context).textTheme.headlineMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -331,7 +333,22 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                   Divider(color: AppColors.divider.withValues(alpha: 0.5)),
                   const SizedBox(height: AppSpacing.sm),
                   TextButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SeatSelectionScreen(
+                            movieTitle: 'Drishyam 3',
+                            showtime: '10:00 AM',
+                            cinema: widget.theaterName,
+                            screen: 'Screen 01',
+                            format: '2D',
+                            date: '24 Apr',
+                            isReadOnly: true,
+                          ),
+                        ),
+                      );
+                    },
                     icon: const Icon(
                       Icons.open_in_new,
                       size: 16,

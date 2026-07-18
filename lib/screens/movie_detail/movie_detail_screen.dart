@@ -400,7 +400,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     });
                   },
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: const Duration(milliseconds: 100),
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.primary : AppColors.surface,
@@ -433,7 +433,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           _buildSectionHeader(context, 'Select Theater'),
           const SizedBox(height: AppSpacing.sm),
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 100),
             child: Column(
               key: ValueKey(_selectedDate),
               children: _theaterData.keys.map((cinema) {
@@ -453,7 +453,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           _buildSectionHeader(context, 'Select Screen & Time'),
           const SizedBox(height: AppSpacing.sm),
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 100),
             child: Builder(
               key: ValueKey(_selectedCinema),
               builder: (context) {
@@ -543,7 +543,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         });
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 100),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface,
@@ -659,7 +659,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   });
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
+                  duration: const Duration(milliseconds: 50),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: isTimeSelected ? AppColors.primary : AppColors.background,

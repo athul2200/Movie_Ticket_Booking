@@ -7,7 +7,8 @@ import 'package:booking/screens/owner/widgets/admin_text_field.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
 
 class OwnerScheduleScreen extends StatefulWidget {
-  const OwnerScheduleScreen({super.key});
+  final String theaterName;
+  const OwnerScheduleScreen({super.key, this.theaterName = 'Grand Cinema'});
 
   @override
   State<OwnerScheduleScreen> createState() => _OwnerScheduleScreenState();
@@ -99,7 +100,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AdminAppBar(showBackButton: true),
+      appBar: AdminAppBar(title: widget.theaterName, showBackButton: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -295,7 +296,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                 });
                               },
                         child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
+                          duration: const Duration(milliseconds: 50),
                           width:
                               (MediaQuery.of(context).size.width -
                                   (AppSpacing.lg * 4) -

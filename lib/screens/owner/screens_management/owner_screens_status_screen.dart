@@ -5,7 +5,8 @@ import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/screens_management/owner_screen_details_screen.dart';
 
 class OwnerScreensStatusScreen extends StatefulWidget {
-  const OwnerScreensStatusScreen({super.key});
+  final String theaterName;
+  const OwnerScreensStatusScreen({super.key, this.theaterName = 'Grand Cinema'});
 
   @override
   State<OwnerScreensStatusScreen> createState() =>
@@ -19,7 +20,7 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AdminAppBar(showBackButton: Navigator.canPop(context)),
+      appBar: AdminAppBar(title: widget.theaterName, showBackButton: Navigator.canPop(context)),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -83,27 +84,16 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
               itemCount: _activeScreens.length,
               itemBuilder: (context, index) {
                 final screenNum = _activeScreens[index];
-                // Mock data variations
                 String screenName =
-                    'SCREEN ${screenNum < 10 ? '0$screenNum' : screenNum}';
-                String movieTitle = 'Dune: Part Two';
-                String imageUrl = 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop';
-                double occupancy = 0.3 + (((screenNum - 1) * 0.17) % 0.6);
-                String timeLabel = (screenNum - 1) % 2 == 0 ? 'Ends at' : 'Next Show';
-                String timeValue = (screenNum - 1) % 2 == 0 ? '02:45 PM' : '03:15 PM';
+                    'Screen ${screenNum < 10 ? '0$screenNum' : screenNum}';
 
                 return _buildScreenListItem(
                   screenName: screenName,
-                  movieTitle: movieTitle,
-                  imageUrl: imageUrl,
-                  occupancy: occupancy,
-                  timeLabel: timeLabel,
-                  timeValue: timeValue,
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const OwnerScreenDetailsScreen(),
+                        builder: (_) => OwnerScreenDetailsScreen(theaterName: widget.theaterName),
                       ),
                     );
                   },
@@ -143,11 +133,6 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
 
   Widget _buildScreenListItem({
     required String screenName,
-    required String movieTitle,
-    required String imageUrl,
-    required double occupancy,
-    required String timeLabel,
-    required String timeValue,
     required VoidCallback onTap,
     VoidCallback? onLongPress,
   }) {
@@ -158,6 +143,7 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
         decoration: BoxDecoration(
           color: AppColors.background,
           borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
           boxShadow: [
             BoxShadow(
               color: AppColors.shadowColor.withValues(alpha: 0.05),
@@ -167,90 +153,44 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              flex: 3,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppRadius.md),
-                ),
-                child: Image.network(imageUrl, fit: BoxFit.cover),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.live_tv_outlined,
+                color: AppColors.primary,
+                size: 32,
               ),
             ),
-            Expanded(
-              flex: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      screenName,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 10,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      movieTitle,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          timeLabel,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.labelSmall?.copyWith(fontSize: 10),
-                        ),
-                        Text(
-                          timeValue,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: LinearProgressIndicator(
-                            value: occupancy,
-                            backgroundColor: AppColors.divider,
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              AppColors.primaryDark,
-                            ),
-                            minHeight: 4,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          '${(occupancy * 100).toInt()}%',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 10,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ],
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              screenName,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: 3,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.full),
+              ),
+              child: Text(
+                'ACTIVE',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10,
                 ),
               ),
             ),

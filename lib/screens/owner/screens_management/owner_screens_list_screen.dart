@@ -7,7 +7,8 @@ import 'package:booking/screens/owner/widgets/admin_button.dart';
 import 'package:booking/screens/owner/screens_management/owner_add_screen.dart';
 
 class OwnerScreensListScreen extends StatefulWidget {
-  const OwnerScreensListScreen({super.key});
+  final String theaterName;
+  const OwnerScreensListScreen({super.key, this.theaterName = 'Grand Cinema'});
 
   @override
   State<OwnerScreensListScreen> createState() => _OwnerScreensListScreenState();
@@ -29,7 +30,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AdminAppBar(noLeading: true),
+      appBar: AdminAppBar(title: widget.theaterName, noLeading: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -47,10 +48,10 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const OwnerAddScreen()),
-                    );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => OwnerAddScreen(theaterName: widget.theaterName)),
+                      );
                   },
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.xs),

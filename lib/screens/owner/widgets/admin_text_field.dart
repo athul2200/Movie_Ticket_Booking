@@ -11,6 +11,8 @@ class AdminTextField extends StatelessWidget {
   final bool obscureText;
   final bool readOnly;
   final VoidCallback? onTap;
+  final String? Function(String?)? validator;
+  final int? maxLines;
 
   const AdminTextField({
     super.key,
@@ -22,16 +24,20 @@ class AdminTextField extends StatelessWidget {
     this.obscureText = false,
     this.readOnly = false,
     this.onTap,
+    this.validator,
+    this.maxLines = 1,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
       readOnly: readOnly,
       onTap: onTap,
+      validator: validator,
+      maxLines: maxLines,
       style: Theme.of(
         context,
       ).textTheme.bodyLarge?.copyWith(color: AppColors.textPrimary),

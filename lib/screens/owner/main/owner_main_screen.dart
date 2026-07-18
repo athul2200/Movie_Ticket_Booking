@@ -5,7 +5,8 @@ import 'package:booking/screens/owner/screens_management/owner_screens_list_scre
 import 'package:booking/screens/owner/movies_management/owner_movies_screen.dart';
 
 class OwnerMainScreen extends StatefulWidget {
-  const OwnerMainScreen({super.key});
+  final String theaterName;
+  const OwnerMainScreen({super.key, this.theaterName = 'Grand Cinema'});
 
   @override
   State<OwnerMainScreen> createState() => _OwnerMainScreenState();
@@ -19,9 +20,12 @@ class _OwnerMainScreenState extends State<OwnerMainScreen> {
   void initState() {
     super.initState();
     _screens = [
-      OwnerDashboardScreen(onNavigateToMovies: () => setIndex(1)),
-      const OwnerMoviesScreen(),
-      const OwnerScreensListScreen(),
+      OwnerDashboardScreen(
+        theaterName: widget.theaterName,
+        onNavigateToMovies: () => setIndex(1),
+      ),
+      OwnerMoviesScreen(theaterName: widget.theaterName),
+      OwnerScreensListScreen(theaterName: widget.theaterName),
     ];
   }
 

@@ -41,6 +41,78 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     super.dispose();
   }
 
+  void _showTheaterSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select Theater',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Choose which theater you want to manage.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: const Icon(Icons.location_city, color: AppColors.primary),
+                ),
+                title: Text('Nila Theater', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  Navigator.pushReplacementNamed(context, '/owner', arguments: 'Nila Theater');
+                },
+              ),
+              const Divider(color: AppColors.divider),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: const Icon(Icons.location_city, color: AppColors.primary),
+                ),
+                title: Text('Kairali Theater', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  Navigator.pushReplacementNamed(context, '/owner', arguments: 'Kairali Theater');
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,7 +184,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                       const Color(0xFF6C63FF),
                       const Color(0xFF6C63FF).withValues(alpha: 0.7),
                     ],
-                    onTap: () => Navigator.pushReplacementNamed(context, '/owner'),
+                    onTap: () => _showTheaterSelection(context),
                   ),
                   const SizedBox(height: AppSpacing.lg),
 

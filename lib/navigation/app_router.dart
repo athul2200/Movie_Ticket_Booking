@@ -73,7 +73,8 @@ class AppRouter {
         );
 
       case owner:
-        return MaterialPageRoute(builder: (_) => const OwnerMainScreen());
+        final theaterName = settings.arguments as String? ?? 'Grand Cinema';
+        return MaterialPageRoute(builder: (_) => OwnerMainScreen(theaterName: theaterName));
 
       case admin:
         return MaterialPageRoute(builder: (_) => const AdminDashboard());

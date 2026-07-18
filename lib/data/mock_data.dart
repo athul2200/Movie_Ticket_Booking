@@ -63,7 +63,7 @@ class MockData {
   ];
 
   // ── All movies for the grid ──
-  static const List<MovieModel> allMovies = [
+  static List<MovieModel> allMovies = [
     MovieModel(
       id: '1',
       title: 'Drishyam 3',

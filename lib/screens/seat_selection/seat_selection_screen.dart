@@ -24,6 +24,7 @@ class SeatSelectionScreen extends StatefulWidget {
   final String screen;
   final String format;
   final String date;
+  final bool isReadOnly;
 
   const SeatSelectionScreen({
     super.key,
@@ -33,6 +34,7 @@ class SeatSelectionScreen extends StatefulWidget {
     required this.screen,
     required this.format,
     required this.date,
+    this.isReadOnly = false,
   });
 
   @override
@@ -174,8 +176,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     _buildMovieInfo(context),
                     const SizedBox(height: AppSpacing.xl),
                     // Countdown banner
-                    if (_selectedSeats.isNotEmpty) _buildCountdownBanner(context),
-                    if (_selectedSeats.isNotEmpty) const SizedBox(height: AppSpacing.md),
+                    if (!widget.isReadOnly && _selectedSeats.isNotEmpty) _buildCountdownBanner(context),
+                    if (!widget.isReadOnly && _selectedSeats.isNotEmpty) const SizedBox(height: AppSpacing.md),
                     _buildSeatLegend(context),
                     const SizedBox(height: AppSpacing.xl),
                     _buildSeatGrid(context),
@@ -186,7 +188,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 ),
               ),
             ),
-            _buildBottomCTA(context),
+            if (!widget.isReadOnly) _buildBottomCTA(context),
           ],
         ),
       ),
@@ -434,7 +436,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
           return Expanded(
             child: GestureDetector(
-              onTap: isBookedByOther
+              onTap: (widget.isReadOnly || isBookedByOther)
                   ? null
                   : () => _onSeatTap(seatId),
               child: Container(
