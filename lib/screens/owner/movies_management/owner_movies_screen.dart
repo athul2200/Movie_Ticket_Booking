@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:booking/models/movie_model.dart';
 import 'package:booking/data/mock_data.dart';
@@ -11,7 +12,7 @@ import 'package:booking/screens/owner/widgets/admin_button.dart';
 
 class OwnerMoviesScreen extends StatefulWidget {
   final String theaterName;
-  const OwnerMoviesScreen({super.key, this.theaterName = 'Grand Cinema'});
+  const OwnerMoviesScreen({super.key, this.theaterName = 'Kairali'});
 
   @override
   State<OwnerMoviesScreen> createState() => _OwnerMoviesScreenState();
@@ -337,7 +338,11 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                               const SizedBox(height: AppSpacing.xs),
                               AdminTextField(
                                 controller: _durationCtrl,
-                                hintText: 'HH:MM',
+                                keyboardType: TextInputType.datetime,
+                                inputFormatters: [
+                                  TimeDurationFormatter(),
+                                ],
+                                hintText: 'HH:MM (e.g. 02:30)',
                                 validator: (val) =>
                                     val == null || val.isEmpty ? 'Required' : null,
                                 suffixIcon: const Icon(
@@ -738,6 +743,48 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class TimeDurationFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String newText = newValue.text;
+    
+    // Allow deleting the colon smoothly
+    if (oldValue.text.length == 3 && oldValue.text.endsWith(':') && newValue.text.length == 2) {
+      return newValue;
+    }
+
+    // Clean up input to only numbers
+    String cleanText = newText.replaceAll(RegExp(r'[^0-9]'), '');
+    
+    // Max 4 digits (HHMM)
+    if (cleanText.length > 4) {
+      cleanText = cleanText.substring(0, 4);
+    }
+
+    String formattedText = '';
+    
+    for (int i = 0; i < cleanText.length; i++) {
+      if (i == 2) {
+        formattedText += ':';
+      }
+      formattedText += cleanText[i];
+    }
+    
+    // If they typed 2 digits, automatically append the colon for them to start typing minutes
+    if (cleanText.length == 2 && oldValue.text.length < 3) {
+      formattedText += ':';
+    }
+
+    return TextEditingValue(
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: formattedText.length),
     );
   }
 }

@@ -43,17 +43,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   /// disappear automatically while the screen is open.
   Timer? _refreshTimer;
 
-  // Mock theater → screens → times data
-  static const Map<String, Map<String, List<String>>> _theaterData = {
-    'Kairali': {
-      'Screen 1': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
-      'Screen 2': ['11:00 AM', '02:30 PM','05:30 PM', '08:30 PM','11:20 PM'],
-    },
-    'Nila': {
-      'Screen 1': ['11:00 AM', '02:30 PM','05:30 PM', '08:30 PM','11:20 PM'],
-      'Screen 2': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
-    },
-  };
+  // We will dynamically fetch this from MockData.movieSchedules in build.
 
   @override
   void initState() {
@@ -371,6 +361,15 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
   /// Available Showtimes section — 3-step progressive disclosure
   Widget _buildShowtimes(BuildContext context) {
+    // Fetch dynamic theater data for this specific movie and selected date
+    // We only try to read schedules if a date is selected, otherwise we can default to empty.
+    final Map<String, Map<String, List<String>>> theaterData;
+    if (_selectedDate != null) {
+      theaterData = MockData.movieSchedules[widget.movie.title]?[_selectedDate] ?? {};
+    } else {
+      theaterData = {};
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -434,16 +433,45 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           const SizedBox(height: AppSpacing.sm),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 100),
-            child: Column(
-              key: ValueKey(_selectedDate),
-              children: _theaterData.keys.map((cinema) {
-                final isSelected = _selectedCinema == cinema;
+            child: () {
+              final validCinemas = theaterData.keys
+                  .where((cinema) => MockData.theaters.any((t) => t.name == cinema))
+                  .toList();
+
+              if (validCinemas.isEmpty) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: _buildTheaterCard(context, cinema: cinema, isSelected: isSelected),
+                  key: ValueKey('no-shows-$_selectedDate'),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  child: Row(
+                    children: [
+                      Icon(Icons.event_busy_outlined,
+                          size: 18, color: AppColors.textSecondary),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          'No shows scheduled for this date yet.',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
-              }).toList(),
-            ),
+              }
+
+              return Column(
+                key: ValueKey(_selectedDate),
+                children: validCinemas.map((cinema) {
+                  final isSelected = _selectedCinema == cinema;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: _buildTheaterCard(context, cinema: cinema, isSelected: isSelected),
+                  );
+                }).toList(),
+              );
+            }(),
           ),
         ],
 
@@ -458,7 +486,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               key: ValueKey(_selectedCinema),
               builder: (context) {
                 // Filter each screen's showtimes to only active (IST) ones.
-                final activeScreens = _theaterData[_selectedCinema]!.entries
+                final activeScreens = (theaterData[_selectedCinema] ?? {}).entries
                     .map((entry) {
                       final activeTimes =
                           IstTimeUtils.filterActiveShowtimesForDate(

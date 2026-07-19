@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 
@@ -6,6 +7,7 @@ class AdminTextField extends StatelessWidget {
   final String? hintText;
   final TextEditingController? controller;
   final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final bool obscureText;
@@ -19,6 +21,7 @@ class AdminTextField extends StatelessWidget {
     this.hintText,
     this.controller,
     this.keyboardType = TextInputType.text,
+    this.inputFormatters,
     this.prefixIcon,
     this.suffixIcon,
     this.obscureText = false,
@@ -33,6 +36,7 @@ class AdminTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       obscureText: obscureText,
       readOnly: readOnly,
       onTap: onTap,

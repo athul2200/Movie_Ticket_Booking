@@ -167,4 +167,7 @@ class MockData {
   static final List<BookingModel> bookings = [
 
   ];
+
+  // ── Global Movie Schedules (Movie -> DateLabel -> Theater -> Screen -> Times) ──
+  static Map<String, Map<String, Map<String, Map<String, List<String>>>>> movieSchedules = {};
 }

@@ -84,7 +84,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  Navigator.pushReplacementNamed(context, '/owner', arguments: 'Nila Theater');
+                  Navigator.pushReplacementNamed(context, '/owner', arguments: 'Nila');
                 },
               ),
               const Divider(color: AppColors.divider),
@@ -102,7 +102,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  Navigator.pushReplacementNamed(context, '/owner', arguments: 'Kairali Theater');
+                  Navigator.pushReplacementNamed(context, '/owner', arguments: 'Kairali');
                 },
               ),
               const SizedBox(height: AppSpacing.lg),

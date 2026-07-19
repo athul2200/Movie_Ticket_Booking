@@ -5,47 +5,54 @@ import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/widgets/admin_dropdown.dart';
 import 'package:booking/screens/owner/widgets/admin_text_field.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
+import 'package:booking/core/utils/ist_time_utils.dart';
+import 'package:booking/data/mock_data.dart';
 
 class OwnerScheduleScreen extends StatefulWidget {
   final String theaterName;
-  const OwnerScheduleScreen({super.key, this.theaterName = 'Grand Cinema'});
+  const OwnerScheduleScreen({super.key, this.theaterName = 'Kairali'});
 
   @override
   State<OwnerScheduleScreen> createState() => _OwnerScheduleScreenState();
 }
 
 class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
-  String _selectedMovie = 'Drishyam 3';
-  String _selectedTheater = 'Kairali';
+  late String _selectedMovie;
+  late String _selectedTheater;
   String _selectedScreen = 'Screen 01';
 
   late final TextEditingController _dateCtrl;
+  late DateTime _selectedDateObj;
 
-  // Occupied slots per screen (mock data — per-screen)
-  final Map<String, Set<String>> _occupiedSlots = {
-    'Screen 01': {'10:15 PM'},
-    'Screen 02': {'10:40 AM'},
-  };
+  // Occupied slots per date and screen: DateLabel -> Screen -> Set of times
+  final Map<String, Map<String, Set<String>>> _occupiedSlots = {};
 
-  // Schedule preview state — updates when user confirms
-  final Map<String, Map<String, String>> _schedulePreview = {
-    'Screen 01': {'movie': 'Drishyam 3', 'time': '10:00 AM - 01:00 PM'},
-    'Screen 02': {'movie': 'Michael', 'time': '11:00 AM - 02:00 PM'},
+  // Schedule preview state per date and screen: DateLabel -> Screen -> {movie, time}
+  final Map<String, Map<String, Map<String, String>>> _schedulePreview = {};
+
+  // Default time slots used for any theater not explicitly listed
+  static const Map<String, List<String>> _defaultScreenSlots = {
+    'Screen 01': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
+    'Screen 02': ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
   };
 
   static const Map<String, Map<String, List<String>>> _theaterData = {
     'Kairali': {
-      'Screen 01': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
+      'Screen 01': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
       'Screen 02': ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
     },
     'Nila': {
       'Screen 01': ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
-      'Screen 02': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM','09:30 PM'],
+      'Screen 02': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
     },
   };
 
   List<String> get _timeSlots {
-    return _theaterData[_selectedTheater]?[_selectedScreen] ?? [];
+    // Look up by theater name first; fall back to the default slots so any
+    // theater always has times to display.
+    return _theaterData[_selectedTheater]?[_selectedScreen]
+        ?? _defaultScreenSlots[_selectedScreen]
+        ?? ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'];
   }
 
   final Set<String> _selectedTimes = {};
@@ -53,10 +60,15 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    _selectedMovie = MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : 'Drishyam 3';
+    // Lock the theater to the owner's own theater
+    _selectedTheater = widget.theaterName;
+    // Use IST-aligned date so the saved label matches the user module's date chips
+    final now = IstTimeUtils.nowInIst();
+    _selectedDateObj = DateTime.utc(now.year, now.month, now.day);
     _dateCtrl = TextEditingController(
       text:
-          '${now.month.toString().padLeft(2, '0')}/${now.day.toString().padLeft(2, '0')}/${now.year}',
+          '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}',
     );
   }
 
@@ -67,12 +79,14 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
   }
 
   bool _isOccupied(String time) {
-    return (_occupiedSlots[_selectedScreen] ?? {}).contains(time);
+    final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
+    return (_occupiedSlots[dateLabel]?[_selectedScreen] ?? {}).contains(time);
   }
 
   /// Returns true if any selected slot is adjacent to an occupied slot on the same screen
   bool get _hasOverlapRisk {
-    final occupiedTimes = _occupiedSlots[_selectedScreen] ?? {};
+    final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
+    final occupiedTimes = _occupiedSlots[dateLabel]?[_selectedScreen] ?? <String>{};
     for (final selectedTime in _selectedTimes) {
       final selectedIdx = _timeSlots.indexOf(selectedTime);
       for (final occ in occupiedTimes) {
@@ -85,7 +99,8 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
 
   /// First selected time that has an overlap risk (for display in warning)
   String get _overlapRiskTime {
-    final occupiedTimes = _occupiedSlots[_selectedScreen] ?? {};
+    final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
+    final occupiedTimes = _occupiedSlots[dateLabel]?[_selectedScreen] ?? <String>{};
     for (final selectedTime in _selectedTimes) {
       final selectedIdx = _timeSlots.indexOf(selectedTime);
       for (final occ in occupiedTimes) {
@@ -152,24 +167,12 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                       Icons.movie_creation_outlined,
                       color: AppColors.textSecondary,
                     ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Drishyam 3',
-                        child: Text('Drishyam 3'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Michael',
-                        child: Text('Michael'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Kattalan',
-                        child: Text('Kattalan'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Karuppu',
-                        child: Text('Karuppu'),
-                      ),
-                    ],
+                    items: MockData.allMovies.map((movie) {
+                      return DropdownMenuItem(
+                        value: movie.title,
+                        child: Text(movie.title),
+                      );
+                    }).toList(),
                     onChanged: (val) {
                       if (val != null) setState(() => _selectedMovie = val);
                     },
@@ -177,34 +180,63 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                   const SizedBox(height: AppSpacing.md),
 
                   Text(
-                    'Select Theater',
+                    'Theater',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  AdminDropdown<String>(
-                    value: _selectedTheater,
-                    prefixIcon: const Icon(
-                      Icons.location_city_outlined,
-                      color: AppColors.textSecondary,
+                  // Read-only: owner can only schedule for their own theater
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.md,
                     ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Kairali',
-                        child: Text('Kairali'),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      border: Border.all(
+                        color: AppColors.divider.withValues(alpha: 0.6),
                       ),
-                      DropdownMenuItem(
-                        value: 'Nila',
-                        child: Text('Nila'),
-                      ),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedTheater = val;
-                          _selectedTimes.clear();
-                        });
-                      }
-                    },
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_city_outlined,
+                          color: AppColors.textSecondary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(
+                            _selectedTheater,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(AppRadius.full),
+                          ),
+                          child: Text(
+                            'YOUR THEATER',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 9,
+                                  letterSpacing: 0.5,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
 
@@ -247,6 +279,24 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                   const SizedBox(height: AppSpacing.xs),
                   AdminTextField(
                     controller: _dateCtrl,
+                    readOnly: true,
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          // Normalize to UTC midnight to match generateAvailableDates labels
+                          _selectedDateObj = DateTime.utc(picked.year, picked.month, picked.day);
+                          // Update the text field for visual confirmation
+                          _dateCtrl.text =
+                              '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+                        });
+                      }
+                    },
                     prefixIcon: const Icon(
                       Icons.calendar_today_outlined,
                       color: AppColors.textSecondary,
@@ -285,11 +335,9 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                             ? null
                             : () {
                                 setState(() {
+                                  // Toggle: tap to select, tap again to deselect
                                   if (isSelected) {
-                                    // Don't allow deselecting the last one
-                                    if (_selectedTimes.length > 1) {
-                                      _selectedTimes.remove(time);
-                                    }
+                                    _selectedTimes.remove(time);
                                   } else {
                                     _selectedTimes.add(time);
                                   }
@@ -371,23 +419,44 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                     .compareTo(_timeSlots.indexOf(b));
                               });
                             final timeSummary = sortedTimes.join(', ');
-                            // Update the preview and mark all slots as occupied
-                            setState(() {
-                              _schedulePreview[_selectedScreen] = {
+                            final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
+                              
+                              _schedulePreview
+                                  .putIfAbsent(dateLabel, () => {})[_selectedScreen] = {
                                 'movie': _selectedMovie,
                                 'time': sortedTimes.first,
                               };
                               _occupiedSlots
+                                  .putIfAbsent(dateLabel, () => {})
                                   .putIfAbsent(_selectedScreen, () => {})
                                   .addAll(_selectedTimes);
-                              _selectedTimes.clear();
-                              _selectedTimes.add(
-                                _timeSlots.firstWhere(
-                                  (t) => !_isOccupied(t),
-                                  orElse: () => _timeSlots.first,
-                                ),
-                              );
-                            });
+
+                              // Save to global schedules so the user app sees it
+                              MockData.movieSchedules.putIfAbsent(_selectedMovie, () => {});
+                              MockData.movieSchedules[_selectedMovie]!.putIfAbsent(dateLabel, () => {});
+                              MockData.movieSchedules[_selectedMovie]![dateLabel]!.putIfAbsent(_selectedTheater, () => {});
+                              
+                              // Keep any existing times and add the newly selected ones
+                              final existingTimes = MockData.movieSchedules[_selectedMovie]![dateLabel]![_selectedTheater]![_selectedScreen] ?? [];
+                              final newTimesSet = Set<String>.from(existingTimes)..addAll(_selectedTimes);
+                              
+                              // Sort times chronologically
+                              final sortedGlobalTimes = newTimesSet.toList()
+                                ..sort((a, b) {
+                                  return _timeSlots.indexOf(a)
+                                      .compareTo(_timeSlots.indexOf(b));
+                                });
+                              MockData.movieSchedules[_selectedMovie]![dateLabel]![_selectedTheater]![_selectedScreen] = sortedGlobalTimes;
+
+                              setState(() {
+                                _selectedTimes.clear();
+                                _selectedTimes.add(
+                                  _timeSlots.firstWhere(
+                                    (t) => !_isOccupied(t),
+                                    orElse: () => _timeSlots.first,
+                                  ),
+                                );
+                              });
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 backgroundColor: AppColors.primary,
@@ -479,8 +548,8 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             // Timelines — driven by _schedulePreview and _selectedScreen
             _buildTimelineRow(
               'SCR 01',
-              _schedulePreview['Screen 01']?['movie'] ?? 'Drishyam 3',
-              _schedulePreview['Screen 01']?['time'] ?? '10:00 AM - 01:00 PM',
+              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 01']?['movie'] ?? 'Drishyam 3',
+              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 01']?['time'] ?? '10:00 AM - 01:00 PM',
               0.3,
               0.4,
               _selectedScreen == 'Screen 01',
@@ -488,8 +557,8 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             const SizedBox(height: AppSpacing.md),
             _buildTimelineRow(
               'SCR 02',
-              _schedulePreview['Screen 02']?['movie'] ?? 'Michael',
-              _schedulePreview['Screen 02']?['time'] ?? '11:15 AM - 01:15 PM',
+              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 02']?['movie'] ?? 'Michael',
+              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 02']?['time'] ?? '11:15 AM - 01:15 PM',
               0.5,
               0.3,
               _selectedScreen == 'Screen 02',

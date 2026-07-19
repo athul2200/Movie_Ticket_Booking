@@ -25,7 +25,7 @@ class IstTimeUtils {
   // ── Date helpers ─────────────────────────────────────────────
 
   /// Formats a [DateTime] as a short date label, e.g. "Jun 30" or "Jul 1".
-  static String _formatDateLabel(DateTime date) {
+  static String formatDateLabel(DateTime date) {
     return '${_monthAbbr[date.month - 1]} ${date.day}';
   }
 
@@ -33,7 +33,7 @@ class IstTimeUtils {
   ///   [0] = Today, [1] = Tomorrow, [2] = Day after tomorrow.
   static List<String> generateAvailableDates() {
     final today = nowInIst();
-    return List.generate(3, (i) => _formatDateLabel(
+    return List.generate(3, (i) => formatDateLabel(
       DateTime.utc(today.year, today.month, today.day + i),
     ));
   }
@@ -41,7 +41,7 @@ class IstTimeUtils {
   /// Returns `true` if [dateLabel] (e.g. "Jun 30") matches today's IST date.
   static bool isDateToday(String dateLabel) {
     final today = nowInIst();
-    return dateLabel.trim() == _formatDateLabel(today);
+    return dateLabel.trim() == formatDateLabel(today);
   }
 
   // ── Showtime helpers ──────────────────────────────────────────

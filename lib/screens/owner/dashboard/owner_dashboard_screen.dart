@@ -14,7 +14,7 @@ class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({
     super.key,
     this.onNavigateToMovies,
-    this.theaterName = 'Grand Cinema',
+    this.theaterName = 'Kairali',
   });
 
   @override

@@ -6,7 +6,7 @@ import 'package:booking/screens/seat_selection/seat_selection_screen.dart';
 
 class OwnerScreenDetailsScreen extends StatefulWidget {
   final String theaterName;
-  const OwnerScreenDetailsScreen({super.key, this.theaterName = 'Grand Cinema'});
+  const OwnerScreenDetailsScreen({super.key, this.theaterName = 'Kairali'});
 
   @override
   State<OwnerScreenDetailsScreen> createState() =>

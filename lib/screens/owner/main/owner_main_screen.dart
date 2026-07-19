@@ -6,7 +6,7 @@ import 'package:booking/screens/owner/movies_management/owner_movies_screen.dart
 
 class OwnerMainScreen extends StatefulWidget {
   final String theaterName;
-  const OwnerMainScreen({super.key, this.theaterName = 'Grand Cinema'});
+  const OwnerMainScreen({super.key, this.theaterName = 'Kairali'});
 
   @override
   State<OwnerMainScreen> createState() => _OwnerMainScreenState();
