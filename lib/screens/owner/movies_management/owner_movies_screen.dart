@@ -33,9 +33,8 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
   
   String? _selectedScreen;
   final Map<String, List<String>> _screenShowtimes = {
-    'Screen 1': ['09:00 AM', '12:30 PM', '03:45 PM', '07:00 PM', '10:15 PM'],
-    'Screen 2': ['10:00 AM', '01:15 PM', '04:30 PM', '08:00 PM', '11:00 PM'],
-    'Screen 3': ['11:00 AM', '02:30 PM', '06:00 PM', '09:15 PM'],
+    'Screen 01': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
+    'Screen 02': ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
   };
   final Set<String> _selectedTimes = {};
 

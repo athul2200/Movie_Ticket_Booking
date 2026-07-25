@@ -5,6 +5,7 @@ import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/widgets/admin_text_field.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
 import 'package:booking/screens/owner/screens_management/owner_add_screen.dart';
+import 'package:booking/data/mock_data.dart';
 
 class OwnerScreensListScreen extends StatefulWidget {
   final String theaterName;
@@ -15,10 +16,49 @@ class OwnerScreensListScreen extends StatefulWidget {
 }
 
 class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
+  String _activeScreen = 'Screen 01';
+  late final TextEditingController _standardRateCtrl;
 
-  final TextEditingController _standardRateCtrl = TextEditingController(
-    text: '14.00',
-  );
+  @override
+  void initState() {
+    super.initState();
+    _standardRateCtrl = TextEditingController(text: _getPrice(_activeScreen));
+  }
+
+  String _getPrice(String screen) {
+    final price = MockData.screenPrices[widget.theaterName]?[screen] ?? 140.0;
+    return price.toStringAsFixed(2);
+  }
+
+  void _setActiveScreen(String screen) {
+    setState(() {
+      _activeScreen = screen;
+      _standardRateCtrl.text = _getPrice(screen);
+    });
+  }
+
+  void _updateRate() {
+    final newPrice = double.tryParse(_standardRateCtrl.text);
+    if (newPrice != null) {
+      if (MockData.screenPrices[widget.theaterName] == null) {
+        MockData.screenPrices[widget.theaterName] = <String, double>{};
+      }
+      MockData.screenPrices[widget.theaterName]![_activeScreen] = newPrice;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$_activeScreen rate updated to ₹${newPrice.toStringAsFixed(2)}!'),
+          backgroundColor: AppColors.primaryDark,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid price format'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -71,9 +111,23 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // ── Screens List ──
-            _buildScreenCard(title: 'Screen 01', seats: 124, isActive: true),
+            GestureDetector(
+              onTap: () => _setActiveScreen('Screen 01'),
+              child: _buildScreenCard(
+                title: 'Screen 01',
+                seats: 124,
+                isActive: _activeScreen == 'Screen 01',
+              ),
+            ),
             const SizedBox(height: AppSpacing.md),
-            _buildScreenCard(title: 'Screen 02', seats: 88, isActive: false),
+            GestureDetector(
+              onTap: () => _setActiveScreen('Screen 02'),
+              child: _buildScreenCard(
+                title: 'Screen 02',
+                seats: 88,
+                isActive: _activeScreen == 'Screen 02',
+              ),
+            ),
             const SizedBox(height: AppSpacing.xl),
 
             // ── Set Pricing Section ──
@@ -98,7 +152,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            AdminButton(text: 'Update Rates', onPressed: () {}),
+            AdminButton(text: 'Update Rates', onPressed: _updateRate),
             const SizedBox(height: AppSpacing.xxl),
 
             // ── Layout Editor Section ──
@@ -324,9 +378,22 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
               ],
             ),
           ),
-          Icon(
-            isActive ? Icons.grid_view_rounded : Icons.grid_view_outlined,
-            color: isActive ? AppColors.textWhite : AppColors.textSecondary,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Icon(
+                isActive ? Icons.grid_view_rounded : Icons.grid_view_outlined,
+                color: isActive ? AppColors.textWhite : AppColors.textSecondary,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                '₹${_getPrice(title)}',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: isActive ? AppColors.textWhite : AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
         ],
       ),

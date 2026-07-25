@@ -78,15 +78,34 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
     super.dispose();
   }
 
-  bool _isOccupied(String time) {
+  Set<String> get _allOccupiedTimes {
     final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
-    return (_occupiedSlots[dateLabel]?[_selectedScreen] ?? {}).contains(time);
+    final Set<String> times = {};
+    
+    for (final movieEntry in MockData.movieSchedules.entries) {
+      final theaterMap = movieEntry.value[dateLabel];
+      if (theaterMap != null) {
+        final screenMap = theaterMap[_selectedTheater];
+        if (screenMap != null) {
+          final scheduledTimes = screenMap[_selectedScreen];
+          if (scheduledTimes != null) {
+            times.addAll(scheduledTimes);
+          }
+        }
+      }
+    }
+    
+    times.addAll(_occupiedSlots[dateLabel]?[_selectedScreen] ?? {});
+    return times;
+  }
+
+  bool _isOccupied(String time) {
+    return _allOccupiedTimes.contains(time);
   }
 
   /// Returns true if any selected slot is adjacent to an occupied slot on the same screen
   bool get _hasOverlapRisk {
-    final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
-    final occupiedTimes = _occupiedSlots[dateLabel]?[_selectedScreen] ?? <String>{};
+    final occupiedTimes = _allOccupiedTimes;
     for (final selectedTime in _selectedTimes) {
       final selectedIdx = _timeSlots.indexOf(selectedTime);
       for (final occ in occupiedTimes) {
@@ -99,8 +118,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
 
   /// First selected time that has an overlap risk (for display in warning)
   String get _overlapRiskTime {
-    final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
-    final occupiedTimes = _occupiedSlots[dateLabel]?[_selectedScreen] ?? <String>{};
+    final occupiedTimes = _allOccupiedTimes;
     for (final selectedTime in _selectedTimes) {
       final selectedIdx = _timeSlots.indexOf(selectedTime);
       for (final occ in occupiedTimes) {
@@ -366,18 +384,27 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                               color: isSelected
                                   ? AppColors.primary
                                   : isOccupied
-                                  ? AppColors.surface
+                                  ? AppColors.divider
                                   : AppColors.divider,
                               width: isSelected ? 1.5 : 1,
                             ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(alpha: 0.35),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    )
+                                  ]
+                                : [],
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              if (isSelected) ...[
-                                const Icon(
+                              if (isSelected || isOccupied) ...[
+                                Icon(
                                   Icons.check_circle_rounded,
-                                  color: Colors.white,
+                                  color: isSelected ? Colors.white : AppColors.textHint,
                                   size: 12,
                                 ),
                                 const SizedBox(width: 3),
@@ -393,7 +420,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                           : isOccupied
                                           ? AppColors.textHint
                                           : AppColors.textPrimary,
-                                      fontWeight: isSelected
+                                      fontWeight: (isSelected || isOccupied)
                                           ? FontWeight.w600
                                           : FontWeight.w400,
                                       fontSize: 12,

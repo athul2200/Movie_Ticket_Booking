@@ -154,12 +154,12 @@ class MockData {
     TheaterModel(
       name: 'Kairali',
       type: '',
-      showtimes: ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM'],
+      showtimes: ['10:00 AM', '11:00 AM', '01:30 PM', '02:30 PM', '04:30 PM', '05:30 PM', '07:30 PM', '08:30 PM', '09:30 PM', '11:20 PM'],
     ),
     TheaterModel(
       name: 'Nila',
       type: '',
-      showtimes: ['09:30 AM', '12:45 PM', '05:00 PM', '09:15 PM'],
+      showtimes: ['10:00 AM', '11:00 AM', '01:30 PM', '02:30 PM', '04:30 PM', '05:30 PM', '07:30 PM', '08:30 PM', '09:30 PM', '11:20 PM'],
     ),
   ];
 
@@ -170,4 +170,16 @@ class MockData {
 
   // ── Global Movie Schedules (Movie -> DateLabel -> Theater -> Screen -> Times) ──
   static Map<String, Map<String, Map<String, Map<String, List<String>>>>> movieSchedules = {};
+
+  // ── Global Screen Prices (Theater -> Screen -> Price) ──
+  static Map<String, Map<String, double>> screenPrices = {
+    'Kairali': {
+      'Screen 01': 130.00,
+      'Screen 02': 105.00,
+    },
+    'Nila': {
+      'Screen 01': 105.00,
+      'Screen 02': 130.00,
+    },
+  };
 }

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
@@ -48,21 +47,18 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   // Key used for this specific show in the reservation service
   late final String _screenKey;
 
-  // Countdown timer state
-  Timer? _countdownTimer;
-  int _secondsRemaining = SeatReservationService.reservationDuration.inSeconds;
 
   double get _seatPrice {
-    final cinema = widget.cinema.toLowerCase();
-    final screen = widget.screen.toLowerCase();
-    if (cinema.contains('kairali')) {
-      if (screen.contains('1')) return 130.00;
-      if (screen.contains('2')) return 105.00;
-    } else if (cinema.contains('nila')) {
-      if (screen.contains('1')) return 105.00;
-      if (screen.contains('2')) return 130.00;
+    final Map<String, double>? theaterPrices = MockData.screenPrices[widget.cinema];
+    if (theaterPrices != null) {
+      // Find the screen price ignoring case/exact match if possible, or exact match first.
+      for (final entry in theaterPrices.entries) {
+        if (entry.key.toLowerCase() == widget.screen.toLowerCase()) {
+          return entry.value;
+        }
+      }
     }
-    return 140.00;
+    return 140.00; // Default fallback
   }
 
   static const List<String> _rowLabels = [
@@ -85,7 +81,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   @override
   void dispose() {
     SeatReservationService.instance.removeListener(_screenKey, _onReservationChanged);
-    _countdownTimer?.cancel();
     super.dispose();
   }
 
@@ -111,50 +106,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     });
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    _updateCountdown();
-  }
-
-  // ── Countdown timer ──────────────────────────────────────────
-
-  void _updateCountdown() {
-    _countdownTimer?.cancel();
-    if (_selectedSeats.isEmpty) return;
-
-    // Find the earliest expiry among selected seats
-    _refreshCountdownValue();
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      _refreshCountdownValue();
-      if (_secondsRemaining <= 0) {
-        _countdownTimer?.cancel();
-        // Any seats that expired are already released by the service timer.
-        // Just sync selected seats with what's still reserved.
-        setState(() {
-          _selectedSeats.removeWhere((seatId) =>
-              !SeatReservationService.instance.reservedSeats(_screenKey).contains(seatId));
-        });
-      }
-    });
-  }
-
-  void _refreshCountdownValue() {
-    if (_selectedSeats.isEmpty) {
-      setState(() => _secondsRemaining = SeatReservationService.reservationDuration.inSeconds);
-      return;
-    }
-    // Show minimum remaining time across selected seats
-    int minRemaining = SeatReservationService.reservationDuration.inSeconds;
-    for (final seatId in _selectedSeats) {
-      final remaining = SeatReservationService.instance.secondsRemaining(_screenKey, seatId);
-      if (remaining < minRemaining) minRemaining = remaining;
-    }
-    setState(() => _secondsRemaining = minRemaining);
-  }
-
-  String get _countdownText {
-    final minutes = (_secondsRemaining ~/ 60).toString().padLeft(2, '0');
-    final seconds = (_secondsRemaining % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
   }
 
   // ── Build ────────────────────────────────────────────────────
@@ -175,9 +126,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     const SizedBox(height: AppSpacing.lg),
                     _buildMovieInfo(context),
                     const SizedBox(height: AppSpacing.xl),
-                    // Countdown banner
-                    if (!widget.isReadOnly && _selectedSeats.isNotEmpty) _buildCountdownBanner(context),
-                    if (!widget.isReadOnly && _selectedSeats.isNotEmpty) const SizedBox(height: AppSpacing.md),
                     _buildSeatLegend(context),
                     const SizedBox(height: AppSpacing.xl),
                     _buildSeatGrid(context),
@@ -228,45 +176,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           ),
           const Spacer(),
           const SizedBox(width: AppSizes.iconLg),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCountdownBanner(BuildContext context) {
-    final isUrgent = _secondsRemaining < 60;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
-      decoration: BoxDecoration(
-        color: isUrgent
-            ? Colors.red.withValues(alpha: 0.12)
-            : AppColors.primary.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: isUrgent ? Colors.red : AppColors.primary,
-          width: 1.2,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.timer_outlined,
-            size: 18,
-            color: isUrgent ? Colors.red : AppColors.primary,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              'Seats reserved for $_countdownText — complete your booking before time runs out!',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: isUrgent ? Colors.red : AppColors.primary,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -589,7 +498,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
                   // Release reservations once heading to payment
                   // (payment completion should finalize the booking)
-                  _countdownTimer?.cancel();
 
                   Navigator.pushNamed(context, '/payment', arguments: booking);
                 },
