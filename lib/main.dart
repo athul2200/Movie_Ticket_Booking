@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/navigation/app_router.dart';
 import 'package:booking/widgets/network_overlay.dart';
+import 'package:booking/data/mock_data.dart';
 
 /// ============================================================
 /// Main Entry Point — Movix Movie Booking App
 /// ============================================================
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MockData.loadData();
   runApp(const MyApp());
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:booking/theme/app_theme.dart';
+import 'package:booking/data/mock_data.dart';
 import 'custom_card.dart';
 
 class SeatBlockingScreen extends StatefulWidget {
@@ -11,11 +12,18 @@ class SeatBlockingScreen extends StatefulWidget {
 
 class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   Set<String> selectedSeats = {};
-  
-  // Mock data for booked and blocked seats
+
+  // Persistent key for admin blocked seats in MockData
+  static const String _blockKey = 'admin_default';
+
+  // Booked seats — fixed for the session
   final Set<String> bookedSeats = {'E7', 'E8', 'E9', 'E10', 'E11'};
-  final Set<String> blockedSeats = {'A1', 'A2'};
-  
+
+  // Blocked seats backed by MockData for persistence
+  Set<String> get blockedSeats => Set<String>.from(
+    MockData.blockedSeats[_blockKey] ?? {'A1', 'A2'},
+  );
+
   void toggleSeatSelection(String seatId) {
     if (bookedSeats.contains(seatId) || blockedSeats.contains(seatId)) {
       return; // Cannot select booked or blocked seats
@@ -35,11 +43,14 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
     });
   }
 
-  void blockSelectedSeats() {
+  Future<void> blockSelectedSeats() async {
+    final current = Set<String>.from(MockData.blockedSeats[_blockKey] ?? {'A1', 'A2'});
+    current.addAll(selectedSeats);
     setState(() {
-      blockedSeats.addAll(selectedSeats);
+      MockData.blockedSeats[_blockKey] = current.toList();
       selectedSeats.clear();
     });
+    await MockData.saveAll();
   }
 
   @override

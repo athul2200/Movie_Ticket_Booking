@@ -20,9 +20,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkInitialConnection() async {
-    // Add a tiny delay to allow the UI to render the loading state
-    await Future.delayed(const Duration(milliseconds: 500));
-    
     final hasConnection = await _networkService.checkConnection();
     
     if (!mounted) return;

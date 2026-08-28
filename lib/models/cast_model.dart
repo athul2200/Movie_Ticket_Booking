@@ -12,4 +12,20 @@ class CastModel {
     required this.role,
     required this.imageUrl,
   });
+
+  factory CastModel.fromJson(Map<String, dynamic> json) {
+    return CastModel(
+      name: json['name'] as String,
+      role: json['role'] as String,
+      imageUrl: json['imageUrl'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'role': role,
+      'imageUrl': imageUrl,
+    };
+  }
 }

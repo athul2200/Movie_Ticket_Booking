@@ -29,6 +29,38 @@ class BookingModel {
     this.isHistory = false,
   });
 
+  factory BookingModel.fromJson(Map<String, dynamic> json) {
+    return BookingModel(
+      id: json['id'] as String,
+      movieTitle: json['movieTitle'] as String,
+      moviePosterUrl: json['moviePosterUrl'] as String,
+      date: json['date'] as String,
+      time: json['time'] as String,
+      cinema: json['cinema'] as String,
+      seats: List<String>.from(json['seats'] ?? []),
+      totalAmount: (json['totalAmount'] as num).toDouble(),
+      experience: json['experience'] as String,
+      isConfirmed: json['isConfirmed'] as bool? ?? true,
+      isHistory: json['isHistory'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'movieTitle': movieTitle,
+      'moviePosterUrl': moviePosterUrl,
+      'date': date,
+      'time': time,
+      'cinema': cinema,
+      'seats': seats,
+      'totalAmount': totalAmount,
+      'experience': experience,
+      'isConfirmed': isConfirmed,
+      'isHistory': isHistory,
+    };
+  }
+
   /// Seats formatted as a comma-separated string (e.g., "H12, H13")
   String get seatsFormatted => seats.join(', ');
 

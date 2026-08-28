@@ -6,6 +6,7 @@ import 'package:booking/screens/owner/widgets/admin_button.dart';
 import 'package:booking/screens/owner/movies_management/owner_movies_screen.dart';
 import 'package:booking/screens/owner/schedule_management/owner_schedule_screen.dart';
 import 'package:booking/screens/owner/screens_management/owner_screens_status_screen.dart';
+import 'package:booking/data/mock_data.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
   final VoidCallback? onNavigateToMovies;
@@ -130,7 +131,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             _buildStatCard(
               icon: Icons.movie_creation_outlined,
               title: 'Active Movies',
-              value: '08',
+              value: MockData.allMovies.length.toString().padLeft(2, '0'),
               badgeText: 'In Rotation',
             ),
             const SizedBox(height: AppSpacing.md),

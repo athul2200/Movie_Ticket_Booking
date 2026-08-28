@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
+import 'package:booking/data/mock_data.dart';
 import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/screens_management/owner_screen_details_screen.dart';
 
@@ -35,27 +36,31 @@ class OwnerScreensStatusScreen extends StatefulWidget {
 }
 
 class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
-  // ── Mock schedule data per screen ──
-  final List<_ScreenSchedule> _schedules = const [
-    _ScreenSchedule(
-      screenName: 'Screen 01',
-      movieTitle: 'Drishyam 3',
-      genre: 'Thriller • Drama',
-      currentShowTime: '10:00 AM',
-      allShowTimes: ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
-      occupancy: 0.73,
-      isActive: true,
-    ),
-    _ScreenSchedule(
-      screenName: 'Screen 02',
-      movieTitle: 'Michael',
-      genre: 'Action • Crime',
-      currentShowTime: '11:00 AM',
-      allShowTimes: ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
-      occupancy: 0.45,
-      isActive: true,
-    ),
-  ];
+  List<_ScreenSchedule> get _schedules {
+    final movie1 = MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : 'No Movie Scheduled';
+    final movie2 = MockData.allMovies.length > 1 ? MockData.allMovies[1].title : (MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : 'No Movie Scheduled');
+
+    return [
+      _ScreenSchedule(
+        screenName: 'Screen 01',
+        movieTitle: movie1,
+        genre: 'Active Listing',
+        currentShowTime: '10:00 AM',
+        allShowTimes: const ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
+        occupancy: MockData.allMovies.isNotEmpty ? 0.73 : 0.0,
+        isActive: MockData.allMovies.isNotEmpty,
+      ),
+      _ScreenSchedule(
+        screenName: 'Screen 02',
+        movieTitle: movie2,
+        genre: 'Active Listing',
+        currentShowTime: '11:00 AM',
+        allShowTimes: const ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
+        occupancy: MockData.allMovies.length > 1 ? 0.45 : 0.0,
+        isActive: MockData.allMovies.length > 1,
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

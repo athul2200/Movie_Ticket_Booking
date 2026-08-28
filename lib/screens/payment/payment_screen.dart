@@ -394,10 +394,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
               top: Radius.circular(AppRadius.lg),
             ),
             child: Image.network(
-              'https://picsum.photos/seed/projector/600/300',
+              widget.booking.moviePosterUrl,
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
+              gaplessPlayback: true,
               errorBuilder: (context, error, stackTrace) => Container(
                 height: 120,
                 color: Colors.black26,
@@ -549,7 +550,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           // Update total amount on the booking model before saving
           final updatedBooking = widget.booking.copyWith(
             totalAmount: widget.booking.totalAmount + 20.00,
@@ -557,10 +558,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
           // Add the newly created booking record to MockData
           MockData.bookings.insert(0, updatedBooking);
+          final navigator = Navigator.of(context);
+          await MockData.saveAll();
 
           // Route to booking detail screen (representing step 3: ticket)
-          Navigator.pushNamed(
-            context,
+          navigator.pushNamed(
             '/booking-detail',
             arguments: updatedBooking,
           );

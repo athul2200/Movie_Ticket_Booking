@@ -1,127 +1,51 @@
 import 'package:booking/models/movie_model.dart';
-import 'package:booking/models/cast_model.dart';
+import 'package:booking/models/cast_model.dart' as cast_model;
+
 import 'package:booking/models/theater_model.dart';
 import 'package:booking/models/booking_model.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// ============================================================
 /// Mock Data — Static data matching the Figma design exactly
 /// ============================================================
 
 class MockData {
+  // ── Static Default Filters ──
+  static final Set<String> _staticDefaultIds = {'1', '2', '3', '4'};
+  static final Set<String> _staticDefaultTitles = {
+    'drishyam 3',
+    'michael',
+    'kattalan',
+    'karuppu',
+  };
+
+  static bool isDefaultMovie(MovieModel m) {
+    return _staticDefaultIds.contains(m.id) ||
+        _staticDefaultTitles.contains(m.title.trim().toLowerCase());
+  }
+
+  static List<MovieModel> deduplicateMovies(List<MovieModel> movies) {
+    final seen = <String>{};
+    final result = <MovieModel>[];
+    for (final movie in movies) {
+      final key = movie.title.trim().toLowerCase();
+      if (key.isNotEmpty && !seen.contains(key)) {
+        seen.add(key);
+        result.add(movie);
+      }
+    }
+    return result;
+  }
+
   // ── Featured movies for the hero carousel ──
-  static const List<MovieModel> featuredMovies = [
-    MovieModel(
-      id: '1',
-      title: 'Drishyam 3',
-      description:
-          'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      duration: '2h 36m',
-      rating: 4.9,
-      certification: 'UA',
-      posterUrl:
-          'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
-      bannerUrl:
-          'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
-    ),
-    MovieModel(
-      id: '2',
-      title: 'Michael',
-      description:
-          'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      duration: '2h 7m',
-      rating: 4.9,
-      certification: 'UA',
-      posterUrl:
-          'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
-      bannerUrl:
-          'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
-    ),
-    MovieModel(
-      id: '3',
-      title: 'Kattalan',
-      description:
-          'Experience the epic saga that redefined a generation, now in stunning 4K laser projection.',
-      duration: '1h 59m',
-      rating: 4.9,
-      certification: 'A',
-      posterUrl:
-          'https://mir-s3-cdn-cf.behance.net/project_modules/1400_webp/172db4236457869.6a1a99d1dd2ca.jpg',
-      bannerUrl:
-          'https://static.toiimg.com/thumb/resizemode-4,width-1280,height-720,msid-131402320/131402320.jpg',
-    ),
-    MovieModel(
-      id: '4',
-      title: 'Karuppu',
-      description:
-          'In a world where memories can be bought and sold, a detective uncovers a long-buried secret that could plunge what\'s left of society into chaos.',
-      duration: '2h 36m',
-      rating: 9.2,
-      certification: 'UA',
-      posterUrl: 'https://pbs.twimg.com/media/G9lBYhzaMAA9WI5.jpg',
-      bannerUrl: 'https://pbs.twimg.com/media/Gwg_4BxbEAQvlmw.jpg',
-    ),
-  ];
+  static List<MovieModel> featuredMovies = [];
 
   // ── All movies for the grid ──
-  static List<MovieModel> allMovies = [
-    MovieModel(
-      id: '1',
-      title: 'Drishyam 3',
-      description:
-          'Drishyam 3 is a 2026 Indian Malayalam-language crime drama film written and directed by Jeethu Joseph. Produced by Antony Perumbavoor for Aashirvad Cinemas, it is a sequel to Drishyam 2 (2021) and the third installment in the Drishyam film series.',
-      genres: ['Crime-Thriller'],
-      duration: '2h 36m',
-      rating: 4.9,
-      certification: 'UA',
-      posterUrl:
-          'https://cdn.district.in/movies-assets/images/cinema/Drishyam-3_Poster-0d2290e0-4469-11f1-9e72-b3859bd2479f%20(1)-6495a2d0-5360-11f1-8c65-299184906c19.jpg',
-      bannerUrl:
-          'https://preview.redd.it/drishyam-3-new-poster-v0-aml2q7qvcnjg1.jpeg?width=640&crop=smart&auto=webp&s=4187e069f30ef3f23473295952ed900831cdcd9e',
-    ),
-    MovieModel(
-      id: '2',
-      title: 'Michael',
-      description:
-          'The biographical musical drama Michael (2026) traces the life of American singer-songwriter Michael Jackson.',
-      genres: ['Drama '],
-      duration: '2h 7m',
-      rating: 4.7,
-      certification: 'UA',
-      posterUrl:
-          'https://m.media-amazon.com/images/M/MV5BNzllNmRlN2EtMDQyOC00ODJjLTg4OWQtZDNmNGU3YzlkNjc1XkEyXkFqcGc@._V1_QL75_UX190_CR0,0,190,281_.jpg',
-      bannerUrl:
-          'https://www.mjvibe.com/wp-content/uploads/2026/03/Michael-New-Poster-March-00.jpg',
-    ),
-    MovieModel(
-      id: '3',
-      title: 'Kattalan',
-      description:
-          'Kattalan is a 2026 Indian Malayalam-language action thriller film written and directed by Paul George, and produced by Shareef Muhammed under the banner of Cubes Entertainments.',
-      genres: ['Action'],
-      duration: '1h 59m',
-      rating: 4.5,
-      certification: 'A',
-      posterUrl:
-          'https://m.media-amazon.com/images/M/MV5BOWFhNWNjN2MtOThjMi00ZTFmLWE1MmMtNDI1N2FhYzk2NmQ3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
-      bannerUrl:
-          'https://static.toiimg.com/thumb/resizemode-4,width-1280,height-720,msid-131402320/131402320.jpg',
-    ),
-    MovieModel(
-      id: '4',
-      title: 'Karuppu',
-      description:
-          'Karuppu (2026) is a Tamil-language fantasy action film directed by and starring RJ Balaji alongside Suriya and Trisha Krishnan. The movie follows the guardian deity Vettai Karuppu, who descends to Earth and takes the human form of a lawyer to dismantle a deeply corrupt legal system.',
-      genres: ['Action'],
-      duration: '2h 36m',
-      rating: 4.8,
-      certification: 'UA',
-      posterUrl: 'https://pbs.twimg.com/media/G9lBYhzaMAA9WI5.jpg',
-      bannerUrl: 'https://pbs.twimg.com/media/Gwg_4BxbEAQvlmw.jpg',
-    ),
-  ];
+  static List<MovieModel> allMovies = [];
 
   // ── Category filters ──
-  static const List<String> categories = [
+  static List<String> categories = [
     'All Movies',
     'Action',
     'Drama',
@@ -131,18 +55,18 @@ class MockData {
   ];
 
   // ── Cast & Crew for detail screen ──
-  static const List<CastModel> cast = [
-    CastModel(
+  static List<cast_model.CastModel> cast = [
+    cast_model.CastModel(
       name: 'Ethan Vance',
       role: 'ACTOR',
       imageUrl: 'https://picsum.photos/seed/ethan/200/200',
     ),
-    CastModel(
+    cast_model.CastModel(
       name: 'Clara Sol',
       role: 'ACTOR',
       imageUrl: 'https://picsum.photos/seed/clara/200/200',
     ),
-    CastModel(
+    cast_model.CastModel(
       name: 'Marc Juro',
       role: 'DIRECTOR',
       imageUrl: 'https://picsum.photos/seed/marc/200/200',
@@ -150,7 +74,7 @@ class MockData {
   ];
 
   // ── Theaters & Showtimes ──
-  static const List<TheaterModel> theaters = [
+  static List<TheaterModel> theaters = [
     TheaterModel(
       name: 'Kairali',
       type: '',
@@ -171,6 +95,33 @@ class MockData {
   // ── Global Movie Schedules (Movie -> DateLabel -> Theater -> Screen -> Times) ──
   static Map<String, Map<String, Map<String, Map<String, List<String>>>>> movieSchedules = {};
 
+  // ── Per-Movie Cast (Movie title -> List<CastModel>) ──
+  static Map<String, List<cast_model.CastModel>> movieCast = {};
+
+  // ── Per-Movie User Ratings (Movie title -> List<double>) ──
+  static Map<String, List<double>> movieRatings = {};
+
+  static double getAverageRating(MovieModel movie) {
+    final ratings = movieRatings[movie.title];
+    if (ratings != null && ratings.isNotEmpty) {
+      final sum = ratings.reduce((a, b) => a + b);
+      final avg = sum / ratings.length;
+      return double.parse(avg.toStringAsFixed(1));
+    }
+    return movie.rating;
+  }
+
+  static int getReviewCount(MovieModel movie) {
+    final ratings = movieRatings[movie.title];
+    return ratings?.length ?? 0;
+  }
+
+  static Future<void> addMovieRating(String movieTitle, double rating) async {
+    movieRatings.putIfAbsent(movieTitle, () => []);
+    movieRatings[movieTitle]!.add(rating);
+    await saveAll();
+  }
+
   // ── Global Screen Prices (Theater -> Screen -> Price) ──
   static Map<String, Map<String, double>> screenPrices = {
     'Kairali': {
@@ -182,4 +133,162 @@ class MockData {
       'Screen 02': 130.00,
     },
   };
+
+  // ── Global Blocked Seats (AuditoriumKey -> List of seat IDs) ──
+  static Map<String, List<String>> blockedSeats = {};
+
+  // ── Persistence Methods ──
+
+  static Future<void> loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final allMoviesJson = prefs.getString('allMovies');
+    if (allMoviesJson != null) {
+      final List decoded = json.decode(allMoviesJson);
+      final loaded = decoded.map((e) => MovieModel.fromJson(e)).where((m) => !isDefaultMovie(m)).toList();
+      allMovies = deduplicateMovies(loaded);
+    } else {
+      allMovies = [];
+    }
+
+    final featuredMoviesJson = prefs.getString('featuredMovies');
+    if (featuredMoviesJson != null) {
+      final List decoded = json.decode(featuredMoviesJson);
+      final loaded = decoded.map((e) => MovieModel.fromJson(e)).where((m) => !isDefaultMovie(m)).toList();
+      featuredMovies = deduplicateMovies(loaded);
+    } else {
+      featuredMovies = [];
+    }
+
+    final theatersJson = prefs.getString('theaters');
+    if (theatersJson != null) {
+      final List decoded = json.decode(theatersJson);
+      theaters = decoded.map((e) => TheaterModel.fromJson(e)).toList();
+    }
+
+    final bookingsJson = prefs.getString('bookings');
+    if (bookingsJson != null) {
+      final List decoded = json.decode(bookingsJson);
+      bookings.clear();
+      bookings.addAll(decoded.map((e) => BookingModel.fromJson(e)).toList());
+    }
+
+    final movieSchedulesJson = prefs.getString('movieSchedules');
+    if (movieSchedulesJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(movieSchedulesJson);
+        final Map<String, Map<String, Map<String, Map<String, List<String>>>>> parsed = {};
+        decoded.forEach((movie, dates) {
+          if (dates is Map<String, dynamic>) {
+            parsed[movie] = {};
+            dates.forEach((date, theatersMap) {
+              if (theatersMap is Map<String, dynamic>) {
+                parsed[movie]![date] = {};
+                theatersMap.forEach((theater, screens) {
+                  if (screens is Map<String, dynamic>) {
+                    parsed[movie]![date]![theater] = {};
+                    screens.forEach((screen, times) {
+                      if (times is List) {
+                        parsed[movie]![date]![theater]![screen] =
+                            times.map((t) => t.toString()).toList();
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+        movieSchedules = parsed;
+      } catch (e) {
+        // Fallback to empty if parse fails
+      }
+    }
+
+    final movieCastJson = prefs.getString('movieCast');
+    if (movieCastJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(movieCastJson);
+        final Map<String, List<cast_model.CastModel>> parsed = {};
+        decoded.forEach((movieTitle, castList) {
+          if (castList is List) {
+            parsed[movieTitle] = castList
+                .map((e) => cast_model.CastModel.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
+        });
+        movieCast = parsed;
+      } catch (e) {
+        // Fallback to empty
+      }
+    }
+
+    final movieRatingsJson = prefs.getString('movieRatings');
+    if (movieRatingsJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(movieRatingsJson);
+        final Map<String, List<double>> parsed = {};
+        decoded.forEach((movieTitle, list) {
+          if (list is List) {
+            parsed[movieTitle] = list.map((e) => (e as num).toDouble()).toList();
+          }
+        });
+        movieRatings = parsed;
+      } catch (e) {
+        // Fallback to empty
+      }
+    }
+
+    final screenPricesJson = prefs.getString('screenPrices');
+    if (screenPricesJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(screenPricesJson);
+        final Map<String, Map<String, double>> parsed = {};
+        decoded.forEach((theater, screens) {
+          if (screens is Map<String, dynamic>) {
+            parsed[theater] = {};
+            screens.forEach((screen, price) {
+              parsed[theater]![screen] = (price as num).toDouble();
+            });
+          }
+        });
+        screenPrices = parsed;
+      } catch (e) {
+        // Fallback to defaults
+      }
+    }
+
+    final blockedSeatsJson = prefs.getString('blockedSeats');
+    if (blockedSeatsJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(blockedSeatsJson);
+        final Map<String, List<String>> parsed = {};
+        decoded.forEach((key, list) {
+          if (list is List) {
+            parsed[key] = list.map((e) => e.toString()).toList();
+          }
+        });
+        blockedSeats = parsed;
+      } catch (e) {
+        // Fallback
+      }
+    }
+  }
+
+  static Future<void> saveAll() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString('allMovies', json.encode(allMovies.map((e) => e.toJson()).toList()));
+    await prefs.setString('featuredMovies', json.encode(featuredMovies.map((e) => e.toJson()).toList()));
+    await prefs.setString('theaters', json.encode(theaters.map((e) => e.toJson()).toList()));
+    await prefs.setString('bookings', json.encode(bookings.map((e) => e.toJson()).toList()));
+    await prefs.setString('movieSchedules', json.encode(movieSchedules));
+    await prefs.setString('screenPrices', json.encode(screenPrices));
+    await prefs.setString('blockedSeats', json.encode(blockedSeats));
+    await prefs.setString(
+      'movieCast',
+      json.encode(movieCast.map((k, v) => MapEntry(k, v.map((c) => c.toJson()).toList()))),
+    );
+    await prefs.setString('movieRatings', json.encode(movieRatings));
+  }
 }

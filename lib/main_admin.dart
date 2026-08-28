@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/screens/admin/admin_dashboard.dart';
 
-void main() {
+import 'package:booking/data/mock_data.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MockData.loadData();
   runApp(const AdminApp());
 }
 

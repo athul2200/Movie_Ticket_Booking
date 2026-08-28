@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/movie_model.dart';
 import 'package:booking/widgets/hero_banner.dart';
 import 'package:booking/widgets/category_chips.dart';
 import 'package:booking/widgets/movie_card.dart';
@@ -23,15 +24,30 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
+  late List<MovieModel> _displayedMovies;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateDisplayedMovies();
+  }
+
+  void _updateDisplayedMovies() {
+    final uniqueMovies = MockData.deduplicateMovies(MockData.allMovies);
+    final selectedCategory = MockData.categories[_selectedCategoryIndex];
+    _displayedMovies = selectedCategory == 'All Movies'
+        ? uniqueMovies
+        : uniqueMovies
+            .where((m) => m.genres.any((g) => g.trim() == selectedCategory.trim()))
+            .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final selectedCategory = MockData.categories[_selectedCategoryIndex];
-    final displayedMovies = selectedCategory == 'All Movies'
-        ? MockData.allMovies
-        : MockData.allMovies
-            .where((m) => m.genres.any((g) => g.trim() == selectedCategory.trim()))
-            .toList();
+    _updateDisplayedMovies();
+    final featured = MockData.deduplicateMovies(
+      MockData.featuredMovies.isNotEmpty ? MockData.featuredMovies : MockData.allMovies,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -44,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // ── Hero Carousel Banner ──
             SliverToBoxAdapter(
               child: HeroBanner(
-                movies: MockData.featuredMovies,
+                movies: featured,
                 onBookNow: (movie) {
                   Navigator.pushNamed(
                     context,
@@ -64,40 +80,81 @@ class _HomeScreenState extends State<HomeScreen> {
                 categories: MockData.categories,
                 selectedIndex: _selectedCategoryIndex,
                 onSelected: (index) {
-                  setState(() {
-                    _selectedCategoryIndex = index;
-                  });
+                  if (_selectedCategoryIndex != index) {
+                    setState(() {
+                      _selectedCategoryIndex = index;
+                      _updateDisplayedMovies();
+                    });
+                  }
                 },
               ),
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
 
-            // ── Movie Grid (2 columns) ──
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.58,
-                  crossAxisSpacing: AppSpacing.lg,
-                  mainAxisSpacing: AppSpacing.lg,
+            // ── Movie Grid (2 columns) or Empty State ──
+            if (_displayedMovies.isEmpty)
+              SliverToBoxAdapter(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.xxl,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.movie_outlined,
+                          size: 64,
+                          color: AppColors.textHint,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'No movies available',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          'Check back later for new releases and showtimes.',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final movie = displayedMovies[index];
-                  return MovieCard(
-                    movie: movie,
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/movie-detail',
-                        arguments: movie,
-                      );
-                    },
-                  );
-                }, childCount: displayedMovies.length),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.51,
+                    crossAxisSpacing: AppSpacing.lg,
+                    mainAxisSpacing: AppSpacing.lg,
+                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final movie = _displayedMovies[index];
+                    return MovieCard(
+                      movie: movie,
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/movie-detail',
+                          arguments: movie,
+                        );
+                      },
+                    );
+                  }, childCount: _displayedMovies.length),
+                ),
               ),
-            ),
 
             const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
 

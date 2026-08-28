@@ -1,12 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:booking/theme/app_theme.dart';
+import 'package:booking/data/mock_data.dart';
 import 'custom_card.dart';
 
-class ShowManagementScreen extends StatelessWidget {
+class ShowManagementScreen extends StatefulWidget {
   const ShowManagementScreen({super.key});
 
   @override
+  State<ShowManagementScreen> createState() => _ShowManagementScreenState();
+}
+
+class _ShowManagementScreenState extends State<ShowManagementScreen> {
+  /// Returns today's date label matching the format used throughout the app.
+  String get _todayLabel {
+    final now = DateTime.now();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[now.month - 1]} ${now.day}';
+  }
+
+  /// Cancels (removes) a specific show time for a movie/theater/screen and persists.
+  Future<void> _cancelShow(String movie, String theater, String screen, String time) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Cancel Show'),
+        content: Text('Cancel $movie at $time on $screen?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cancel Show', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    setState(() {
+      final dateMap = MockData.movieSchedules[movie]?[_todayLabel];
+      if (dateMap != null) {
+        final times = dateMap[theater]?[screen];
+        if (times != null) {
+          times.remove(time);
+          // If no more times remain, clean up empty nodes
+          if (times.isEmpty) dateMap[theater]?.remove(screen);
+          if (dateMap[theater]?.isEmpty ?? false) dateMap.remove(theater);
+        }
+      }
+    });
+    await MockData.saveAll();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final today = _todayLabel;
+
+    // Gather all theaters for today from all movie schedules
+    final Map<String, Map<String, List<Map<String, String>>>> theaterShows = {};
+    MockData.movieSchedules.forEach((movie, dates) {
+      final dateEntry = dates[today];
+      if (dateEntry == null) return;
+      dateEntry.forEach((theater, screens) {
+        theaterShows.putIfAbsent(theater, () => {});
+        screens.forEach((screen, times) {
+          theaterShows[theater]!.putIfAbsent(screen, () => []);
+          for (final t in times) {
+            theaterShows[theater]![screen]!.add({'movie': movie, 'time': t});
+          }
+        });
+      });
+    });
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -25,7 +95,7 @@ class ShowManagementScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Managing 4 Screens • October 24th, 2023',
+                    'Today: $today',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -38,77 +108,82 @@ class ShowManagementScreen extends StatelessWidget {
                   foregroundColor: AppTheme.textPrimary,
                   side: const BorderSide(color: AppTheme.borderLight),
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 32),
-          // Screens Grid
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: 1200, // Fixed width to prevent squishing on smaller screens
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _buildScreenColumn(
-                      context,
-                      'SCREEN 01 - IMAX',
-                      'Premium',
-                      AppTheme.errorRedBg,
-                      AppTheme.darkRed,
-                      [
-                        _buildShowCard(
-                          context,
-                          'Dune: Part Two',
-                          '10:30 AM - 1:15 PM',
-                          '142 / 150',
-                          '\$2,450.00',
-                          'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=200&auto=format&fit=crop', // Poster Placeholder
-                          0.95,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildShowCard(
-                          context,
-                          'Oppenheimer',
-                          '2:00 PM - 4:45 PM',
-                          null,
-                          null,
-                          null,
-                          0.6,
-                        ),
-                      ],
-                    ),
+
+          if (theaterShows.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: Text(
+                  'No shows scheduled for today.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppTheme.textSecondary,
                   ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: _buildScreenColumn(
-                      context,
-                      'SCREEN 02 - DOLBY',
-                      'Standard',
-                      AppTheme.borderLight,
-                      AppTheme.textSecondary,
-                      [
-                        _buildShowCard(
-                          context,
-                          'Spider-Man: Beyond',
-                          '11:00 AM - 1:00 PM',
-                          '88 / 120',
-                          '\$1,320.00',
-                          'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=200&auto=format&fit=crop', // Poster Placeholder
-                          0.73,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  const Expanded(child: SizedBox()), // Screen 3 placeholder
-                  const SizedBox(width: 24),
-                  const Expanded(child: SizedBox()), // Screen 4 placeholder
-                ],
+                ),
+              ),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 800),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...theaterShows.entries.expand((theaterEntry) {
+                      final theater = theaterEntry.key;
+                      final screens = theaterEntry.value;
+                      return [
+                        ...screens.entries.map((screenEntry) {
+                          final screen = screenEntry.key;
+                          final shows = screenEntry.value;
+                          return SizedBox(
+                            width: 300,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 24),
+                              child: _buildScreenColumn(
+                                context,
+                                '$theater — $screen',
+                                theater,
+                                AppTheme.errorRedBg,
+                                AppTheme.darkRed,
+                                shows.asMap().entries.map((entry) {
+                                  final show = entry.value;
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      if (entry.key > 0) const SizedBox(height: 16),
+                                      _buildShowCard(
+                                        context,
+                                        show['movie']!,
+                                        show['time']!,
+                                        null,
+                                        null,
+                                        null,
+                                        0.5,
+                                        onCancel: () => _cancelShow(
+                                          show['movie']!,
+                                          theater,
+                                          screen,
+                                          show['time']!,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          );
+                        }),
+                      ];
+                    }),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -159,7 +234,7 @@ class ShowManagementScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildShowCard(BuildContext context, String title, String time, String? seats, String? revenue, String? imageUrl, double occupancy) {
+  Widget _buildShowCard(BuildContext context, String title, String time, String? seats, String? revenue, String? imageUrl, double occupancy, {VoidCallback? onCancel}) {
     return CustomCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -253,7 +328,7 @@ class ShowManagementScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: onCancel,
                     icon: const Icon(Icons.cancel_outlined, size: 16, color: AppTheme.errorRed),
                     label: const Text('Cancel Show', style: TextStyle(color: AppTheme.errorRed)),
                     style: ElevatedButton.styleFrom(

@@ -122,6 +122,7 @@ class BookingCard extends StatelessWidget {
                 child: Image.network(
                   booking.moviePosterUrl,
                   fit: BoxFit.cover,
+                  gaplessPlayback: true,
                   errorBuilder: (_, _, _) => Container(
                     color: Colors.black26,
                     child: const Icon(Icons.movie, color: AppColors.textWhite),

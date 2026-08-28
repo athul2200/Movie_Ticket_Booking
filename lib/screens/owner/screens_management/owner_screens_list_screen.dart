@@ -37,19 +37,22 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
     });
   }
 
-  void _updateRate() {
+  Future<void> _updateRate() async {
     final newPrice = double.tryParse(_standardRateCtrl.text);
     if (newPrice != null) {
       if (MockData.screenPrices[widget.theaterName] == null) {
         MockData.screenPrices[widget.theaterName] = <String, double>{};
       }
       MockData.screenPrices[widget.theaterName]![_activeScreen] = newPrice;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$_activeScreen rate updated to ₹${newPrice.toStringAsFixed(2)}!'),
-          backgroundColor: AppColors.primaryDark,
-        ),
-      );
+      await MockData.saveAll();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$_activeScreen rate updated to ₹${newPrice.toStringAsFixed(2)}!'),
+            backgroundColor: AppColors.primaryDark,
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

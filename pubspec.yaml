@@ -41,8 +41,11 @@ dependencies:
   url_launcher: ^6.3.2
   connectivity_plus: ^7.2.0
   internet_connection_checker_plus: ^3.1.1
+  shared_preferences: ^2.5.2
+  path_provider: ^2.1.5
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.3
   flutter_test:
     sdk: flutter
 
@@ -50,6 +53,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
     - assets/images/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+
+  adaptive_icon_background: "#1a1969"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"

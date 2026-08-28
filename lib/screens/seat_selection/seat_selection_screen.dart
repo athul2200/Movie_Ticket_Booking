@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/movie_model.dart';
 import 'package:booking/models/booking_model.dart';
 import 'package:booking/services/seat_reservation_service.dart';
 
@@ -46,20 +47,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
   // Key used for this specific show in the reservation service
   late final String _screenKey;
-
-
-  double get _seatPrice {
-    final Map<String, double>? theaterPrices = MockData.screenPrices[widget.cinema];
-    if (theaterPrices != null) {
-      // Find the screen price ignoring case/exact match if possible, or exact match first.
-      for (final entry in theaterPrices.entries) {
-        if (entry.key.toLowerCase() == widget.screen.toLowerCase()) {
-          return entry.value;
-        }
-      }
-    }
-    return 140.00; // Default fallback
-  }
+  late final double _seatPrice;
+  late final Set<String> _permanentlyBookedSeats;
 
   static const List<String> _rowLabels = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
@@ -74,18 +63,46 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
       date: widget.date,
       showtime: widget.showtime,
     );
+
+    // Calculate seat price once
+    double price = 140.00;
+    final Map<String, double>? theaterPrices = MockData.screenPrices[widget.cinema];
+    if (theaterPrices != null) {
+      for (final entry in theaterPrices.entries) {
+        if (entry.key.toLowerCase() == widget.screen.toLowerCase()) {
+          price = entry.value;
+          break;
+        }
+      }
+    }
+    _seatPrice = price;
+
+    // Compute permanently booked seats once
+    _permanentlyBookedSeats = MockData.bookings
+        .where((b) =>
+            b.movieTitle == widget.movieTitle &&
+            b.date == widget.date &&
+            b.time == widget.showtime &&
+            (b.cinema == widget.cinema || b.cinema.startsWith('${widget.cinema} •')))
+        .expand((b) => b.seats)
+        .toSet();
+
     // Listen to reservation changes (other users releasing seats, expiry, etc.)
-    SeatReservationService.instance.addListener(_screenKey, _onReservationChanged);
+    // SeatReservationService.instance.addListener(_screenKey, _onReservationChanged);
   }
 
   @override
   void dispose() {
-    SeatReservationService.instance.removeListener(_screenKey, _onReservationChanged);
+  // SeatReservationService.instance.removeListener(_screenKey, _onReservationChanged);
     super.dispose();
   }
 
   void _onReservationChanged() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
+    }
   }
 
   // ── Seat tap logic ───────────────────────────────────────────
@@ -93,17 +110,19 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   void _onSeatTap(String seatId) {
     final service = SeatReservationService.instance;
 
-    setState(() {
-      if (_selectedSeats.contains(seatId)) {
-        // Deselect → release reservation
-        _selectedSeats.remove(seatId);
-        service.releaseSeat(_screenKey, seatId);
-      } else {
-        // Select → reserve
-        _selectedSeats.add(seatId);
-        service.reserveSeat(_screenKey, seatId);
-      }
-    });
+    if (_selectedSeats.contains(seatId)) {
+      // Deselect → release reservation
+      _selectedSeats.remove(seatId);
+      service.releaseSeat(_screenKey, seatId);
+    } else {
+      // Select → reserve
+      _selectedSeats.add(seatId);
+      service.reserveSeat(_screenKey, seatId);
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
@@ -262,60 +281,54 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
   Widget _buildSeatGrid(BuildContext context) {
     final reservedSeats = SeatReservationService.instance.reservedSeats(_screenKey);
-    
-    // Also include seats that were fully paid/booked in MockData.bookings
-    final permanentlyBookedSeats = MockData.bookings
-        .where((b) =>
-            b.movieTitle == widget.movieTitle &&
-            b.date == widget.date &&
-            b.time == widget.showtime &&
-            (b.cinema == widget.cinema || b.cinema.startsWith('${widget.cinema} •')))
-        .expand((b) => b.seats)
-        .toSet();
 
-    return Column(
-      children: List.generate(_rowLabels.length, (rowIndex) {
-        final row = _rowLabels[rowIndex];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 16,
-                child: Text(
-                  row,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontSize: 9,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Column(
+        children: List.generate(_rowLabels.length, (rowIndex) {
+          final row = _rowLabels[rowIndex];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 16,
+                  child: Text(
+                    row,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontSize: 9,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(width: 3),
-              _buildBlock(context, row, 'L', 4, 1, reservedSeats, permanentlyBookedSeats),
-              const SizedBox(width: 10),
-              _buildBlock(context, row, 'C', 8, 5, reservedSeats, permanentlyBookedSeats),
-              const SizedBox(width: 10),
-              _buildBlock(context, row, 'R', 4, 13, reservedSeats, permanentlyBookedSeats),
-              const SizedBox(width: 3),
-              SizedBox(
-                width: 16,
-                child: Text(
-                  row,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontSize: 9,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(width: 3),
+                _buildBlock(context, row, 'L', 4, 1, reservedSeats, _permanentlyBookedSeats),
+                const SizedBox(width: 10),
+                _buildBlock(context, row, 'C', 8, 5, reservedSeats, _permanentlyBookedSeats),
+                const SizedBox(width: 10),
+                _buildBlock(context, row, 'R', 4, 13, reservedSeats, _permanentlyBookedSeats),
+                const SizedBox(width: 3),
+                SizedBox(
+                  width: 16,
+                  child: Text(
+                    row,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontSize: 9,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
-          ),
-        );
-      }),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
 
@@ -328,53 +341,50 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     Set<String> reservedSeats,
     Set<String> permanentlyBookedSeats,
   ) {
-    return Expanded(
-      flex: count,
-      child: Row(
-        children: List.generate(count, (col) {
-          final seatNumber = startCol + col;
-          final seatId = '$row-$seatNumber';
-          
-          // Bookings are saved as A1 instead of A-1
-          final formattedSeatId = '$row$seatNumber';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(count, (col) {
+        final seatNumber = startCol + col;
+        final seatId = '$row-$seatNumber';
+        
+        // Bookings are saved as A1 instead of A-1
+        final formattedSeatId = '$row$seatNumber';
 
-          final isSelectedByMe = _selectedSeats.contains(seatId);
-          final isPermanentlyBooked = permanentlyBookedSeats.contains(formattedSeatId);
-          // A seat is "booked" if someone else reserved it (not this user) or it is permanently booked
-          final isBookedByOther = (!isSelectedByMe && reservedSeats.contains(seatId)) || isPermanentlyBooked;
+        final isSelectedByMe = _selectedSeats.contains(seatId);
+        final isPermanentlyBooked = permanentlyBookedSeats.contains(formattedSeatId);
+        // A seat is "booked" if someone else reserved it (not this user) or it is permanently booked
+        final isBookedByOther = (!isSelectedByMe && reservedSeats.contains(seatId)) || isPermanentlyBooked;
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: (widget.isReadOnly || isBookedByOther)
-                  ? null
-                  : () => _onSeatTap(seatId),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                height: 22,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: isSelectedByMe
-                      ? AppColors.primary
-                      : isBookedByOther
-                          ? AppColors.divider
-                          : AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  '$seatNumber',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w700,
-                    color: isSelectedByMe || isBookedByOther
-                        ? Colors.white
-                        : AppColors.textPrimary,
-                  ),
-                ),
+        return GestureDetector(
+          onTap: (widget.isReadOnly || isBookedByOther)
+              ? null
+              : () => _onSeatTap(seatId),
+          child: Container(
+            width: 20,
+            height: 22,
+            margin: const EdgeInsets.symmetric(horizontal: 1.5),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isSelectedByMe
+                  ? AppColors.primary
+                  : isBookedByOther
+                      ? AppColors.divider
+                      : AppColors.surface,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              '$seatNumber',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontSize: 8,
+                fontWeight: FontWeight.w700,
+                color: isSelectedByMe || isBookedByOther
+                    ? Colors.white
+                    : AppColors.textPrimary,
               ),
             ),
-          );
-        }),
-      ),
+          ),
+        );
+      }),
     );
   }
 
@@ -469,7 +479,18 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     (m) => m.title == widget.movieTitle,
                     orElse: () => MockData.featuredMovies.firstWhere(
                       (m) => m.title == widget.movieTitle,
-                      orElse: () => MockData.allMovies.first,
+                      orElse: () => MockData.allMovies.isNotEmpty
+                          ? MockData.allMovies.first
+                          : MovieModel(
+                              id: 'fallback',
+                              title: widget.movieTitle,
+                              description: '',
+                              duration: '',
+                              rating: 0.0,
+                              certification: '',
+                              posterUrl: '',
+                              bannerUrl: '',
+                            ),
                     ),
                   );
 

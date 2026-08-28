@@ -60,7 +60,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedMovie = MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : 'Drishyam 3';
+    _selectedMovie = MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : '';
     // Lock the theater to the owner's own theater
     _selectedTheater = widget.theaterName;
     // Use IST-aligned date so the saved label matches the user module's date chips
@@ -70,12 +70,38 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
       text:
           '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}',
     );
+    _loadExistingSchedules();
   }
 
   @override
   void dispose() {
     _dateCtrl.dispose();
     super.dispose();
+  }
+
+  /// Loads existing schedules from MockData into local preview state so the
+  /// timeline and occupied slot indicators reflect already-saved data.
+  void _loadExistingSchedules() {
+    final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
+    MockData.movieSchedules.forEach((movieTitle, dates) {
+      final theaterMap = dates[dateLabel];
+      if (theaterMap == null) return;
+      final screenMap = theaterMap[_selectedTheater];
+      if (screenMap == null) return;
+      screenMap.forEach((screen, times) {
+        if (times.isNotEmpty) {
+          _schedulePreview
+              .putIfAbsent(dateLabel, () => {})[screen] = {
+            'movie': movieTitle,
+            'time': times.first,
+          };
+          _occupiedSlots
+              .putIfAbsent(dateLabel, () => {})
+              .putIfAbsent(screen, () => {})
+              .addAll(times);
+        }
+      });
+    });
   }
 
   Set<String> get _allOccupiedTimes {
@@ -180,7 +206,8 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   AdminDropdown<String>(
-                    value: _selectedMovie,
+                    value: MockData.allMovies.any((m) => m.title == _selectedMovie) ? _selectedMovie : null,
+                    hintText: 'Select a movie',
                     prefixIcon: const Icon(
                       Icons.movie_creation_outlined,
                       color: AppColors.textSecondary,
@@ -398,35 +425,38 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                   ]
                                 : [],
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (isSelected || isOccupied) ...[
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  color: isSelected ? Colors.white : AppColors.textHint,
-                                  size: 12,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (isSelected || isOccupied) ...[
+                                  Icon(
+                                    Icons.check_circle_rounded,
+                                    color: isSelected ? Colors.white : AppColors.textHint,
+                                    size: 12,
+                                  ),
+                                  const SizedBox(width: 3),
+                                ],
+                                Text(
+                                  time,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: isSelected
+                                            ? AppColors.textWhite
+                                            : isOccupied
+                                            ? AppColors.textHint
+                                            : AppColors.textPrimary,
+                                        fontWeight: (isSelected || isOccupied)
+                                            ? FontWeight.w600
+                                            : FontWeight.w400,
+                                        fontSize: 12,
+                                      ),
                                 ),
-                                const SizedBox(width: 3),
                               ],
-                              Text(
-                                time,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: isSelected
-                                          ? AppColors.textWhite
-                                          : isOccupied
-                                          ? AppColors.textHint
-                                          : AppColors.textPrimary,
-                                      fontWeight: (isSelected || isOccupied)
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
-                                      fontSize: 12,
-                                    ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       );
@@ -439,7 +469,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                     icon: Icons.event_available,
                     onPressed: _selectedTimes.isEmpty
                         ? null
-                        : () {
+                        : () async {
                             final sortedTimes = _selectedTimes.toList()
                               ..sort((a, b) {
                                 return _timeSlots.indexOf(a)
@@ -475,6 +505,10 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                 });
                               MockData.movieSchedules[_selectedMovie]![dateLabel]![_selectedTheater]![_selectedScreen] = sortedGlobalTimes;
 
+                              // Persist immediately
+                              final messenger = ScaffoldMessenger.of(context);
+                              await MockData.saveAll();
+
                               setState(() {
                                 _selectedTimes.clear();
                                 _selectedTimes.add(
@@ -484,35 +518,35 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                   ),
                                 );
                               });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: AppColors.primary,
-                                behavior: SnackBarBehavior.floating,
-                                duration: const Duration(seconds: 3),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(AppRadius.sm),
-                                ),
-                                content: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.check_circle_outline,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        '$_selectedMovie on $_selectedScreen\n$timeSummary',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          height: 1.4,
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppColors.primary,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: const Duration(seconds: 3),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(AppRadius.sm),
+                                  ),
+                                  content: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle_outline,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          '$_selectedMovie on $_selectedScreen\n$timeSummary',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            height: 1.4,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
+                              );
                           },
                   ),
                 ],
@@ -575,8 +609,8 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             // Timelines — driven by _schedulePreview and _selectedScreen
             _buildTimelineRow(
               'SCR 01',
-              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 01']?['movie'] ?? 'Drishyam 3',
-              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 01']?['time'] ?? '10:00 AM - 01:00 PM',
+              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 01']?['movie'] ?? 'No Show Scheduled',
+              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 01']?['time'] ?? '--',
               0.3,
               0.4,
               _selectedScreen == 'Screen 01',
@@ -584,8 +618,8 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             const SizedBox(height: AppSpacing.md),
             _buildTimelineRow(
               'SCR 02',
-              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 02']?['movie'] ?? 'Michael',
-              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 02']?['time'] ?? '11:15 AM - 01:15 PM',
+              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 02']?['movie'] ?? 'No Show Scheduled',
+              _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 02']?['time'] ?? '--',
               0.5,
               0.3,
               _selectedScreen == 'Screen 02',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
+import 'package:booking/data/mock_data.dart';
 import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/seat_selection/seat_selection_screen.dart';
 
@@ -91,7 +92,9 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Drishyam 3',
+                              MockData.allMovies.isNotEmpty
+                                  ? MockData.allMovies.first.title
+                                  : 'No Movie Listed',
                               style: Theme.of(context).textTheme.headlineMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -338,7 +341,9 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => SeatSelectionScreen(
-                            movieTitle: 'Drishyam 3',
+                            movieTitle: MockData.allMovies.isNotEmpty
+                                ? MockData.allMovies.first.title
+                                : 'No Movie Listed',
                             showtime: '10:00 AM',
                             cinema: widget.theaterName,
                             screen: 'Screen 01',

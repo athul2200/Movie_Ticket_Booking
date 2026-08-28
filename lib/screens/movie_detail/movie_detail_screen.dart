@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/core/utils/ist_time_utils.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/models/movie_model.dart';
-import 'package:booking/widgets/cast_avatar.dart';
 import 'package:booking/widgets/rating_badge.dart';
 
 /// ============================================================
@@ -53,15 +53,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     // Refresh every 60 seconds so expired shows vanish without user interaction.
     _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       if (!mounted) return;
-      setState(() {
-        // If the currently selected showtime has expired, clear the selection.
-        if (_selectedShowtime != null &&
-            !IstTimeUtils.isShowtimeVisible(_selectedShowtime!)) {
+      if (_selectedShowtime != null &&
+          !IstTimeUtils.isShowtimeVisible(_selectedShowtime!)) {
+        setState(() {
           _selectedScreen = null;
           _selectedShowtime = null;
           _selectedFormat = '';
-        }
-      });
+        });
+      }
     });
   }
 
@@ -161,6 +160,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           Image.network(
             widget.movie.bannerUrl,
             fit: BoxFit.cover,
+            gaplessPlayback: true,
             errorBuilder: (context, error, stackTrace) => Container(
               color: AppColors.textPrimary,
               child: const Center(
@@ -242,10 +242,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
   /// Genre tags
   Widget _buildGenreTags(BuildContext context) {
-    // Use the movie's genres, or fallback to an empty list
-    final genres = widget.movie.genres.length > 1
-        ? widget.movie.genres
-        : <String>[];
+    final genres = widget.movie.genres;
 
     return Wrap(
       spacing: AppSpacing.sm,
@@ -270,15 +267,16 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     );
   }
 
-  /// Rating (star + 9.2/10) and Duration (clock + 2h 44m) row
+  /// Rating (star + avg rating) and Duration (clock + duration) row
   Widget _buildRatingDurationRow(BuildContext context) {
+    final avgRating = MockData.getAverageRating(widget.movie);
     return Row(
       children: [
         // ── Rating ──
         const Icon(Icons.star, size: 18, color: AppColors.primary),
         const SizedBox(width: 4),
         Text(
-          '${widget.movie.rating} / 10',
+          '${avgRating.toStringAsFixed(1)} / 5',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w700,
             fontSize: 14,
@@ -304,8 +302,32 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   /// Play Trailer link
   Widget _buildPlayTrailer(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // TODO: Play trailer
+      onTap: () async {
+        final trailer = widget.movie.trailerUrl.trim();
+        if (trailer.isNotEmpty) {
+          String formattedUrl = trailer;
+          if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+            formattedUrl = 'https://$formattedUrl';
+          }
+          final uri = Uri.parse(formattedUrl);
+          try {
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } else {
+              await launchUrl(uri, mode: LaunchMode.platformDefault);
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Could not open trailer: $trailer')),
+              );
+            }
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No trailer link provided for this movie.')),
+          );
+        }
       },
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -331,6 +353,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
   /// Cast & Crew section
   Widget _buildCastCrew(BuildContext context) {
+    // Use per-movie cast if available, otherwise fall back to global placeholder cast
+    final castList = MockData.movieCast.containsKey(widget.movie.title) &&
+            MockData.movieCast[widget.movie.title]!.isNotEmpty
+        ? MockData.movieCast[widget.movie.title]!
+        : MockData.cast;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -343,18 +371,53 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         ),
         const SizedBox(height: AppSpacing.lg),
 
-        // Horizontal list of cast avatars
-        SizedBox(
-          height: 100,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: MockData.cast.length,
-            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.lg),
-            itemBuilder: (context, index) {
-              return CastAvatar(cast: MockData.cast[index]);
-            },
+        if (castList.isEmpty)
+          Text(
+            'No cast information available.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          )
+        else
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: castList.map((c) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      c.name,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      c.role,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppColors.primary,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
-        ),
       ],
     );
   }
@@ -431,16 +494,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           const SizedBox(height: AppSpacing.xl),
           _buildSectionHeader(context, 'Select Theater'),
           const SizedBox(height: AppSpacing.sm),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 100),
-            child: () {
+          Builder(
+            builder: (context) {
               final validCinemas = theaterData.keys
                   .where((cinema) => MockData.theaters.any((t) => t.name == cinema))
                   .toList();
 
               if (validCinemas.isEmpty) {
                 return Padding(
-                  key: ValueKey('no-shows-$_selectedDate'),
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   child: Row(
                     children: [
@@ -462,7 +523,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               }
 
               return Column(
-                key: ValueKey(_selectedDate),
                 children: validCinemas.map((cinema) {
                   final isSelected = _selectedCinema == cinema;
                   return Padding(
@@ -471,7 +531,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   );
                 }).toList(),
               );
-            }(),
+            },
           ),
         ],
 
@@ -480,66 +540,62 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           const SizedBox(height: AppSpacing.xl),
           _buildSectionHeader(context, 'Select Screen & Time'),
           const SizedBox(height: AppSpacing.sm),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 100),
-            child: Builder(
-              key: ValueKey(_selectedCinema),
-              builder: (context) {
-                // Filter each screen's showtimes to only active (IST) ones.
-                final activeScreens = (theaterData[_selectedCinema] ?? {}).entries
-                    .map((entry) {
-                      final activeTimes =
-                          IstTimeUtils.filterActiveShowtimesForDate(
-                        entry.value,
-                        _selectedDate!,
-                      );
-                      return MapEntry(entry.key, activeTimes);
-                    })
-                    .where((entry) => entry.value.isNotEmpty)
-                    .toList();
+          Builder(
+            builder: (context) {
+              // Filter each screen's showtimes to only active (IST) ones.
+              final activeScreens = (theaterData[_selectedCinema] ?? {}).entries
+                  .map((entry) {
+                    final activeTimes =
+                        IstTimeUtils.filterActiveShowtimesForDate(
+                      entry.value,
+                      _selectedDate!,
+                    );
+                    return MapEntry(entry.key, activeTimes);
+                  })
+                  .where((entry) => entry.value.isNotEmpty)
+                  .toList();
 
-                if (activeScreens.isEmpty) {
-                  // All shows for this theater have started / are within 30 min.
+              if (activeScreens.isEmpty) {
+                // All shows for this theater have started / are within 30 min.
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.schedule_outlined,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          'No more shows available for today at this theater.',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Column(
+                children: activeScreens.map((entry) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.schedule_outlined,
-                          size: 18,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            'No more shows available for today at this theater.',
-                            style:
-                                Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                          ),
-                        ),
-                      ],
+                    padding:
+                        const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildScreenCard(
+                      context,
+                      screenName: entry.key,
+                      times: entry.value,
                     ),
                   );
-                }
-
-                return Column(
-                  children: activeScreens.map((entry) {
-                    return Padding(
-                      padding:
-                          const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: _buildScreenCard(
-                        context,
-                        screenName: entry.key,
-                        times: entry.value,
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
+                }).toList(),
+              );
+            },
           ),
         ],
       ],

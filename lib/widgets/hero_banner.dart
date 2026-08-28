@@ -27,7 +27,7 @@ class _HeroBannerState extends State<HeroBanner> {
   @override
   Widget build(BuildContext context) {
     if (widget.movies.isEmpty) {
-      return const SizedBox(height: AppSizes.heroBannerHeight);
+      return const SizedBox.shrink();
     }
 
     return SizedBox(
@@ -101,6 +101,7 @@ class _BannerSlide extends StatelessWidget {
           child: Image.network(
             movie.bannerUrl,
             fit: BoxFit.cover,
+            gaplessPlayback: true,
             errorBuilder: (context, error, stackTrace) => Container(
               color: AppColors.textPrimary,
               child: const Center(

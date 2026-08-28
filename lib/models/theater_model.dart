@@ -12,4 +12,20 @@ class TheaterModel {
     required this.type,
     required this.showtimes,
   });
+
+  factory TheaterModel.fromJson(Map<String, dynamic> json) {
+    return TheaterModel(
+      name: json['name'] as String,
+      type: json['type'] as String,
+      showtimes: List<String>.from(json['showtimes'] ?? []),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'type': type,
+      'showtimes': showtimes,
+    };
+  }
 }

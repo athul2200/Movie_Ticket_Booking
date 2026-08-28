@@ -35,6 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ── Review state ──
   int _reviewStars = 0;
+  String? _selectedReviewMovieTitle;
   final TextEditingController _reviewController = TextEditingController();
   bool _reviewSubmitted = false;
 
@@ -537,6 +538,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ] else ...[
+          // Movie Selector Dropdown
+          Text(
+            'Select Movie',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+              fontSize: 11,
+            ),
+          ),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: _selectedReviewMovieTitle,
+            isExpanded: true,
+            decoration: InputDecoration(
+              hintText: 'Select a movie to review',
+              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textHint,
+                fontSize: 13,
+              ),
+              filled: true,
+              fillColor: AppColors.surface,
+              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            items: MockData.allMovies.map((movie) {
+              return DropdownMenuItem<String>(
+                value: movie.title,
+                child: Text(
+                  movie.title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (val) => setState(() => _selectedReviewMovieTitle = val),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
           // Star Rating
           Text(
             'Your Rating',
@@ -614,7 +657,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: double.infinity,
             height: 50,
             child: ElevatedButton.icon(
-              onPressed: () {
+              onPressed: () async {
+                if (_selectedReviewMovieTitle == null || _selectedReviewMovieTitle!.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please select a movie to review.'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
                 if (_reviewStars == 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -635,6 +688,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                   return;
                 }
+
+                await MockData.addMovieRating(
+                  _selectedReviewMovieTitle!,
+                  _reviewStars.toDouble(),
+                );
+
                 setState(() => _reviewSubmitted = true);
               },
               icon: const Icon(Icons.send_rounded, size: 18),

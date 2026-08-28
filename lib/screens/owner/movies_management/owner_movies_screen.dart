@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:booking/models/movie_model.dart';
+import 'package:booking/models/cast_model.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
@@ -9,6 +10,8 @@ import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/widgets/admin_text_field.dart';
 import 'package:booking/screens/owner/widgets/admin_dropdown.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
+
+import 'package:booking/core/utils/ist_time_utils.dart';
 
 class OwnerMoviesScreen extends StatefulWidget {
   final String theaterName;
@@ -28,16 +31,27 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
   final TextEditingController _posterUrlCtrl = TextEditingController();
   
   String _selectedLanguage = 'English';
+  String _selectedCertification = 'UA';
   String _posterSource = 'URL'; // 'URL' or 'Upload'
   String? _uploadedPosterName;
-  
-  String? _selectedScreen;
-  final Map<String, List<String>> _screenShowtimes = {
-    'Screen 01': ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
-    'Screen 02': ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
-  };
-  final Set<String> _selectedTimes = {};
+  String? _editingMovieId;
+  final ScrollController _scrollController = ScrollController();
 
+  // ── Cast entries ──
+  final List<_CastEntry> _castMembers = [];
+  void _addCastMember() {
+    setState(() => _castMembers.add(_CastEntry()));
+  }
+  void _removeCastMember(int index) {
+    if (index >= 0 && index < _castMembers.length) {
+      final removed = _castMembers.removeAt(index);
+      setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        removed.dispose();
+      });
+    }
+  }
+  
   @override
   void dispose() {
     _movieNameCtrl.dispose();
@@ -45,10 +59,76 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
     _trailerCtrl.dispose();
     _descriptionCtrl.dispose();
     _posterUrlCtrl.dispose();
+    _scrollController.dispose();
+    for (final c in _castMembers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
-  void _submitForm() {
+  void _editMovie(MovieModel movie) {
+    setState(() {
+      _editingMovieId = movie.id;
+      _movieNameCtrl.text = movie.title;
+      _descriptionCtrl.text = movie.description;
+      _posterSource = 'URL';
+      _posterUrlCtrl.text = movie.posterUrl;
+      _uploadedPosterName = null;
+      _selectedLanguage = movie.genres.isNotEmpty ? movie.genres.first : 'English';
+      if (!['English', 'Malayalam', 'Tamil', 'Hindi', 'Telugu'].contains(_selectedLanguage)) {
+        _selectedLanguage = 'English';
+      }
+      _selectedCertification = movie.certification.isNotEmpty ? movie.certification : 'UA';
+      if (!['U', 'UA'].contains(_selectedCertification)) {
+        _selectedCertification = 'UA';
+      }
+      _durationCtrl.text = movie.duration;
+      _trailerCtrl.text = movie.trailerUrl;
+
+      // Load cast
+      for (final c in _castMembers) {
+        c.dispose();
+      }
+      _castMembers.clear();
+      final existingCast = MockData.movieCast[movie.title] ?? [];
+      for (final castItem in existingCast) {
+        final entry = _CastEntry();
+        entry.nameCtrl.text = castItem.name;
+        entry.selectedRole = castItem.role;
+        _castMembers.add(entry);
+      }
+    });
+
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _cancelEdit() {
+    _formKey.currentState?.reset();
+    _movieNameCtrl.clear();
+    _descriptionCtrl.clear();
+    _durationCtrl.clear();
+    _trailerCtrl.clear();
+    _posterUrlCtrl.clear();
+    final oldCast = List<_CastEntry>.from(_castMembers);
+    _castMembers.clear();
+    setState(() {
+      _editingMovieId = null;
+      _uploadedPosterName = null;
+      _selectedLanguage = 'English';
+      _selectedCertification = 'UA';
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final c in oldCast) {
+        c.dispose();
+      }
+    });
+  }
+
+  Future<void> _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (_posterSource == 'URL' && _posterUrlCtrl.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -61,56 +141,120 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
         );
         return;
       }
-      if (_selectedScreen == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a screen.')),
-        );
-        return;
-      }
-      if (_selectedTimes.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select at least one show time.')),
-        );
-        return;
-      }
       
       final String poster = _posterSource == 'URL'
           ? _posterUrlCtrl.text
-          : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop'; // fallback image for uploaded photo
+          : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop';
 
-      final newMovie = MovieModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: _movieNameCtrl.text,
-        description: _descriptionCtrl.text,
-        duration: _durationCtrl.text,
-        rating: 0.0,
-        certification: 'UA',
-        posterUrl: poster,
-        bannerUrl: poster,
-      );
+      final String updatedTitle = _movieNameCtrl.text.trim();
 
-      // Add to mock database
-      MockData.allMovies.insert(0, newMovie);
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Movie added successfully!'),
-          backgroundColor: AppColors.primary,
-        ),
-      );
-      
-      // Clear form after success
-      _formKey.currentState?.reset();
-      _movieNameCtrl.clear();
-      _descriptionCtrl.clear();
-      _durationCtrl.clear();
-      _trailerCtrl.clear();
-      _posterUrlCtrl.clear();
-      setState(() {
-        _selectedTimes.clear();
-        _selectedScreen = null;
-        _uploadedPosterName = null;
-      });
+      if (_editingMovieId != null) {
+        // Find existing movie
+        final existingIndex = MockData.allMovies.indexWhere((m) => m.id == _editingMovieId);
+        final oldMovieTitle = existingIndex != -1 ? MockData.allMovies[existingIndex].title : '';
+
+        final updatedMovie = MovieModel(
+          id: _editingMovieId!,
+          title: updatedTitle,
+          description: _descriptionCtrl.text.trim(),
+          genres: [_selectedLanguage],
+          duration: _durationCtrl.text.trim(),
+          rating: existingIndex != -1 ? MockData.allMovies[existingIndex].rating : 4.5,
+          certification: _selectedCertification,
+          posterUrl: poster,
+          bannerUrl: poster,
+          trailerUrl: _trailerCtrl.text.trim(),
+        );
+
+        if (existingIndex != -1) {
+          MockData.allMovies[existingIndex] = updatedMovie;
+        }
+        final featIndex = MockData.featuredMovies.indexWhere((m) => m.id == _editingMovieId);
+        if (featIndex != -1) {
+          MockData.featuredMovies[featIndex] = updatedMovie;
+        }
+
+        // Transfer schedule and cast if title changed
+        if (oldMovieTitle.isNotEmpty && oldMovieTitle != updatedTitle) {
+          if (MockData.movieSchedules.containsKey(oldMovieTitle)) {
+            MockData.movieSchedules[updatedTitle] = MockData.movieSchedules.remove(oldMovieTitle)!;
+          }
+          if (MockData.movieCast.containsKey(oldMovieTitle)) {
+            MockData.movieCast.remove(oldMovieTitle);
+          }
+        }
+
+        // Save updated cast
+        if (_castMembers.isNotEmpty) {
+          MockData.movieCast[updatedTitle] = _castMembers
+              .where((c) => c.nameCtrl.text.trim().isNotEmpty)
+              .map((c) => CastModel(
+                    name: c.nameCtrl.text.trim(),
+                    role: c.selectedRole,
+                    imageUrl: 'https://picsum.photos/seed/${Uri.encodeComponent(c.nameCtrl.text.trim())}/200/200',
+                  ))
+              .toList();
+        } else {
+          MockData.movieCast.remove(updatedTitle);
+        }
+
+        await MockData.saveAll();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Movie updated successfully!'),
+              backgroundColor: AppColors.primary,
+            ),
+          );
+        }
+      } else {
+        final newMovie = MovieModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: updatedTitle,
+          description: _descriptionCtrl.text.trim(),
+          genres: [_selectedLanguage],
+          duration: _durationCtrl.text.trim(),
+          rating: 4.5,
+          certification: _selectedCertification,
+          posterUrl: poster,
+          bannerUrl: poster,
+          trailerUrl: _trailerCtrl.text.trim(),
+        );
+
+        // Prevent duplicates: remove any existing movie with the same title
+        MockData.allMovies.removeWhere((m) => m.title.trim().toLowerCase() == updatedTitle.toLowerCase());
+        MockData.featuredMovies.removeWhere((m) => m.title.trim().toLowerCase() == updatedTitle.toLowerCase());
+
+        // Add to mock database
+        MockData.allMovies.insert(0, newMovie);
+        MockData.featuredMovies.insert(0, newMovie);
+
+        // Save per-movie cast
+        if (_castMembers.isNotEmpty) {
+          MockData.movieCast[newMovie.title] = _castMembers
+              .where((c) => c.nameCtrl.text.trim().isNotEmpty)
+              .map((c) => CastModel(
+                    name: c.nameCtrl.text.trim(),
+                    role: c.selectedRole,
+                    imageUrl: 'https://picsum.photos/seed/${Uri.encodeComponent(c.nameCtrl.text.trim())}/200/200',
+                  ))
+              .toList();
+        }
+
+        await MockData.saveAll();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Movie added successfully!'),
+              backgroundColor: AppColors.primary,
+            ),
+          );
+        }
+      }
+
+      _cancelEdit();
     }
   }
 
@@ -120,6 +264,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
       backgroundColor: AppColors.background,
       appBar: AdminAppBar(title: widget.theaterName, noLeading: true),
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,18 +308,24 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
-                          Icons.add_circle_outline,
+                        Icon(
+                          _editingMovieId != null ? Icons.edit : Icons.add_circle_outline,
                           color: AppColors.primary,
                           size: 24,
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Text(
-                          'Add New Movie',
+                          _editingMovieId != null ? 'Edit Movie' : 'Add New Movie',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
+                        const Spacer(),
+                        if (_editingMovieId != null)
+                          TextButton(
+                            onPressed: _cancelEdit,
+                            child: const Text('Cancel Edit'),
+                          ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -315,6 +466,14 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                                     value: 'Tamil',
                                     child: Text('Tamil'),
                                   ),
+                                  DropdownMenuItem(
+                                    value: 'Hindi',
+                                    child: Text('Hindi'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Telugu',
+                                    child: Text('Telugu'),
+                                  ),
                                 ],
                                 onChanged: (val) {
                                   if (val != null) {
@@ -331,29 +490,54 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Duration',
+                                'Sensor Certificate',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               const SizedBox(height: AppSpacing.xs),
-                              AdminTextField(
-                                controller: _durationCtrl,
-                                keyboardType: TextInputType.datetime,
-                                inputFormatters: [
-                                  TimeDurationFormatter(),
+                              AdminDropdown<String>(
+                                value: _selectedCertification,
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'UA',
+                                    child: Text('UA'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'U',
+                                    child: Text('U'),
+                                  ),
                                 ],
-                                hintText: 'HH:MM (e.g. 02:30)',
-                                validator: (val) =>
-                                    val == null || val.isEmpty ? 'Required' : null,
-                                suffixIcon: const Icon(
-                                  Icons.access_time,
-                                  color: AppColors.textSecondary,
-                                  size: 20,
-                                ),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setState(() => _selectedCertification = val);
+                                  }
+                                },
                               ),
                             ],
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    Text(
+                      'Duration',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    AdminTextField(
+                      controller: _durationCtrl,
+                      keyboardType: TextInputType.datetime,
+                      inputFormatters: [
+                        TimeDurationFormatter(),
+                      ],
+                      hintText: 'HH:MM:SS (e.g. 02:30:00)',
+                      validator: (val) =>
+                          val == null || val.isEmpty ? 'Required' : null,
+                      suffixIcon: const Icon(
+                        Icons.access_time,
+                        color: AppColors.textSecondary,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.md),
 
@@ -375,102 +559,70 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                     ),
                     const SizedBox(height: AppSpacing.md),
 
-                    Text(
-                      'Screen Selection',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    AdminDropdown<String>(
-                      value: _selectedScreen,
-                      hintText: 'Select a screen',
-                      items: _screenShowtimes.keys.map((screen) {
-                        return DropdownMenuItem(
-                          value: screen,
-                          child: Text(screen),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _selectedScreen = val;
-                            _selectedTimes.clear();
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
-                    if (_selectedScreen != null) ...[
-                      Text(
-                        'Available Show Times',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      ..._screenShowtimes[_selectedScreen]!.map((time) {
-                        return CheckboxListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(time),
-                          controlAffinity: ListTileControlAffinity.leading,
-                          activeColor: AppColors.primary,
-                          value: _selectedTimes.contains(time),
-                          onChanged: (bool? selected) {
-                            setState(() {
-                              if (selected == true) {
-                                _selectedTimes.add(time);
-                              } else {
-                                _selectedTimes.remove(time);
-                              }
-                            });
-                          },
-                        );
-                      }),
-                      const SizedBox(height: AppSpacing.sm),
-                      if (_selectedTimes.isNotEmpty) ...[
+                    // ── Cast Members ──
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
                         Text(
-                          'Selected Times',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                          'Cast & Crew',
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 4.0,
-                          children: _selectedTimes.map((time) {
-                            return Chip(
-                              label: Text(
-                                time,
-                                style: const TextStyle(
-                                  color: AppColors.textWhite,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              backgroundColor: AppColors.primary,
-                              deleteIcon: const Icon(
-                                Icons.close,
-                                color: AppColors.textWhite,
-                                size: 16,
-                              ),
-                              onDeleted: () {
-                                setState(() {
-                                  _selectedTimes.remove(time);
-                                });
-                              },
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppRadius.sm),
-                              ),
-                              side: BorderSide.none,
-                            );
-                          }).toList(),
+                        TextButton.icon(
+                          onPressed: _addCastMember,
+                          icon: const Icon(
+                            Icons.add_circle_outline,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          label: const Text(
+                            'Add Member',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                         ),
                       ],
-                      const SizedBox(height: AppSpacing.md),
-                    ],
-
+                    ),
                     const SizedBox(height: AppSpacing.sm),
+                    if (_castMembers.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(color: AppColors.divider),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'No cast members added yet',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textHint,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _castMembers.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                        itemBuilder: (context, index) {
+                          final entry = _castMembers[index];
+                          return _buildCastEntryRow(index, entry, key: entry.key);
+                        },
+                      ),
+                    const SizedBox(height: AppSpacing.lg),
                     AdminButton(
-                      text: 'Save Movie & Schedule', 
+                      text: _editingMovieId != null ? 'Update Movie' : 'Save Movie',
                       onPressed: _submitForm,
                     ),
                   ],
@@ -568,36 +720,69 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // Movie List
-            _buildManagedMovieCard(
-              title: 'Cosmic Horizon',
-              language: 'English',
-              duration: '02:15',
-              imageUrl:
-                  'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop',
-              badgeText: 'Live Now',
-              isLive: true,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _buildManagedMovieCard(
-              title: 'Midnight Rain',
-              language: 'French',
-              duration: '01:48',
-              imageUrl:
-                  'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop',
-              badgeText: 'Scheduled',
-              isLive: false,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _buildManagedMovieCard(
-              title: 'Dust Runners',
-              language: 'English',
-              duration: '02:30',
-              imageUrl:
-                  'https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=1000&auto=format&fit=crop',
-              badgeText: null,
-              isLive: false,
-            ),
+            // Movie List — dynamic from MockData
+            if (MockData.allMovies.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                child: Center(
+                  child: Text(
+                    'No movies added yet. Use the form above to add one.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
+            else
+              ...MockData.allMovies.asMap().entries.map((entry) {
+                final index = entry.key;
+                final movie = entry.value;
+                final isLive = MockData.movieSchedules.containsKey(movie.title);
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index < MockData.allMovies.length - 1 ? AppSpacing.md : 0,
+                  ),
+                  child: _buildManagedMovieCard(
+                    title: movie.title,
+                    duration: movie.duration,
+                    imageUrl: movie.posterUrl,
+                    badgeText: isLive ? 'Running Now' : null,
+                    isLive: isLive,
+                    onEdit: () => _editMovie(movie),
+                    onDelete: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Remove Movie'),
+                          content: Text('Remove "${movie.title}" from the catalog?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text(
+                                'Remove',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        setState(() {
+                          MockData.allMovies.removeAt(index);
+                          MockData.featuredMovies.removeWhere((m) => m.title == movie.title);
+                          MockData.movieSchedules.remove(movie.title);
+                        });
+                        await MockData.saveAll();
+                      }
+                    },
+                  ),
+                );
+              }),
             const SizedBox(height: AppSpacing.xl),
 
             // Add More Movies Button
@@ -649,11 +834,12 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
 
   Widget _buildManagedMovieCard({
     required String title,
-    required String language,
     required String duration,
     required String imageUrl,
     required String? badgeText,
     required bool isLive,
+    required VoidCallback onEdit,
+    required VoidCallback onDelete,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -681,6 +867,13 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                   height: 140,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 140,
+                    color: AppColors.surface,
+                    child: const Center(
+                      child: Icon(Icons.movie, size: 40, color: AppColors.textHint),
+                    ),
+                  ),
                 ),
               ),
               if (badgeText != null)
@@ -694,21 +887,57 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: isLive
-                          ? AppColors.textWhite
+                          ? const Color(0xFF16A34A)
                           : AppColors.textWhite.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
-                    child: Text(
-                      badgeText,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: isLive
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isLive) ...[
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
+                          badgeText,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: isLive
+                                ? Colors.white
+                                : AppColors.textSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
+              // Delete button overlay
+              Positioned(
+                top: AppSpacing.sm,
+                left: AppSpacing.sm,
+                child: GestureDetector(
+                  onTap: onDelete,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
           Padding(
@@ -716,28 +945,151 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$language • $duration',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        duration,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
                 ),
-                const Icon(
-                  Icons.edit_outlined,
-                  color: AppColors.textSecondary,
-                  size: 20,
+                GestureDetector(
+                  onTap: onEdit,
+                  child: const Icon(
+                    Icons.edit_outlined,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCastEntryRow(int index, _CastEntry entry, {Key? key}) {
+    return Container(
+      key: key,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar placeholder
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+            child: Text(
+              entry.nameCtrl.text.isNotEmpty
+                  ? entry.nameCtrl.text[0].toUpperCase()
+                  : '?',
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Name field
+                TextFormField(
+                  controller: entry.nameCtrl,
+                  onChanged: (_) => setState(() {}),
+                  style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Cast Name',
+                    hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 13),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      borderSide: const BorderSide(color: AppColors.divider),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      borderSide: const BorderSide(color: AppColors.divider),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      borderSide: const BorderSide(color: AppColors.primary),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                // Role selector
+                DropdownButtonFormField<String>(
+                  value: entry.selectedRole,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.background,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      borderSide: const BorderSide(color: AppColors.divider),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      borderSide: const BorderSide(color: AppColors.divider),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      borderSide: const BorderSide(color: AppColors.primary),
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                  items: const [
+                    DropdownMenuItem(value: 'ACTOR', child: Text('Actor')),
+                    DropdownMenuItem(value: 'ACTRESS', child: Text('Actress')),
+                    DropdownMenuItem(value: 'DIRECTOR', child: Text('Director')),
+                    DropdownMenuItem(value: 'PRODUCER', child: Text('Producer')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setState(() => entry.selectedRole = val);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          GestureDetector(
+            onTap: () => _removeCastMember(index),
+            child: const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Icon(
+                Icons.close,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
         ],
@@ -754,30 +1106,32 @@ class TimeDurationFormatter extends TextInputFormatter {
   ) {
     String newText = newValue.text;
     
-    // Allow deleting the colon smoothly
-    if (oldValue.text.length == 3 && oldValue.text.endsWith(':') && newValue.text.length == 2) {
+    // Allow deleting colons smoothly
+    if ((oldValue.text.length == 3 || oldValue.text.length == 6) && 
+        oldValue.text.endsWith(':') && 
+        newValue.text.length < oldValue.text.length) {
       return newValue;
     }
 
     // Clean up input to only numbers
     String cleanText = newText.replaceAll(RegExp(r'[^0-9]'), '');
     
-    // Max 4 digits (HHMM)
-    if (cleanText.length > 4) {
-      cleanText = cleanText.substring(0, 4);
+    // Max 6 digits (HHMMSS)
+    if (cleanText.length > 6) {
+      cleanText = cleanText.substring(0, 6);
     }
 
     String formattedText = '';
     
     for (int i = 0; i < cleanText.length; i++) {
-      if (i == 2) {
+      if (i == 2 || i == 4) {
         formattedText += ':';
       }
       formattedText += cleanText[i];
     }
     
-    // If they typed 2 digits, automatically append the colon for them to start typing minutes
-    if (cleanText.length == 2 && oldValue.text.length < 3) {
+    // If user typed 2 or 4 digits and is typing forward, automatically append colon
+    if ((cleanText.length == 2 || cleanText.length == 4) && newValue.text.length > oldValue.text.length) {
       formattedText += ':';
     }
 
@@ -786,4 +1140,13 @@ class TimeDurationFormatter extends TextInputFormatter {
       selection: TextSelection.collapsed(offset: formattedText.length),
     );
   }
+}
+
+/// Simple data holder for a single cast entry row in the form.
+class _CastEntry {
+  final Key key = UniqueKey();
+  final TextEditingController nameCtrl = TextEditingController();
+  String selectedRole = 'ACTOR';
+
+  void dispose() => nameCtrl.dispose();
 }

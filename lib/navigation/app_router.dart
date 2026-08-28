@@ -15,6 +15,16 @@ import 'package:booking/screens/network/no_internet_screen.dart';
 /// App Router — Named route definitions
 /// ============================================================
 
+class FastPageRoute<T> extends MaterialPageRoute<T> {
+  FastPageRoute({required super.builder, super.settings});
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 150);
+
+  @override
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 150);
+}
+
 class AppRouter {
   static const String roleSelection = '/';
   static const String home = '/home';
@@ -30,26 +40,27 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return FastPageRoute(builder: (_) => const SplashScreen(), settings: settings);
 
       case noInternet:
-        return MaterialPageRoute(builder: (_) => const NoInternetScreen());
+        return FastPageRoute(builder: (_) => const NoInternetScreen(), settings: settings);
 
       case roleSelection:
-        return MaterialPageRoute(builder: (_) => const RoleSelectionScreen());
+        return FastPageRoute(builder: (_) => const RoleSelectionScreen(), settings: settings);
 
       case home:
-        return MaterialPageRoute(builder: (_) => const BottomNavBar());
+        return FastPageRoute(builder: (_) => const BottomNavBar(), settings: settings);
 
       case movieDetail:
         final movie = settings.arguments as MovieModel;
-        return MaterialPageRoute(
+        return FastPageRoute(
           builder: (_) => MovieDetailScreen(movie: movie),
+          settings: settings,
         );
 
       case seatSelection:
         final args = settings.arguments as Map<String, String>;
-        return MaterialPageRoute(
+        return FastPageRoute(
           builder: (_) => SeatSelectionScreen(
             movieTitle: args['movieTitle'] ?? '',
             showtime: args['showtime'] ?? '',
@@ -58,32 +69,36 @@ class AppRouter {
             format: args['format'] ?? '',
             date: args['date'] ?? '',
           ),
+          settings: settings,
         );
 
       case payment:
         final booking = settings.arguments as BookingModel;
-        return MaterialPageRoute(
+        return FastPageRoute(
           builder: (_) => PaymentScreen(booking: booking),
+          settings: settings,
         );
 
       case bookingDetail:
         final booking = settings.arguments as BookingModel;
-        return MaterialPageRoute(
+        return FastPageRoute(
           builder: (_) => BookingDetailScreen(booking: booking),
+          settings: settings,
         );
 
       case owner:
         final theaterName = settings.arguments as String? ?? 'Kairali';
-        return MaterialPageRoute(builder: (_) => OwnerMainScreen(theaterName: theaterName));
+        return FastPageRoute(builder: (_) => OwnerMainScreen(theaterName: theaterName), settings: settings);
 
       case admin:
-        return MaterialPageRoute(builder: (_) => const AdminDashboard());
+        return FastPageRoute(builder: (_) => const AdminDashboard(), settings: settings);
 
       default:
-        return MaterialPageRoute(
+        return FastPageRoute(
           builder: (_) => Scaffold(
             body: Center(child: Text('No route defined for ${settings.name}')),
           ),
+          settings: settings,
         );
     }
   }

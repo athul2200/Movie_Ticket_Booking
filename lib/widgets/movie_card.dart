@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/models/movie_model.dart';
+import 'package:booking/data/mock_data.dart';
 
 /// ============================================================
 /// Movie Card — Poster card for the grid with:
@@ -37,6 +38,7 @@ class MovieCard extends StatelessWidget {
                   child: Image.network(
                     movie.posterUrl,
                     fit: BoxFit.cover,
+                    gaplessPlayback: true,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: AppColors.surface,
                       child: const Center(
@@ -47,41 +49,6 @@ class MovieCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ),
-
-              // Star rating badge (bottom-left)
-              Positioned(
-                bottom: 8,
-                left: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.star,
-                        size: 14,
-                        color: AppColors.starYellow,
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        movie.rating.toString(),
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),
@@ -111,11 +78,24 @@ class MovieCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.xs),
+
+          // ── Title ──
+          Text(
+            movie.title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              fontSize: 14,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
 
           // ── Genre • Duration ──
           Text(
-            '${movie.genres.first} • ${movie.duration}',
+            '${movie.genres.isNotEmpty ? movie.genres.first : 'Movie'} • ${movie.duration}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontSize: 12,
               color: AppColors.textSecondary,

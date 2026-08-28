@@ -27,16 +27,12 @@ class CastAvatar extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.divider, width: 2),
-              image: DecorationImage(
-                image: NetworkImage(cast.imageUrl),
-                fit: BoxFit.cover,
-                onError: (exception, stackTrace) {},
-              ),
             ),
             child: ClipOval(
               child: Image.network(
                 cast.imageUrl,
                 fit: BoxFit.cover,
+                gaplessPlayback: true,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: AppColors.surface,
                   child: const Icon(
