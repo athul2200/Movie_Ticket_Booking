@@ -37,6 +37,12 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
   String? _editingMovieId;
   final ScrollController _scrollController = ScrollController();
 
+  List<MovieModel> get _managedMovies {
+    return MockData.allMovies
+        .where((m) => m.theaters.contains(widget.theaterName))
+        .toList();
+  }
+
   // ── Cast entries ──
   final List<_CastEntry> _castMembers = [];
   void _addCastMember() {
@@ -152,6 +158,8 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
         // Find existing movie
         final existingIndex = MockData.allMovies.indexWhere((m) => m.id == _editingMovieId);
         final oldMovieTitle = existingIndex != -1 ? MockData.allMovies[existingIndex].title : '';
+        final currentTheaters = existingIndex != -1 ? MockData.allMovies[existingIndex].theaters : [widget.theaterName];
+        final updatedTheaters = Set<String>.from(currentTheaters)..add(widget.theaterName);
 
         final updatedMovie = MovieModel(
           id: _editingMovieId!,
@@ -164,6 +172,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
           posterUrl: poster,
           bannerUrl: poster,
           trailerUrl: _trailerCtrl.text.trim(),
+          theaters: updatedTheaters.toList(),
         );
 
         if (existingIndex != -1) {
@@ -209,30 +218,51 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
           );
         }
       } else {
-        final newMovie = MovieModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          title: updatedTitle,
-          description: _descriptionCtrl.text.trim(),
-          genres: [_selectedLanguage],
-          duration: _durationCtrl.text.trim(),
-          rating: 4.5,
-          certification: _selectedCertification,
-          posterUrl: poster,
-          bannerUrl: poster,
-          trailerUrl: _trailerCtrl.text.trim(),
+        // Check if movie with same title already exists
+        final existingIdx = MockData.allMovies.indexWhere(
+          (m) => m.title.trim().toLowerCase() == updatedTitle.toLowerCase(),
         );
 
-        // Prevent duplicates: remove any existing movie with the same title
-        MockData.allMovies.removeWhere((m) => m.title.trim().toLowerCase() == updatedTitle.toLowerCase());
-        MockData.featuredMovies.removeWhere((m) => m.title.trim().toLowerCase() == updatedTitle.toLowerCase());
+        if (existingIdx != -1) {
+          final existing = MockData.allMovies[existingIdx];
+          final updatedTheaters = Set<String>.from(existing.theaters)..add(widget.theaterName);
+          final updated = existing.copyWith(
+            description: _descriptionCtrl.text.trim(),
+            genres: [_selectedLanguage],
+            duration: _durationCtrl.text.trim(),
+            certification: _selectedCertification,
+            posterUrl: poster,
+            bannerUrl: poster,
+            trailerUrl: _trailerCtrl.text.trim(),
+            theaters: updatedTheaters.toList(),
+          );
+          MockData.allMovies[existingIdx] = updated;
+          final featIdx = MockData.featuredMovies.indexWhere((m) => m.id == existing.id);
+          if (featIdx != -1) {
+            MockData.featuredMovies[featIdx] = updated;
+          }
+        } else {
+          final newMovie = MovieModel(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            title: updatedTitle,
+            description: _descriptionCtrl.text.trim(),
+            genres: [_selectedLanguage],
+            duration: _durationCtrl.text.trim(),
+            rating: 4.5,
+            certification: _selectedCertification,
+            posterUrl: poster,
+            bannerUrl: poster,
+            trailerUrl: _trailerCtrl.text.trim(),
+            theaters: [widget.theaterName],
+          );
 
-        // Add to mock database
-        MockData.allMovies.insert(0, newMovie);
-        MockData.featuredMovies.insert(0, newMovie);
+          MockData.allMovies.insert(0, newMovie);
+          MockData.featuredMovies.insert(0, newMovie);
+        }
 
         // Save per-movie cast
         if (_castMembers.isNotEmpty) {
-          MockData.movieCast[newMovie.title] = _castMembers
+          MockData.movieCast[updatedTitle] = _castMembers
               .where((c) => c.nameCtrl.text.trim().isNotEmpty)
               .map((c) => CastModel(
                     name: c.nameCtrl.text.trim(),
@@ -530,7 +560,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                       inputFormatters: [
                         TimeDurationFormatter(),
                       ],
-                      hintText: 'HH:MM:SS (e.g. 02:30:00)',
+                      hintText: 'HH:MM (e.g. 02:30)',
                       validator: (val) =>
                           val == null || val.isEmpty ? 'Required' : null,
                       suffixIcon: const Icon(
@@ -721,12 +751,12 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // Movie List — dynamic from MockData
-            if (MockData.allMovies.isEmpty)
+            if (_managedMovies.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
                 child: Center(
                   child: Text(
-                    'No movies added yet. Use the form above to add one.',
+                    'No movies added for ${widget.theaterName} yet. Use the form above to add one.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -735,13 +765,14 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                 ),
               )
             else
-              ...MockData.allMovies.asMap().entries.map((entry) {
+              ..._managedMovies.asMap().entries.map((entry) {
                 final index = entry.key;
                 final movie = entry.value;
-                final isLive = MockData.movieSchedules.containsKey(movie.title);
+                final isLive = MockData.movieSchedules.containsKey(movie.title) &&
+                    (MockData.movieSchedules[movie.title]?.values.any((dates) => dates.containsKey(widget.theaterName)) ?? false);
                 return Padding(
                   padding: EdgeInsets.only(
-                    bottom: index < MockData.allMovies.length - 1 ? AppSpacing.md : 0,
+                    bottom: index < _managedMovies.length - 1 ? AppSpacing.md : 0,
                   ),
                   child: _buildManagedMovieCard(
                     title: movie.title,
@@ -755,7 +786,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                         context: context,
                         builder: (_) => AlertDialog(
                           title: const Text('Remove Movie'),
-                          content: Text('Remove "${movie.title}" from the catalog?'),
+                          content: Text('Remove "${movie.title}" from ${widget.theaterName}?'),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
@@ -773,9 +804,21 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                       );
                       if (confirm == true) {
                         setState(() {
-                          MockData.allMovies.removeAt(index);
-                          MockData.featuredMovies.removeWhere((m) => m.title == movie.title);
-                          MockData.movieSchedules.remove(movie.title);
+                          final remainingTheaters = List<String>.from(movie.theaters)..remove(widget.theaterName);
+                          if (remainingTheaters.isEmpty) {
+                            MockData.allMovies.removeWhere((m) => m.id == movie.id);
+                            MockData.featuredMovies.removeWhere((m) => m.id == movie.id);
+                          } else {
+                            final idx = MockData.allMovies.indexWhere((m) => m.id == movie.id);
+                            if (idx != -1) {
+                              MockData.allMovies[idx] = movie.copyWith(theaters: remainingTheaters);
+                            }
+                          }
+                          if (MockData.movieSchedules.containsKey(movie.title)) {
+                            MockData.movieSchedules[movie.title]?.values.forEach((datesMap) {
+                              datesMap.remove(widget.theaterName);
+                            });
+                          }
                         });
                         await MockData.saveAll();
                       }
@@ -1105,33 +1148,33 @@ class TimeDurationFormatter extends TextInputFormatter {
     TextEditingValue newValue,
   ) {
     String newText = newValue.text;
-    
-    // Allow deleting colons smoothly
-    if ((oldValue.text.length == 3 || oldValue.text.length == 6) && 
-        oldValue.text.endsWith(':') && 
+
+    // Allow deleting the colon smoothly
+    if (oldValue.text.length == 3 &&
+        oldValue.text.endsWith(':') &&
         newValue.text.length < oldValue.text.length) {
       return newValue;
     }
 
-    // Clean up input to only numbers
+    // Keep only digits
     String cleanText = newText.replaceAll(RegExp(r'[^0-9]'), '');
-    
-    // Max 6 digits (HHMMSS)
-    if (cleanText.length > 6) {
-      cleanText = cleanText.substring(0, 6);
+
+    // Max 4 digits (HHMM)
+    if (cleanText.length > 4) {
+      cleanText = cleanText.substring(0, 4);
     }
 
     String formattedText = '';
-    
+
     for (int i = 0; i < cleanText.length; i++) {
-      if (i == 2 || i == 4) {
+      if (i == 2) {
         formattedText += ':';
       }
       formattedText += cleanText[i];
     }
-    
-    // If user typed 2 or 4 digits and is typing forward, automatically append colon
-    if ((cleanText.length == 2 || cleanText.length == 4) && newValue.text.length > oldValue.text.length) {
+
+    // Auto-append colon after 2 digits when typing forward
+    if (cleanText.length == 2 && newValue.text.length > oldValue.text.length) {
       formattedText += ':';
     }
 

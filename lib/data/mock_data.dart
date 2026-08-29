@@ -1,5 +1,6 @@
 import 'package:booking/models/movie_model.dart';
 import 'package:booking/models/cast_model.dart' as cast_model;
+import 'package:booking/models/seat_row_model.dart';
 
 import 'package:booking/models/theater_model.dart';
 import 'package:booking/models/booking_model.dart';
@@ -137,6 +138,58 @@ class MockData {
   // ── Global Blocked Seats (AuditoriumKey -> List of seat IDs) ──
   static Map<String, List<String>> blockedSeats = {};
 
+  // ── Seating Layouts (Theater -> Screen -> List<SeatRow>) ──
+  // Held purely in memory; mutated live by the layout editor.
+  static Map<String, Map<String, List<SeatRow>>> screenLayouts = {
+    'Kairali': {
+      'Screen 01': _defaultRows(),
+      'Screen 02': _defaultRows(),
+    },
+    'Nila': {
+      'Screen 01': _defaultRows(),
+      'Screen 02': _defaultRows(),
+    },
+  };
+
+  /// Builds the standard default layout: rows A–J with 16 seats each,
+  /// matching the user-facing seat selection screen.
+  static List<SeatRow> _defaultRows() {
+    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+        .map((r) => SeatRow(rowName: r, seatCount: 16))
+        .toList();
+  }
+
+  /// Returns a fresh default layout used to reset a screen.
+  static List<SeatRow> defaultLayoutFor(String screenName) => _defaultRows();
+
+  /// Resilient lookup for layout by cinema and screen name.
+  static List<SeatRow> getLayout(String cinema, String screen) {
+    final direct = screenLayouts[cinema]?[screen];
+    if (direct != null && direct.isNotEmpty) return direct;
+
+    final cleanedCinema = cinema.split('•').first.trim().toLowerCase();
+    final cleanedScreen = screen.trim().toLowerCase();
+
+    for (final theaterEntry in screenLayouts.entries) {
+      if (theaterEntry.key.trim().toLowerCase() == cleanedCinema) {
+        for (final screenEntry in theaterEntry.value.entries) {
+          if (screenEntry.key.trim().toLowerCase() == cleanedScreen) {
+            return screenEntry.value;
+          }
+        }
+        for (final screenEntry in theaterEntry.value.entries) {
+          final sKey = screenEntry.key.replaceAll(RegExp(r'[^0-9]'), '');
+          final targetKey = screen.replaceAll(RegExp(r'[^0-9]'), '');
+          if (sKey.isNotEmpty && sKey == targetKey) {
+            return screenEntry.value;
+          }
+        }
+      }
+    }
+
+    return defaultLayoutFor(screen);
+  }
+
   // ── Persistence Methods ──
 
   static Future<void> loadData() async {
@@ -273,6 +326,31 @@ class MockData {
         // Fallback
       }
     }
+
+    final screenLayoutsJson = prefs.getString('screenLayouts');
+    if (screenLayoutsJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(screenLayoutsJson);
+        final Map<String, Map<String, List<SeatRow>>> parsed = {};
+        decoded.forEach((theater, screens) {
+          if (screens is Map<String, dynamic>) {
+            parsed[theater] = {};
+            screens.forEach((screen, rowsList) {
+              if (rowsList is List) {
+                parsed[theater]![screen] = rowsList
+                    .map((r) => SeatRow.fromJson(r as Map<String, dynamic>))
+                    .toList();
+              }
+            });
+          }
+        });
+        if (parsed.isNotEmpty) {
+          screenLayouts = parsed;
+        }
+      } catch (e) {
+        // Fallback to defaults
+      }
+    }
   }
 
   static Future<void> saveAll() async {
@@ -290,5 +368,15 @@ class MockData {
       json.encode(movieCast.map((k, v) => MapEntry(k, v.map((c) => c.toJson()).toList()))),
     );
     await prefs.setString('movieRatings', json.encode(movieRatings));
+
+    final Map<String, dynamic> encodedLayouts = {};
+    screenLayouts.forEach((theater, screens) {
+      final Map<String, dynamic> screensMap = {};
+      screens.forEach((screen, rows) {
+        screensMap[screen] = rows.map((r) => r.toJson()).toList();
+      });
+      encodedLayouts[theater] = screensMap;
+    });
+    await prefs.setString('screenLayouts', json.encode(encodedLayouts));
   }
 }

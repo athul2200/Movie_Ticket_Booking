@@ -2,12 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/movie_model.dart';
+import 'package:booking/models/seat_row_model.dart';
 import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/seat_selection/seat_selection_screen.dart';
+import 'package:booking/services/seat_reservation_service.dart';
 
+/// Detailed view for a single cinema screen in the Owner module.
+///
+/// Shows movie info, revenue, and a live seating occupancy map built
+/// directly from [MockData.screenLayouts] — the same data that backs
+/// the user-facing seat selection screen.
 class OwnerScreenDetailsScreen extends StatefulWidget {
   final String theaterName;
-  const OwnerScreenDetailsScreen({super.key, this.theaterName = 'Kairali'});
+  final String screenName;
+
+  const OwnerScreenDetailsScreen({
+    super.key,
+    this.theaterName = 'Kairali',
+    this.screenName = 'Screen 01',
+  });
 
   @override
   State<OwnerScreenDetailsScreen> createState() =>
@@ -15,11 +29,57 @@ class OwnerScreenDetailsScreen extends StatefulWidget {
 }
 
 class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
+  // Key used by SeatReservationService for this screen
+  late final String _screenKey;
+
+  // Seats permanently booked via confirmed bookings
+  late final Set<String> _permanentlyBooked;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use a fixed showtime key for the overview (we show aggregate status)
+    _screenKey = SeatReservationService.screenKey(
+      cinema: widget.theaterName,
+      screen: widget.screenName,
+      date: '24 Apr',
+      showtime: '10:00 AM',
+    );
+
+    _permanentlyBooked = MockData.bookings
+        .where((b) =>
+            b.cinema == widget.theaterName ||
+            b.cinema.startsWith('${widget.theaterName} •'))
+        .expand((b) => b.seats)
+        .toSet();
+  }
+
+  List<MovieModel> get _theaterMovies =>
+      MockData.allMovies.where((m) => m.theaters.contains(widget.theaterName)).toList();
+
+  List<SeatRow> get _rows =>
+      MockData.getLayout(widget.theaterName, widget.screenName);
+
+  int get _totalCapacity => _rows.fold(0, (s, r) => s + r.seatCount);
+
+  // ─────────────────────────────────────────────
+  //  BUILD
+  // ─────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
+    final reservedSeats =
+        SeatReservationService.instance.reservedSeats(_screenKey);
+    final bookedCount = reservedSeats.length + _permanentlyBooked.length;
+    final bookedPercent =
+        _totalCapacity > 0 ? (bookedCount / _totalCapacity).clamp(0.0, 1.0) : 0.0;
+
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AdminAppBar(title: widget.theaterName, showBackButton: true),
+      appBar: AdminAppBar(
+        title: widget.theaterName,
+        showBackButton: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -36,7 +96,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Screen 01',
+              widget.screenName,
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
@@ -47,11 +107,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
               children: [
                 _buildBadge('LIVE NOW', AppColors.primary, AppColors.textWhite),
                 const SizedBox(width: AppSpacing.sm),
-                _buildBadge(
-                  '2D',
-                  AppColors.divider,
-                  AppColors.textSecondary,
-                ),
+                _buildBadge('2D', AppColors.divider, AppColors.textSecondary),
               ],
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -92,10 +148,12 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              MockData.allMovies.isNotEmpty
-                                  ? MockData.allMovies.first.title
+                              _theaterMovies.isNotEmpty
+                                  ? _theaterMovies.first.title
                                   : 'No Movie Listed',
-                              style: Theme.of(context).textTheme.headlineMedium
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.primaryDark,
@@ -103,15 +161,14 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                             ),
                             Row(
                               children: [
-                                const Icon(
-                                  Icons.star,
-                                  color: AppColors.primary,
-                                  size: 16,
-                                ),
+                                const Icon(Icons.star,
+                                    color: AppColors.primary, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
                                   '4.9',
-                                  style: Theme.of(context).textTheme.titleSmall
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall
                                       ?.copyWith(
                                         color: AppColors.primaryDark,
                                         fontWeight: FontWeight.w700,
@@ -124,15 +181,14 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         const SizedBox(height: AppSpacing.md),
                         Row(
                           children: [
-                            const Icon(
-                              Icons.access_time,
-                              color: AppColors.textSecondary,
-                              size: 18,
-                            ),
+                            const Icon(Icons.access_time,
+                                color: AppColors.textSecondary, size: 18),
                             const SizedBox(width: AppSpacing.sm),
                             Text(
                               '10:00 AM - 01:00 PM',
-                              style: Theme.of(context).textTheme.bodyMedium
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
                                   ?.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w500,
@@ -141,23 +197,24 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                             const SizedBox(width: AppSpacing.sm),
                             Text(
                               '(165 mins)',
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style:
+                                  Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Row(
                           children: [
-                            const Icon(
-                              Icons.masks_outlined,
-                              color: AppColors.textSecondary,
-                              size: 18,
-                            ),
+                            const Icon(Icons.masks_outlined,
+                                color: AppColors.textSecondary, size: 18),
                             const SizedBox(width: AppSpacing.sm),
                             Text(
                               'Sci-Fi, Adventure, Drama',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: AppColors.textSecondary),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                      color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -169,7 +226,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // ── Show Revenue Card ──
+            // ── Revenue Card ──
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
@@ -207,12 +264,12 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         '\$2,450.00',
-                        style: Theme.of(context).textTheme.headlineLarge
-                            ?.copyWith(
-                              color: AppColors.textWhite,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 32,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  color: AppColors.textWhite,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 32,
+                                ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       Row(
@@ -220,16 +277,19 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         children: [
                           Text(
                             'Quota Progress',
-                            style: Theme.of(context).textTheme.labelSmall
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
                                 ?.copyWith(
-                                  color: AppColors.textWhite.withValues(
-                                    alpha: 0.8,
-                                  ),
+                                  color: AppColors.textWhite
+                                      .withValues(alpha: 0.8),
                                 ),
                           ),
                           Text(
                             '82%',
-                            style: Theme.of(context).textTheme.labelSmall
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
                                 ?.copyWith(
                                   color: AppColors.textWhite,
                                   fontWeight: FontWeight.w700,
@@ -271,21 +331,19 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildLegendItem(
-                      AppColors.background,
-                      'Available',
-                      isOutlined: true,
-                    ),
+                    _buildLegendItem(AppColors.background, 'Available',
+                        isOutlined: true),
                     const SizedBox(width: AppSpacing.sm),
                     _buildLegendItem(AppColors.primaryDark, 'Booked'),
                     const SizedBox(width: AppSpacing.sm),
-                    _buildLegendItem(AppColors.divider, 'Occupied'),
+                    _buildLegendItem(AppColors.divider, 'Reserved'),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
 
+            // ── Live Seat Map ──
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
@@ -301,40 +359,76 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
               ),
               child: Column(
                 children: [
+                  // Screen bar at top
                   Center(
                     child: Container(
                       width: 150,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.divider,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(2),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.shadowColor.withValues(alpha: 0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                            color: AppColors.primary.withValues(alpha: 0.5),
+                            blurRadius: 8,
+                            spreadRadius: 1,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: 4),
                   Text(
-                    'SCREEN',
-                    style: Theme.of(context).textTheme.labelSmall,
+                    'S C R E E N',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      letterSpacing: 3,
+                      fontSize: 8,
+                      color: AppColors.textHint,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
 
-                  // Seating Rows
-                  _buildSeatingRow('A', [1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0]),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildSeatingRow('B', [1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1]),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildSeatingRow('C', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+                  // Dynamic seat grid from MockData.screenLayouts
+                  if (_rows.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.xl),
+                      child: Column(
+                        children: [
+                          Icon(Icons.chair_outlined,
+                              size: 36, color: AppColors.divider),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'No seating layout defined.\nSet one up in the Layout Editor.',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: AppColors.textHint),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _rows.map((row) {
+                          return _buildSeatRow(
+                            context,
+                            row,
+                            reservedSeats,
+                          );
+                        }).toList(),
+                      ),
+                    ),
 
                   const SizedBox(height: AppSpacing.xl),
                   Divider(color: AppColors.divider.withValues(alpha: 0.5)),
                   const SizedBox(height: AppSpacing.sm),
+
+                  // Link to open the full interactive seat selection screen
                   TextButton.icon(
                     onPressed: () {
                       Navigator.push(
@@ -346,7 +440,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                                 : 'No Movie Listed',
                             showtime: '10:00 AM',
                             cinema: widget.theaterName,
-                            screen: 'Screen 01',
+                            screen: widget.screenName,
                             format: '2D',
                             date: '24 Apr',
                             isReadOnly: true,
@@ -354,11 +448,8 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         ),
                       );
                     },
-                    icon: const Icon(
-                      Icons.open_in_new,
-                      size: 16,
-                      color: AppColors.primary,
-                    ),
+                    icon: const Icon(Icons.open_in_new,
+                        size: 16, color: AppColors.primary),
                     label: Text(
                       'Open Full Interactive Seating Chart',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
@@ -387,9 +478,9 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                 children: [
                   Text(
                     'AVAILABILITY BREAKDOWN',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(letterSpacing: 1.0),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      letterSpacing: 1.0,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
@@ -399,8 +490,10 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '120',
-                            style: Theme.of(context).textTheme.headlineMedium
+                            '$_totalCapacity',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                           Text(
@@ -413,15 +506,17 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '85',
-                            style: Theme.of(context).textTheme.headlineMedium
+                            '$bookedCount',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.primaryDark,
                                 ),
                           ),
                           Text(
-                            'Booked (71%)',
+                            'Booked (${(bookedPercent * 100).toStringAsFixed(0)}%)',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -430,7 +525,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   LinearProgressIndicator(
-                    value: 0.71,
+                    value: bookedPercent,
                     backgroundColor: AppColors.surface,
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.primaryDark,
@@ -447,6 +542,108 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
       ),
     );
   }
+
+  // ─────────────────────────────────────────────
+  //  SEAT ROW
+  // ─────────────────────────────────────────────
+
+  Widget _buildSeatRow(
+    BuildContext context,
+    SeatRow row,
+    Set<String> reservedSeats,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Left label
+          SizedBox(
+            width: 18,
+            child: Text(
+              row.rowName,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+
+          // Seat boxes
+          ...List.generate(row.seatCount, (i) {
+            final seatNum = i + 1;
+            final seatId = '${row.rowName}-$seatNum';
+            final formattedId = '${row.rowName}$seatNum';
+
+            final isPermanentlyBooked =
+                _permanentlyBooked.contains(formattedId);
+            final isReserved =
+                !isPermanentlyBooked && reservedSeats.contains(seatId);
+
+            Color bgColor;
+            Color textColor;
+            bool isOutlined = false;
+
+            if (isPermanentlyBooked) {
+              bgColor = AppColors.primaryDark;
+              textColor = Colors.white;
+            } else if (isReserved) {
+              bgColor = AppColors.divider;
+              textColor = Colors.white;
+            } else {
+              bgColor = AppColors.background;
+              textColor = AppColors.textSecondary;
+              isOutlined = true;
+            }
+
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(4),
+                border: isOutlined
+                    ? Border.all(color: AppColors.divider)
+                    : null,
+              ),
+              child: Center(
+                child: Text(
+                  '$seatNum',
+                  style: TextStyle(
+                    fontSize: 7,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+              ),
+            );
+          }),
+
+          const SizedBox(width: 4),
+          // Right label
+          SizedBox(
+            width: 18,
+            child: Text(
+              row.rowName,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  HELPERS
+  // ─────────────────────────────────────────────
 
   Widget _buildBadge(String text, Color bgColor, Color textColor) {
     return Container(
@@ -465,11 +662,8 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
     );
   }
 
-  Widget _buildLegendItem(
-    Color color,
-    String label, {
-    bool isOutlined = false,
-  }) {
+  Widget _buildLegendItem(Color color, String label,
+      {bool isOutlined = false}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -485,45 +679,11 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(fontSize: 10),
         ),
-      ],
-    );
-  }
-
-  Widget _buildSeatingRow(String rowLabel, List<int> seatStatuses) {
-    // 0 = Available, 1 = Booked, 2 = Occupied
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 20,
-          child: Text(rowLabel, style: Theme.of(context).textTheme.labelSmall),
-        ),
-        ...seatStatuses.map((status) {
-          Color bgColor;
-          bool isOutlined = false;
-
-          if (status == 1) {
-            bgColor = AppColors.primaryDark;
-          } else if (status == 2) {
-            bgColor = AppColors.divider; // Grey for occupied
-          } else {
-            bgColor = AppColors.background;
-            isOutlined = true;
-          }
-
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: bgColor,
-              border: isOutlined ? Border.all(color: AppColors.divider) : null,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          );
-        }),
       ],
     );
   }

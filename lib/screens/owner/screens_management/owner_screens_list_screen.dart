@@ -5,8 +5,14 @@ import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/widgets/admin_text_field.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
 import 'package:booking/screens/owner/screens_management/owner_add_screen.dart';
+import 'package:booking/screens/owner/screens_management/owner_layout_editor_screen.dart';
 import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/seat_row_model.dart';
 
+/// Screens list screen for the Owner module.
+///
+/// Shows all cinema screens for a theater, allows switching between them,
+/// viewing their seating layout preview, and opening the layout editor.
 class OwnerScreensListScreen extends StatefulWidget {
   final String theaterName;
   const OwnerScreensListScreen({super.key, this.theaterName = 'Kairali'});
@@ -16,12 +22,20 @@ class OwnerScreensListScreen extends StatefulWidget {
 }
 
 class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
-  String _activeScreen = 'Screen 01';
+  /// All screen names available for this theater (derived from screenPrices).
+  List<String> get _screenNames {
+    final prices = MockData.screenPrices[widget.theaterName];
+    if (prices == null || prices.isEmpty) return ['Screen 01', 'Screen 02'];
+    return prices.keys.toList()..sort();
+  }
+
+  late String _activeScreen;
   late final TextEditingController _standardRateCtrl;
 
   @override
   void initState() {
     super.initState();
+    _activeScreen = _screenNames.first;
     _standardRateCtrl = TextEditingController(text: _getPrice(_activeScreen));
   }
 
@@ -40,9 +54,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
   Future<void> _updateRate() async {
     final newPrice = double.tryParse(_standardRateCtrl.text);
     if (newPrice != null) {
-      if (MockData.screenPrices[widget.theaterName] == null) {
-        MockData.screenPrices[widget.theaterName] = <String, double>{};
-      }
+      MockData.screenPrices[widget.theaterName] ??= {};
       MockData.screenPrices[widget.theaterName]![_activeScreen] = newPrice;
       await MockData.saveAll();
       if (mounted) {
@@ -69,6 +81,23 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
     super.dispose();
   }
 
+  // ── Computed helpers ──
+
+  List<SeatRow> get _activeRows {
+    return MockData.getLayout(widget.theaterName, _activeScreen);
+  }
+
+  int get _totalSeats => _activeRows.fold(0, (s, r) => s + r.seatCount);
+
+  int _totalSeatsForScreen(String screen) {
+    final rows = MockData.getLayout(widget.theaterName, screen);
+    return rows.fold(0, (s, r) => s + r.seatCount);
+  }
+
+  // ─────────────────────────────────────────────
+  //  BUILD
+  // ─────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +108,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header (Screens & Add Button) ──
+            // ── Section header + Add screen button ──
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -90,12 +119,12 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => OwnerAddScreen(theaterName: widget.theaterName)),
-                      );
-                  },
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => OwnerAddScreen(theaterName: widget.theaterName),
+                    ),
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.xs),
                     decoration: BoxDecoration(
@@ -113,24 +142,149 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // ── Screens List ──
-            GestureDetector(
-              onTap: () => _setActiveScreen('Screen 01'),
-              child: _buildScreenCard(
-                title: 'Screen 01',
-                seats: 124,
-                isActive: _activeScreen == 'Screen 01',
+            // ── Screen Selector Tabs ──
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _screenNames.map((screen) {
+                  final isActive = _activeScreen == screen;
+                  return GestureDetector(
+                    onTap: () => _setActiveScreen(screen),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(right: AppSpacing.sm),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.sm,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isActive ? AppColors.primary : AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                        border: isActive
+                            ? null
+                            : Border.all(color: AppColors.divider),
+                      ),
+                      child: Text(
+                        screen,
+                        style: TextStyle(
+                          color: isActive
+                              ? AppColors.textWhite
+                              : AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            GestureDetector(
-              onTap: () => _setActiveScreen('Screen 02'),
-              child: _buildScreenCard(
-                title: 'Screen 02',
-                seats: 88,
-                isActive: _activeScreen == 'Screen 02',
-              ),
-            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // ── Screen Cards (one per screen) ──
+            ..._screenNames.map((screen) {
+              final isActive = _activeScreen == screen;
+              return GestureDetector(
+                onTap: () => _setActiveScreen(screen),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: isActive ? AppColors.primary : AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: isActive
+                        ? null
+                        : Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (isActive) ...[
+                              Text(
+                                'NOW EDITING',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: AppColors.textWhite.withValues(alpha: 0.8),
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                            ],
+                            Text(
+                              screen,
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                color: isActive
+                                    ? AppColors.textWhite
+                                    : AppColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.chair_outlined,
+                                  size: AppSizes.iconSm,
+                                  color: isActive
+                                      ? AppColors.textWhite
+                                      : AppColors.textSecondary,
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Text(
+                                  '${_totalSeatsForScreen(screen)} Seats Total',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: isActive
+                                        ? AppColors.textWhite
+                                        : AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Icon(
+                            isActive
+                                ? Icons.grid_view_rounded
+                                : Icons.grid_view_outlined,
+                            color: isActive
+                                ? AppColors.textWhite
+                                : AppColors.textSecondary,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            '₹${_getPrice(screen)}',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: isActive
+                                  ? AppColors.textWhite
+                                  : AppColors.primary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+
             const SizedBox(height: AppSpacing.xl),
 
             // ── Set Pricing Section ──
@@ -142,7 +296,6 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-
             Text(
               'Rate (₹)',
               style: Theme.of(context).textTheme.bodyMedium,
@@ -150,22 +303,40 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
             const SizedBox(height: AppSpacing.xs),
             AdminTextField(
               controller: _standardRateCtrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: AppSpacing.lg),
             AdminButton(text: 'Update Rates', onPressed: _updateRate),
             const SizedBox(height: AppSpacing.xxl),
 
-            // ── Layout Editor Section ──
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              ),
-              child: Column(
+            // ── Seating Layout Section ──
+            _buildLayoutSection(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  LAYOUT SECTION
+  // ─────────────────────────────────────────────
+
+  Widget _buildLayoutSection() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.divider.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
@@ -178,7 +349,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: Text(
-                      'Layout Editor',
+                      'Seating Layout',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
@@ -187,304 +358,278 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Screen 01\nConfiguration',
+                    _activeScreen,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
-                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'Adjust the seating chart for the main\nauditorium hall.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
+                ],
+              ),
+              // Capacity pill
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.chair_outlined,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$_totalSeats seats',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
 
-                  // Legend
-                  Row(
-                    children: [
-                      _buildLegendItem(Colors.transparent, '2D', true),
+          // Screen indicator bar
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  width: 140,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.5),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  // Screen visual
-                  Center(
-                    child: Container(
-                      width: 150,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.5),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                    ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'S C R E E N   T H I S   W A Y',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    letterSpacing: 2.0,
+                    fontSize: 8,
+                    color: AppColors.textHint,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Center(
-                    child: Text(
-                      'S C R E E N   T H I S   W A Y',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelSmall?.copyWith(letterSpacing: 2.0),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
 
-                  // Seating grid (mock)
-                  _buildSeatingGrid(),
-
-                  const SizedBox(height: AppSpacing.xl),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: AppColors.background,
-                        side: const BorderSide(color: AppColors.divider),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
-                        ),
-                      ),
-                      child: Text(
-                        'Reset\nLayout',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-
-                  // Capacity summary
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEEEEE),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                    ),
-                    child: Row(
+          // Compact seating preview
+          _activeRows.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'CAPACITY',
-                                style: Theme.of(context).textTheme.labelSmall,
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: '124 ',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 18,
-                                          ),
-                                    ),
-                                    TextSpan(
-                                      text: 'seats',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyMedium,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                        Icon(
+                          Icons.chair_outlined,
+                          size: 36,
+                          color: AppColors.divider,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'No layout defined.\nTap "Customize Layout" to get started.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textHint,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildScreenCard({
-    required String title,
-    required int seats,
-    required bool isActive,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primary : AppColors.background,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: isActive ? null : Border.all(color: AppColors.divider),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isActive) ...[
-                  Text(
-                    'NOW EDITING',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textWhite.withValues(alpha: 0.8),
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                ],
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: isActive
-                        ? AppColors.textWhite
-                        : AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
+                )
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: _activeRows.map(_buildCompactPreviewRow).toList(),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
+
+          const SizedBox(height: AppSpacing.xl),
+
+          // Capacity summary bar
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: AppColors.divider.withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'CAPACITY',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          letterSpacing: 1,
+                          color: AppColors.textHint,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: '$_totalSeats ',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 22,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'seats',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Icon(
-                      Icons.chair_outlined,
-                      size: AppSizes.iconSm,
-                      color: isActive
-                          ? AppColors.textWhite
-                          : AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
                     Text(
-                      '$seats Seats Total',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: isActive
-                            ? AppColors.textWhite
-                            : AppColors.textSecondary,
+                      '${_activeRows.length} rows',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (_activeRows.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Rows: ${_activeRows.map((r) => r.rowName).join(', ')}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textHint,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Icon(
-                isActive ? Icons.grid_view_rounded : Icons.grid_view_outlined,
-                color: isActive ? AppColors.textWhite : AppColors.textSecondary,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                '₹${_getPrice(title)}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: isActive ? AppColors.textWhite : AppColors.primary,
-                  fontWeight: FontWeight.w800,
+          const SizedBox(height: AppSpacing.lg),
+
+          // Customize Layout button — navigates to dedicated editor
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => OwnerLayoutEditorScreen(
+                      theaterName: widget.theaterName,
+                      screenName: _activeScreen,
+                    ),
+                  ),
+                );
+                // Refresh after returning from editor
+                setState(() {});
+              },
+              icon: const Icon(Icons.tune, size: 18, color: AppColors.textWhite),
+              label: const Text(
+                'Customize Layout',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textWhite,
                 ),
               ),
-            ],
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textWhite,
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                elevation: 0,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem(Color color, String text, [bool isOutlined = false]) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
-            border: isOutlined ? Border.all(color: AppColors.divider) : null,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Text(text, style: Theme.of(context).textTheme.bodyMedium),
-      ],
-    );
-  }
-
-  Widget _buildSeatingGrid() {
-    // This is a static visual representation of the seating grid from Figma
-    return Column(
-      children: [
-        _buildRow('A', 6),
-        _buildRow('', 3, offset: 2),
-        _buildRow('B', 6),
-        _buildRow('', 3, offset: 2),
-        _buildRow('C', 6),
-        _buildRow('', 2, offset: 3),
-        _buildRow('D', 6),
-        _buildRow('', 2, offset: 3),
-        _buildRow('E', 6),
-        _buildRow('', 2, offset: 3),
-      ],
-    );
-  }
-
-  Widget _buildRow(
-    String label,
-    int count, {
-    int offset = 0,
-  }) {
-    List<Widget> seats = [];
-    for (int i = 0; i < count; i++) {
-      seats.add(
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: AppColors.divider),
-          ),
-        ),
-      );
-    }
-
+  Widget _buildCompactPreviewRow(SeatRow row) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 5),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Row label – left
           SizedBox(
             width: 20,
             child: Text(
-              label,
+              row.rowName.isEmpty ? '?' : row.rowName,
               style: const TextStyle(
                 fontSize: 10,
-                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
               ),
             ),
           ),
-          SizedBox(width: offset * 32.0), // Spacer
-          ...seats,
+          const SizedBox(width: 4),
+          // Seat boxes
+          ...List.generate(row.seatCount, (i) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: AppColors.divider),
+              ),
+              child: Center(
+                child: Text(
+                  '${i + 1}',
+                  style: const TextStyle(
+                    fontSize: 6,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            );
+          }),
+          const SizedBox(width: 4),
+          // Row label – right
           SizedBox(
             width: 20,
             child: Text(
-              label,
+              row.rowName.isEmpty ? '?' : row.rowName,
               textAlign: TextAlign.right,
               style: const TextStyle(
                 fontSize: 10,
-                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
               ),
             ),
           ),

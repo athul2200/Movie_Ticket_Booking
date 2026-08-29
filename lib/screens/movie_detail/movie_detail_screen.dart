@@ -498,6 +498,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             builder: (context) {
               final validCinemas = theaterData.keys
                   .where((cinema) => MockData.theaters.any((t) => t.name == cinema))
+                  .where((cinema) => widget.movie.theaters.contains(cinema))
                   .toList();
 
               if (validCinemas.isEmpty) {

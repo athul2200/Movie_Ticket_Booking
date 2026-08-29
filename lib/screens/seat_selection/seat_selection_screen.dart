@@ -50,10 +50,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   late final double _seatPrice;
   late final Set<String> _permanentlyBookedSeats;
 
-  static const List<String> _rowLabels = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -281,12 +277,35 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
   Widget _buildSeatGrid(BuildContext context) {
     final reservedSeats = SeatReservationService.instance.reservedSeats(_screenKey);
+    final layout = MockData.getLayout(widget.cinema, widget.screen);
+
+    if (layout.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+        child: Text(
+          'No seats configured for this screen.',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+      );
+    }
 
     return FittedBox(
       fit: BoxFit.scaleDown,
       child: Column(
-        children: List.generate(_rowLabels.length, (rowIndex) {
-          final row = _rowLabels[rowIndex];
+        children: layout.map((seatRow) {
+          final row = seatRow.rowName;
+          final totalSeats = seatRow.seatCount;
+
+          int leftCount = 0;
+          int rightCount = 0;
+          int centerCount = totalSeats;
+
+          if (totalSeats >= 8) {
+            leftCount = (totalSeats * 0.25).round();
+            rightCount = (totalSeats * 0.25).round();
+            centerCount = totalSeats - leftCount - rightCount;
+          }
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 5),
             child: Row(
@@ -294,7 +313,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                  width: 16,
+                  width: 20,
                   child: Text(
                     row,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -306,14 +325,18 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   ),
                 ),
                 const SizedBox(width: 3),
-                _buildBlock(context, row, 'L', 4, 1, reservedSeats, _permanentlyBookedSeats),
-                const SizedBox(width: 10),
-                _buildBlock(context, row, 'C', 8, 5, reservedSeats, _permanentlyBookedSeats),
-                const SizedBox(width: 10),
-                _buildBlock(context, row, 'R', 4, 13, reservedSeats, _permanentlyBookedSeats),
+                if (leftCount > 0) ...[
+                  _buildBlock(context, row, 'L', leftCount, 1, reservedSeats, _permanentlyBookedSeats),
+                  const SizedBox(width: 10),
+                ],
+                _buildBlock(context, row, 'C', centerCount, leftCount + 1, reservedSeats, _permanentlyBookedSeats),
+                if (rightCount > 0) ...[
+                  const SizedBox(width: 10),
+                  _buildBlock(context, row, 'R', rightCount, leftCount + centerCount + 1, reservedSeats, _permanentlyBookedSeats),
+                ],
                 const SizedBox(width: 3),
                 SizedBox(
-                  width: 16,
+                  width: 20,
                   child: Text(
                     row,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -327,7 +350,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               ],
             ),
           );
-        }),
+        }).toList(),
       ),
     );
   }

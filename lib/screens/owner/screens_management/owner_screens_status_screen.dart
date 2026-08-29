@@ -37,8 +37,9 @@ class OwnerScreensStatusScreen extends StatefulWidget {
 
 class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
   List<_ScreenSchedule> get _schedules {
-    final movie1 = MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : 'No Movie Scheduled';
-    final movie2 = MockData.allMovies.length > 1 ? MockData.allMovies[1].title : (MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : 'No Movie Scheduled');
+    final theaterMovies = MockData.allMovies.where((m) => m.theaters.contains(widget.theaterName)).toList();
+    final movie1 = theaterMovies.isNotEmpty ? theaterMovies.first.title : 'No Movie Scheduled';
+    final movie2 = theaterMovies.length > 1 ? theaterMovies[1].title : (theaterMovies.isNotEmpty ? theaterMovies.first.title : 'No Movie Scheduled');
 
     return [
       _ScreenSchedule(
@@ -47,8 +48,8 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
         genre: 'Active Listing',
         currentShowTime: '10:00 AM',
         allShowTimes: const ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
-        occupancy: MockData.allMovies.isNotEmpty ? 0.73 : 0.0,
-        isActive: MockData.allMovies.isNotEmpty,
+        occupancy: theaterMovies.isNotEmpty ? 0.73 : 0.0,
+        isActive: theaterMovies.isNotEmpty,
       ),
       _ScreenSchedule(
         screenName: 'Screen 02',
@@ -56,8 +57,8 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
         genre: 'Active Listing',
         currentShowTime: '11:00 AM',
         allShowTimes: const ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
-        occupancy: MockData.allMovies.length > 1 ? 0.45 : 0.0,
-        isActive: MockData.allMovies.length > 1,
+        occupancy: theaterMovies.length > 1 ? 0.45 : 0.0,
+        isActive: theaterMovies.length > 1,
       ),
     ];
   }
@@ -180,7 +181,10 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
           context,
           MaterialPageRoute(
             builder: (_) =>
-                OwnerScreenDetailsScreen(theaterName: widget.theaterName),
+                OwnerScreenDetailsScreen(
+                  theaterName: widget.theaterName,
+                  screenName: schedule.screenName,
+                ),
           ),
         );
       },

@@ -13,6 +13,7 @@ class MovieModel {
   final String posterUrl; // Network image URL
   final String bannerUrl; // Network image URL for hero banner
   final String trailerUrl; // YouTube trailer link
+  final List<String> theaters; // Theaters where this movie is added
 
   const MovieModel({
     required this.id,
@@ -25,6 +26,7 @@ class MovieModel {
     required this.posterUrl,
     required this.bannerUrl,
     this.trailerUrl = '',
+    this.theaters = const ['Kairali', 'Nila'],
   });
 
   factory MovieModel.fromJson(Map<String, dynamic> json) {
@@ -39,6 +41,7 @@ class MovieModel {
       posterUrl: json['posterUrl'] as String,
       bannerUrl: json['bannerUrl'] as String,
       trailerUrl: json['trailerUrl'] as String? ?? '',
+      theaters: List<String>.from(json['theaters'] ?? ['Kairali', 'Nila']),
     );
   }
 
@@ -54,6 +57,35 @@ class MovieModel {
       'posterUrl': posterUrl,
       'bannerUrl': bannerUrl,
       'trailerUrl': trailerUrl,
+      'theaters': theaters,
     };
+  }
+
+  MovieModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    List<String>? genres,
+    String? duration,
+    double? rating,
+    String? certification,
+    String? posterUrl,
+    String? bannerUrl,
+    String? trailerUrl,
+    List<String>? theaters,
+  }) {
+    return MovieModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      genres: genres ?? this.genres,
+      duration: duration ?? this.duration,
+      rating: rating ?? this.rating,
+      certification: certification ?? this.certification,
+      posterUrl: posterUrl ?? this.posterUrl,
+      bannerUrl: bannerUrl ?? this.bannerUrl,
+      trailerUrl: trailerUrl ?? this.trailerUrl,
+      theaters: theaters ?? this.theaters,
+    );
   }
 }

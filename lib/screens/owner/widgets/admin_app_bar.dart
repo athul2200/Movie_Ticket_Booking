@@ -5,12 +5,14 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool showBackButton;
   final bool noLeading;
+  final List<Widget>? actions;
 
   const AdminAppBar({
     super.key,
     this.title = 'Movix',
     this.showBackButton = false,
     this.noLeading = false,
+    this.actions,
   });
 
   @override
@@ -36,6 +38,7 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: true,
       automaticallyImplyLeading: false,
       leading: noLeading ? null : leadingWidget,
+      actions: actions,
       title: Text(
         title,
         style: Theme.of(context).textTheme.titleLarge?.copyWith(

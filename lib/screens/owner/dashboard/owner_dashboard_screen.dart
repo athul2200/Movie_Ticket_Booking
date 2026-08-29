@@ -128,11 +128,18 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
               },
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildStatCard(
-              icon: Icons.movie_creation_outlined,
-              title: 'Active Movies',
-              value: MockData.allMovies.length.toString().padLeft(2, '0'),
-              badgeText: 'In Rotation',
+            Builder(
+              builder: (context) {
+                final activeMoviesCount = MockData.allMovies
+                    .where((m) => m.theaters.contains(widget.theaterName))
+                    .length;
+                return _buildStatCard(
+                  icon: Icons.movie_creation_outlined,
+                  title: 'Active Movies',
+                  value: activeMoviesCount.toString().padLeft(2, '0'),
+                  badgeText: 'In Rotation',
+                );
+              },
             ),
             const SizedBox(height: AppSpacing.md),
             _buildStatCard(

@@ -7,6 +7,7 @@ import 'package:booking/screens/owner/widgets/admin_text_field.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
 import 'package:booking/core/utils/ist_time_utils.dart';
 import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/movie_model.dart';
 
 class OwnerScheduleScreen extends StatefulWidget {
   final String theaterName;
@@ -57,10 +58,17 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
 
   final Set<String> _selectedTimes = {};
 
+  List<MovieModel> get _availableMovies {
+    return MockData.allMovies
+        .where((m) => m.theaters.contains(widget.theaterName))
+        .toList();
+  }
+
   @override
   void initState() {
     super.initState();
-    _selectedMovie = MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : '';
+    final avail = _availableMovies;
+    _selectedMovie = avail.isNotEmpty ? avail.first.title : (MockData.allMovies.isNotEmpty ? MockData.allMovies.first.title : '');
     // Lock the theater to the owner's own theater
     _selectedTheater = widget.theaterName;
     // Use IST-aligned date so the saved label matches the user module's date chips
@@ -206,13 +214,13 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   AdminDropdown<String>(
-                    value: MockData.allMovies.any((m) => m.title == _selectedMovie) ? _selectedMovie : null,
+                    value: _availableMovies.any((m) => m.title == _selectedMovie) ? _selectedMovie : null,
                     hintText: 'Select a movie',
                     prefixIcon: const Icon(
                       Icons.movie_creation_outlined,
                       color: AppColors.textSecondary,
                     ),
-                    items: MockData.allMovies.map((movie) {
+                    items: _availableMovies.map((movie) {
                       return DropdownMenuItem(
                         value: movie.title,
                         child: Text(movie.title),
