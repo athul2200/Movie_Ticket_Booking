@@ -57,6 +57,103 @@ class _ShowManagementScreenState extends State<ShowManagementScreen> {
     await MockData.saveAll();
   }
 
+  String _selectedTheaterFilter = 'All Theaters';
+
+  void _showAddShowDialog() {
+    if (MockData.allMovies.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No movies available to schedule.')),
+      );
+      return;
+    }
+
+    String selectedMovie = MockData.allMovies.first.title;
+    String selectedTheater = 'Kairali';
+    String selectedScreen = 'Screen 01';
+    final timeCtrl = TextEditingController(text: '07:30 PM');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Add Show Schedule'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                value: selectedMovie,
+                decoration: const InputDecoration(labelText: 'Select Movie'),
+                items: MockData.allMovies
+                    .map((m) => DropdownMenuItem(value: m.title, child: Text(m.title)))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setDialogState(() => selectedMovie = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedTheater,
+                decoration: const InputDecoration(labelText: 'Theater'),
+                items: const [
+                  DropdownMenuItem(value: 'Kairali', child: Text('Kairali')),
+                  DropdownMenuItem(value: 'Nila', child: Text('Nila')),
+                ],
+                onChanged: (val) {
+                  if (val != null) setDialogState(() => selectedTheater = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedScreen,
+                decoration: const InputDecoration(labelText: 'Screen'),
+                items: const [
+                  DropdownMenuItem(value: 'Screen 01', child: Text('Screen 01')),
+                  DropdownMenuItem(value: 'Screen 02', child: Text('Screen 02')),
+                ],
+                onChanged: (val) {
+                  if (val != null) setDialogState(() => selectedScreen = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: timeCtrl,
+                decoration: const InputDecoration(labelText: 'Showtime (e.g. 07:30 PM)'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final time = timeCtrl.text.trim();
+                if (time.isEmpty) return;
+
+                final today = _todayLabel;
+                MockData.movieSchedules.putIfAbsent(selectedMovie, () => {});
+                MockData.movieSchedules[selectedMovie]!.putIfAbsent(today, () => {});
+                MockData.movieSchedules[selectedMovie]![today]!.putIfAbsent(selectedTheater, () => {});
+                MockData.movieSchedules[selectedMovie]![today]![selectedTheater]!.putIfAbsent(selectedScreen, () => []);
+
+                if (!MockData.movieSchedules[selectedMovie]![today]![selectedTheater]![selectedScreen]!.contains(time)) {
+                  MockData.movieSchedules[selectedMovie]![today]![selectedTheater]![selectedScreen]!.add(time);
+                }
+
+                await MockData.saveAll();
+                setState(() {});
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRed),
+              child: const Text('Add Show'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final today = _todayLabel;
@@ -67,6 +164,8 @@ class _ShowManagementScreenState extends State<ShowManagementScreen> {
       final dateEntry = dates[today];
       if (dateEntry == null) return;
       dateEntry.forEach((theater, screens) {
+        if (_selectedTheaterFilter != 'All Theaters' && theater != _selectedTheaterFilter) return;
+
         theaterShows.putIfAbsent(theater, () => {});
         screens.forEach((screen, times) {
           theaterShows[theater]!.putIfAbsent(screen, () => []);
@@ -100,14 +199,27 @@ class _ShowManagementScreenState extends State<ShowManagementScreen> {
                   ),
                 ],
               ),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.filter_list, size: 18),
-                label: const Text('Filter'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.textPrimary,
-                  side: const BorderSide(color: AppTheme.borderLight),
-                ),
+              Row(
+                children: [
+                  DropdownButton<String>(
+                    value: _selectedTheaterFilter,
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedTheaterFilter = val);
+                    },
+                    items: const [
+                      DropdownMenuItem(value: 'All Theaters', child: Text('All Theaters')),
+                      DropdownMenuItem(value: 'Kairali', child: Text('Kairali')),
+                      DropdownMenuItem(value: 'Nila', child: Text('Nila')),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: _showAddShowDialog,
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Add Show'),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRed),
+                  ),
+                ],
               ),
             ],
           ),

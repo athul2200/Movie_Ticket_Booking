@@ -4,6 +4,8 @@ import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/models/booking_model.dart';
 
+import 'package:booking/widgets/app_image.dart';
+
 /// ============================================================
 /// My Bookings Screen — Shows booking history only.
 /// ============================================================
@@ -119,10 +121,9 @@ class BookingCard extends StatelessWidget {
               // Left Section — Movie Poster
               SizedBox(
                 width: 95,
-                child: Image.network(
-                  booking.moviePosterUrl,
+                child: AppImage(
+                  urlOrPath: booking.moviePosterUrl,
                   fit: BoxFit.cover,
-                  gaplessPlayback: true,
                   errorBuilder: (_, _, _) => Container(
                     color: Colors.black26,
                     child: const Icon(Icons.movie, color: AppColors.textWhite),

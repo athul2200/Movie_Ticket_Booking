@@ -55,6 +55,7 @@ class Sidebar extends StatelessWidget {
           // ── Nav section label ──────────────────────────────
           _sectionLabel('MANAGEMENT'),
           const SizedBox(height: 8),
+          _menuItem(Icons.movie_outlined,               'Movie Management', 'movie_management'),
           _menuItem(Icons.confirmation_number_outlined, 'All Bookings',    'all_bookings'),
           _menuItem(Icons.movie_creation_outlined,      'Show Management', 'show_management'),
           _menuItem(Icons.event_seat_outlined,          'Seat Blocking',   'seat_blocking'),

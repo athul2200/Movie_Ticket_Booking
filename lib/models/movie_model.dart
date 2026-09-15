@@ -14,6 +14,7 @@ class MovieModel {
   final String bannerUrl; // Network image URL for hero banner
   final String trailerUrl; // YouTube trailer link
   final List<String> theaters; // Theaters where this movie is added
+  final bool isActive; // Enable/disable visibility
 
   const MovieModel({
     required this.id,
@@ -27,6 +28,7 @@ class MovieModel {
     required this.bannerUrl,
     this.trailerUrl = '',
     this.theaters = const ['Kairali', 'Nila'],
+    this.isActive = true,
   });
 
   factory MovieModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class MovieModel {
       bannerUrl: json['bannerUrl'] as String,
       trailerUrl: json['trailerUrl'] as String? ?? '',
       theaters: List<String>.from(json['theaters'] ?? ['Kairali', 'Nila']),
+      isActive: json['isActive'] as bool? ?? true,
     );
   }
 
@@ -58,6 +61,7 @@ class MovieModel {
       'bannerUrl': bannerUrl,
       'trailerUrl': trailerUrl,
       'theaters': theaters,
+      'isActive': isActive,
     };
   }
 
@@ -73,6 +77,7 @@ class MovieModel {
     String? bannerUrl,
     String? trailerUrl,
     List<String>? theaters,
+    bool? isActive,
   }) {
     return MovieModel(
       id: id ?? this.id,
@@ -86,6 +91,7 @@ class MovieModel {
       bannerUrl: bannerUrl ?? this.bannerUrl,
       trailerUrl: trailerUrl ?? this.trailerUrl,
       theaters: theaters ?? this.theaters,
+      isActive: isActive ?? this.isActive,
     );
   }
 }

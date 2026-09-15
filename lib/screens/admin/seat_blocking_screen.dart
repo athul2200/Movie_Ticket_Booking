@@ -13,20 +13,32 @@ class SeatBlockingScreen extends StatefulWidget {
 class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   Set<String> selectedSeats = {};
 
-  // Persistent key for admin blocked seats in MockData
-  static const String _blockKey = 'admin_default';
+  String _selectedCinema = 'Kairali';
+  String _selectedScreen = 'Screen 01';
+  String _selectedShowtime = '07:30 PM';
 
-  // Booked seats — fixed for the session
-  final Set<String> bookedSeats = {'E7', 'E8', 'E9', 'E10', 'E11'};
+  String get _sessionKey => '${_selectedCinema}_${_selectedScreen}_$_selectedShowtime';
+
+  // Booked seats dynamically calculated from real user bookings
+  Set<String> get bookedSeats {
+    final set = <String>{};
+    for (final b in MockData.bookings) {
+      if (b.status != 'Cancelled' &&
+          b.cinema.toLowerCase().contains(_selectedCinema.toLowerCase())) {
+        set.addAll(b.seats);
+      }
+    }
+    return set;
+  }
 
   // Blocked seats backed by MockData for persistence
   Set<String> get blockedSeats => Set<String>.from(
-    MockData.blockedSeats[_blockKey] ?? {'A1', 'A2'},
-  );
+        MockData.blockedSeats[_sessionKey] ?? MockData.blockedSeats['admin_default'] ?? {'A1', 'A2'},
+      );
 
   void toggleSeatSelection(String seatId) {
-    if (bookedSeats.contains(seatId) || blockedSeats.contains(seatId)) {
-      return; // Cannot select booked or blocked seats
+    if (bookedSeats.contains(seatId)) {
+      return; // Cannot select booked seats
     }
     setState(() {
       if (selectedSeats.contains(seatId)) {
@@ -44,13 +56,39 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   }
 
   Future<void> blockSelectedSeats() async {
-    final current = Set<String>.from(MockData.blockedSeats[_blockKey] ?? {'A1', 'A2'});
+    final current = Set<String>.from(blockedSeats);
     current.addAll(selectedSeats);
     setState(() {
-      MockData.blockedSeats[_blockKey] = current.toList();
+      MockData.blockedSeats[_sessionKey] = current.toList();
       selectedSeats.clear();
     });
     await MockData.saveAll();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selected seats successfully blocked for this session.'),
+          backgroundColor: AppTheme.darkRed,
+        ),
+      );
+    }
+  }
+
+  Future<void> unblockSelectedSeats() async {
+    final current = Set<String>.from(blockedSeats);
+    current.removeAll(selectedSeats);
+    setState(() {
+      MockData.blockedSeats[_sessionKey] = current.toList();
+      selectedSeats.clear();
+    });
+    await MockData.saveAll();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selected seats unblocked.'),
+          backgroundColor: AppTheme.successGreen,
+        ),
+      );
+    }
   }
 
   @override
@@ -119,10 +157,52 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   }
 
   Widget _buildSessionDetails() {
+    final activeMovie = MockData.allMovies.isNotEmpty ? MockData.allMovies.first : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Session Details', style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 16),
+        Text('Cinema & Screen', style: Theme.of(context).textTheme.bodyMedium),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: _selectedCinema,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Kairali', child: Text('Kairali')),
+                  DropdownMenuItem(value: 'Nila', child: Text('Nila')),
+                ],
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedCinema = val);
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: _selectedScreen,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Screen 01', child: Text('Screen 01')),
+                  DropdownMenuItem(value: 'Screen 02', child: Text('Screen 02')),
+                ],
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedScreen = val);
+                },
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         Text('Selected Movie', style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 8),
@@ -141,68 +221,34 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                   color: Colors.black,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                // Placeholder for movie poster
-                child: const Icon(Icons.movie, color: Colors.white, size: 24),
+                child: activeMovie != null && activeMovie.posterUrl.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(activeMovie.posterUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.movie, color: Colors.white)),
+                      )
+                    : const Icon(Icons.movie, color: Colors.white, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Nebula's Horizon", style: Theme.of(context).textTheme.titleMedium),
+                    Text(activeMovie?.title ?? "Feature Movie", style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 4),
-                    Text("2h 15m • Sci-Fi / Drama", style: Theme.of(context).textTheme.bodyMedium),
+                    Text("${activeMovie?.duration ?? '2h 15m'} • ${activeMovie?.genres.join('/') ?? 'Drama'}", style: Theme.of(context).textTheme.bodyMedium),
                   ],
                 ),
               )
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Auditorium', style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text('IMAX Theatre\n04', style: Theme.of(context).textTheme.titleMedium?.copyWith(height: 1.5)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Time Slot', style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text('19:45 PM\n', style: Theme.of(context).textTheme.titleMedium?.copyWith(height: 1.5)), // Added \n for height matching
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
 
   Widget _buildAuditoriumStatus() {
+    final availableCount = 160 - (bookedSeats.length + blockedSeats.length);
+
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -213,15 +259,15 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildStatusBox('142', 'Available', const Color(0xFFF3F4F6))),
+                Expanded(child: _buildStatusBox('$availableCount', 'Available', const Color(0xFFF3F4F6))),
                 const SizedBox(width: 12),
-                Expanded(child: _buildStatusBox('58', 'Booked', const Color(0xFFE5E7EB))),
+                Expanded(child: _buildStatusBox('${bookedSeats.length}', 'Booked', const Color(0xFFE5E7EB))),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildStatusBox('12', 'Blocked', const Color(0xFFF3F4F6))),
+                Expanded(child: _buildStatusBox('${blockedSeats.length}', 'Blocked', const Color(0xFFF3F4F6))),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Container(
@@ -277,7 +323,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
           label: const Text('Confirm Block Selection'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            backgroundColor: AppTheme.darkRed, // using dark red as per image
+            backgroundColor: AppTheme.darkRed,
           ),
         ),
         const SizedBox(height: 12),
@@ -320,6 +366,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
 
   Widget _buildLegendItem(Color color, String label, [bool withBorder = false]) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 16,
@@ -409,9 +456,8 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   }
 
   Widget _buildSeat(String rowLetter, int seatNumber) {
-    // Gap logic: rows other than 'E' have a gap at columns 9 and 10.
     if (rowLetter != 'E' && (seatNumber == 9 || seatNumber == 10)) {
-      return const SizedBox(width: 36); // Size of a seat + padding
+      return const SizedBox(width: 36);
     }
 
     final seatId = '$rowLetter$seatNumber';
@@ -473,7 +519,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
         _buildFooterButton('Select\nOdd/Even'),
         const SizedBox(width: 4),
         const Icon(Icons.info_outline, size: 16, color: AppTheme.textLight),
-        Text('Tip: Drag across seats to select multiple (Planned Update)', style: Theme.of(context).textTheme.bodySmall),
+        Text('Click any seat to select and toggle block/unblock status.', style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
@@ -533,6 +579,16 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text('Block Selected'),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: unblockSelectedSeats,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.successGreen,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: const Text('Unblock Selected'),
             ),
             const SizedBox(width: 12),
             TextButton(

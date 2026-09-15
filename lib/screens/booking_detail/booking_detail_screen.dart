@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/models/booking_model.dart';
+import 'package:booking/widgets/app_image.dart';
+import 'package:booking/services/ticket_pdf_service.dart';
+import 'package:booking/core/utils/ist_time_utils.dart';
 
 /// ============================================================
 /// Booking Detail Screen — Confirmed ticket view with:
@@ -11,15 +14,79 @@ import 'package:booking/models/booking_model.dart';
 /// - QR Code
 /// - Booking ID
 /// - Total amount + experience badge
-/// - Download Ticket button
+/// - Download Ticket button (functional PDF download)
 /// - Cancel Booking link
 /// - Important Information section
 /// ============================================================
 
-class BookingDetailScreen extends StatelessWidget {
+class BookingDetailScreen extends StatefulWidget {
   final BookingModel booking;
 
   const BookingDetailScreen({super.key, required this.booking});
+
+  @override
+  State<BookingDetailScreen> createState() => _BookingDetailScreenState();
+}
+
+class _BookingDetailScreenState extends State<BookingDetailScreen> {
+  bool _isDownloading = false;
+
+  Future<void> _handleDownloadTicket() async {
+    if (_isDownloading) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    setState(() {
+      _isDownloading = true;
+    });
+
+    try {
+      final result = await TicketPdfService.downloadTicket(widget.booking);
+
+      if (!mounted) return;
+
+      setState(() {
+        _isDownloading = false;
+      });
+
+      messenger.clearSnackBars();
+      if (result.success) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Ticket downloaded successfully.'),
+            backgroundColor: AppColors.primary,
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Unable to download ticket. Please try again.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _isDownloading = false;
+      });
+
+      messenger.clearSnackBars();
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Unable to download ticket. Please try again.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +179,7 @@ class BookingDetailScreen extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () {
-              // TODO: Share booking
+              // Share booking
             },
             child: const Icon(
               Icons.share_outlined,
@@ -133,27 +200,32 @@ class BookingDetailScreen extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           // ── Banner image ──
-          Container(
+          SizedBox(
             height: 160,
             width: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(booking.moviePosterUrl),
-                fit: BoxFit.cover,
-                onError: (_, _) {},
-              ),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.5),
-                  ],
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: AppImage(
+                    urlOrPath: widget.booking.moviePosterUrl,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.5),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -180,8 +252,8 @@ class BookingDetailScreen extends StatelessWidget {
                   // Movie poster thumbnail
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.sm),
-                    child: Image.network(
-                      booking.moviePosterUrl,
+                    child: AppImage(
+                      urlOrPath: widget.booking.moviePosterUrl,
                       width: 70,
                       height: 90,
                       fit: BoxFit.cover,
@@ -219,7 +291,7 @@ class BookingDetailScreen extends StatelessWidget {
 
                         // Movie title
                         Text(
-                          booking.movieTitle,
+                          widget.booking.movieTitle,
                           style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(
                                 fontWeight: FontWeight.w600,
@@ -263,8 +335,17 @@ class BookingDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Booking info card with date, time, cinema, seats, QR, amount
+  /// Booking info card with date, time, cinema, seats, QR, amount, and IST timestamp
   Widget _buildBookingInfoCard(BuildContext context) {
+    final istNow = IstTimeUtils.nowInIst();
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    int hour = istNow.hour;
+    final period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    if (hour == 0) hour = 12;
+    final minute = istNow.minute.toString().padLeft(2, '0');
+    final formattedIst = '${istNow.day.toString().padLeft(2, '0')} ${months[istNow.month - 1]} ${istNow.year}, ${hour.toString().padLeft(2, '0')}:$minute $period IST';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -278,12 +359,12 @@ class BookingDetailScreen extends StatelessWidget {
           // ── Date & Time row ──
           Row(
             children: [
-              Expanded(child: _infoColumn(context, 'DATE', booking.date)),
+              Expanded(child: _infoColumn(context, 'DATE', widget.booking.date)),
               Expanded(
                 child: _infoColumn(
                   context,
                   'TIME',
-                  booking.time,
+                  widget.booking.time,
                   crossAxisAlignment: CrossAxisAlignment.end,
                 ),
               ),
@@ -298,18 +379,26 @@ class BookingDetailScreen extends StatelessWidget {
           // ── Cinema & Seats row ──
           Row(
             children: [
-              Expanded(child: _infoColumn(context, 'CINEMA', booking.cinema)),
+              Expanded(child: _infoColumn(context, 'THEATER', widget.booking.cinema)),
               Expanded(
                 child: _infoColumn(
                   context,
-                  'SEATS',
-                  booking.seatsFormatted,
+                  'SEATS (${widget.booking.seats.length})',
+                  widget.booking.seatsFormatted,
                   valueColor: AppColors.primary,
                   crossAxisAlignment: CrossAxisAlignment.end,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.xl),
+
+          // ── Screen row ──
+          if (widget.booking.screen.isNotEmpty) ...[
+            const Divider(color: AppColors.divider, height: 1),
+            const SizedBox(height: AppSpacing.xl),
+            _infoColumn(context, 'SCREEN', widget.booking.screen),
+          ],
           const SizedBox(height: AppSpacing.xxl),
 
           // ── QR Code placeholder ──
@@ -332,11 +421,22 @@ class BookingDetailScreen extends StatelessWidget {
 
           // ── Booking ID ──
           Text(
-            'ID: ${booking.id}',
+            'ID: ${widget.booking.id}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
               fontSize: 13,
               letterSpacing: 0.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          // ── IST Booking Timestamp ──
+          Text(
+            'Booked on: $formattedIst',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textHint,
+              fontSize: 11,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -361,7 +461,7 @@ class BookingDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '₹${booking.totalAmount.toStringAsFixed(2)}',
+                    '₹${widget.booking.totalAmount.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: 17,
@@ -382,7 +482,7 @@ class BookingDetailScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Text(
-                  booking.experience,
+                  widget.booking.experience,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
@@ -437,11 +537,18 @@ class BookingDetailScreen extends StatelessWidget {
       width: double.infinity,
       height: 50,
       child: ElevatedButton.icon(
-        onPressed: () {
-          // TODO: Download ticket
-        },
-        icon: const Icon(Icons.download, size: 20),
-        label: const Text('Download Ticket'),
+        onPressed: _isDownloading ? null : _handleDownloadTicket,
+        icon: _isDownloading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.textWhite,
+                ),
+              )
+            : const Icon(Icons.download, size: 20),
+        label: Text(_isDownloading ? 'Downloading...' : 'Download Ticket'),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textWhite,

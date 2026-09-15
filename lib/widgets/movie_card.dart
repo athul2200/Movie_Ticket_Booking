@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/models/movie_model.dart';
-import 'package:booking/data/mock_data.dart';
+
+import 'package:booking/widgets/app_image.dart';
 
 /// ============================================================
 /// Movie Card — Poster card for the grid with:
@@ -35,10 +36,9 @@ class MovieCard extends StatelessWidget {
                 ),
                 child: AspectRatio(
                   aspectRatio: 0.72,
-                  child: Image.network(
-                    movie.posterUrl,
+                  child: AppImage(
+                    urlOrPath: movie.posterUrl,
                     fit: BoxFit.cover,
-                    gaplessPlayback: true,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: AppColors.surface,
                       child: const Center(

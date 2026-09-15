@@ -10,8 +10,7 @@ import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/widgets/admin_text_field.dart';
 import 'package:booking/screens/owner/widgets/admin_dropdown.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
-
-import 'package:booking/core/utils/ist_time_utils.dart';
+import 'package:booking/widgets/app_image.dart';
 
 class OwnerMoviesScreen extends StatefulWidget {
   final String theaterName;
@@ -33,6 +32,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
   String _selectedLanguage = 'English';
   String _selectedCertification = 'UA';
   String _posterSource = 'URL'; // 'URL' or 'Upload'
+  String? _uploadedPosterPath;
   String? _uploadedPosterName;
   String? _editingMovieId;
   final ScrollController _scrollController = ScrollController();
@@ -57,6 +57,25 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
       });
     }
   }
+
+  Future<void> _pickPosterImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _uploadedPosterPath = image.path;
+          _uploadedPosterName = image.name;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
+    }
+  }
   
   @override
   void dispose() {
@@ -73,13 +92,43 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
   }
 
   void _editMovie(MovieModel movie) {
+    // Snapshot old cast entries BEFORE setState so they can be safely
+    // disposed after the frame — disposing inside setState causes the
+    // "_elements.contains(element) is not true" assertion because their
+    // TextEditingControllers are destroyed while Flutter is still
+    // deactivating the associated TextFormField elements.
+    final oldCast = List<_CastEntry>.from(_castMembers);
+
+    final isUrl = movie.posterUrl.startsWith('http://') ||
+        movie.posterUrl.startsWith('https://') ||
+        movie.posterUrl.startsWith('blob:') ||
+        movie.posterUrl.startsWith('data:');
+
+    // Build the new cast list before setState so no disposal happens inside.
+    final existingCast = MockData.movieCast[movie.title] ?? [];
+    final newCast = existingCast.map((castItem) {
+      final entry = _CastEntry();
+      entry.nameCtrl.text = castItem.name;
+      entry.selectedRole = castItem.role;
+      return entry;
+    }).toList();
+
     setState(() {
       _editingMovieId = movie.id;
       _movieNameCtrl.text = movie.title;
       _descriptionCtrl.text = movie.description;
-      _posterSource = 'URL';
-      _posterUrlCtrl.text = movie.posterUrl;
-      _uploadedPosterName = null;
+
+      if (isUrl) {
+        _posterSource = 'URL';
+        _posterUrlCtrl.text = movie.posterUrl;
+        _uploadedPosterPath = null;
+        _uploadedPosterName = null;
+      } else {
+        _posterSource = 'Upload';
+        _uploadedPosterPath = movie.posterUrl;
+        _uploadedPosterName = movie.posterUrl.split('/').last.split('\\').last;
+        _posterUrlCtrl.clear();
+      }
       _selectedLanguage = movie.genres.isNotEmpty ? movie.genres.first : 'English';
       if (!['English', 'Malayalam', 'Tamil', 'Hindi', 'Telugu'].contains(_selectedLanguage)) {
         _selectedLanguage = 'English';
@@ -91,17 +140,17 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
       _durationCtrl.text = movie.duration;
       _trailerCtrl.text = movie.trailerUrl;
 
-      // Load cast
-      for (final c in _castMembers) {
+      // Swap in the new cast list — no disposal happens here.
+      _castMembers
+        ..clear()
+        ..addAll(newCast);
+    });
+
+    // Dispose old cast controllers AFTER the frame so Flutter can cleanly
+    // deactivate the TextFormField elements that used them.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final c in oldCast) {
         c.dispose();
-      }
-      _castMembers.clear();
-      final existingCast = MockData.movieCast[movie.title] ?? [];
-      for (final castItem in existingCast) {
-        final entry = _CastEntry();
-        entry.nameCtrl.text = castItem.name;
-        entry.selectedRole = castItem.role;
-        _castMembers.add(entry);
       }
     });
 
@@ -123,7 +172,9 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
     _castMembers.clear();
     setState(() {
       _editingMovieId = null;
+      _uploadedPosterPath = null;
       _uploadedPosterName = null;
+      _posterSource = 'URL';
       _selectedLanguage = 'English';
       _selectedCertification = 'UA';
     });
@@ -136,21 +187,21 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
-      if (_posterSource == 'URL' && _posterUrlCtrl.text.isEmpty) {
+      if (_posterSource == 'URL' && _posterUrlCtrl.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please enter a poster URL.')),
         );
         return;
-      } else if (_posterSource == 'Upload' && _uploadedPosterName == null) {
+      } else if (_posterSource == 'Upload' && _uploadedPosterPath == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please upload a poster image.')),
+          const SnackBar(content: Text('Please select a poster image from your device.')),
         );
         return;
       }
       
       final String poster = _posterSource == 'URL'
-          ? _posterUrlCtrl.text
-          : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop';
+          ? _posterUrlCtrl.text.trim()
+          : _uploadedPosterPath!;
 
       final String updatedTitle = _movieNameCtrl.text.trim();
 
@@ -422,50 +473,191 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                           size: 20,
                         ),
                       )
-                    else
+                    else if (_uploadedPosterPath == null)
                       GestureDetector(
-                        onTap: () async {
-                          final ImagePicker picker = ImagePicker();
-                          final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-                          if (image != null) {
-                            setState(() {
-                              _uploadedPosterName = image.name;
-                            });
-                          }
-                        },
+                        onTap: _pickPosterImage,
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl, horizontal: AppSpacing.md),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
                             borderRadius: BorderRadius.circular(AppRadius.md),
                             border: Border.all(
-                              color: AppColors.divider,
+                              color: AppColors.primary.withValues(alpha: 0.4),
                               style: BorderStyle.solid,
+                              width: 1.5,
                             ),
                           ),
                           child: Column(
                             children: [
-                              Icon(
-                                _uploadedPosterName != null
-                                    ? Icons.check_circle_outline
-                                    : Icons.cloud_upload_outlined,
-                                color: _uploadedPosterName != null
-                                    ? AppColors.primary
-                                    : AppColors.textSecondary,
-                                size: 32,
+                              Container(
+                                padding: const EdgeInsets.all(AppSpacing.md),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.cloud_upload_outlined,
+                                  color: AppColors.primary,
+                                  size: 32,
+                                ),
                               ),
                               const SizedBox(height: AppSpacing.sm),
                               Text(
-                                _uploadedPosterName ?? 'Tap to browse files',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: _uploadedPosterName != null
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
+                                'Tap to select image from device gallery',
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Supports PNG, JPG, JPEG, WEBP',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
                           ),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.shadowColor.withValues(alpha: 0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(AppRadius.md - 1),
+                                    bottom: Radius.circular(AppRadius.md - 1),
+                                  ),
+                                  child: AppImage(
+                                    urlOrPath: _uploadedPosterPath!,
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      height: 180,
+                                      color: AppColors.surface,
+                                      child: const Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.broken_image_outlined, size: 40, color: AppColors.textHint),
+                                            SizedBox(height: 8),
+                                            Text('Image preview unavailable', style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // File name badge overlay
+                                Positioned(
+                                  top: AppSpacing.sm,
+                                  left: AppSpacing.sm,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.75),
+                                      borderRadius: BorderRadius.circular(AppRadius.full),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.check_circle, size: 14, color: AppColors.greenAccent),
+                                        const SizedBox(width: 6),
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: 180),
+                                          child: Text(
+                                            _uploadedPosterName ?? 'Selected Poster',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                // Change / Remove actions
+                                Positioned(
+                                  top: AppSpacing.sm,
+                                  right: AppSpacing.sm,
+                                  child: Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: _pickPosterImage,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primary,
+                                            borderRadius: BorderRadius.circular(AppRadius.full),
+                                          ),
+                                          child: const Row(
+                                            children: [
+                                              Icon(Icons.photo_library, size: 14, color: Colors.white),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'Change',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      GestureDetector(
+                                        onTap: () => setState(() {
+                                          _uploadedPosterPath = null;
+                                          _uploadedPosterName = null;
+                                        }),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.6),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.close,
+                                            size: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     const SizedBox(height: AppSpacing.md),
@@ -905,8 +1097,8 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(AppRadius.md),
                 ),
-                child: Image.network(
-                  imageUrl,
+                child: AppImage(
+                  urlOrPath: imageUrl,
                   height: 140,
                   width: double.infinity,
                   fit: BoxFit.cover,

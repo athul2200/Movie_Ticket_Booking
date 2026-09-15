@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:booking/theme/app_theme.dart';
+import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/user_model.dart';
 
 class UserTable extends StatelessWidget {
   const UserTable({super.key});
 
-  static const List<Map<String, String>> _users = [
-    {'initials': 'JD', 'name': 'Julianne Devis',  'email': 'julianne.d@example.com', 'movies': '45', 'bookings': '32', 'genre': 'Sci-Fi'},
-    {'initials': 'MW', 'name': 'Marcus Wright',   'email': 'm.wright@cinema.com',    'movies': '12', 'bookings': '8',  'genre': 'Action'},
-    {'initials': 'SC', 'name': 'Sarah Chen',      'email': 'schen.creative@ui.com',  'movies': '8',  'bookings': '5',  'genre': 'Drama'},
-    {'initials': 'AK', 'name': 'Aaron Kessler',   'email': 'akessler@web.net',       'movies': '0',  'bookings': '0',  'genre': 'N/A'},
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final users = MockData.users;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -60,40 +57,40 @@ class UserTable extends StatelessWidget {
                     maxWidth: constraints.maxWidth > 600 ? constraints.maxWidth : 600,
                   ),
                   child: Column(
-                children: [
-                  // Table header
-                  Container(
-                    color: const Color(0xFFFDF6F6),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    child: Row(
-                      children: [
-                        _headerCell('MEMBER', flex: 3),
-                        _headerCell('MOVIES SEEN'),
-                        _headerCell('TOTAL BOOKINGS'),
-                        _headerCell('FAV GENRE'),
-                        _headerCell('ACTIONS'),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
+                    children: [
+                      // Table header
+                      Container(
+                        color: const Color(0xFFFDF6F6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        child: Row(
+                          children: [
+                            _headerCell('MEMBER', flex: 3),
+                            _headerCell('MOVIES SEEN'),
+                            _headerCell('TOTAL BOOKINGS'),
+                            _headerCell('FAV GENRE'),
+                            _headerCell('STATUS'),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1),
 
-                  // Rows
-                  ..._users.asMap().entries.map((e) {
-                    final isLast = e.key == _users.length - 1;
-                    return Column(
-                      children: [
-                        _buildRow(context, e.value),
-                        if (!isLast) const Divider(height: 1),
-                      ],
-                    );
-                  }),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+                      // Rows
+                      ...users.asMap().entries.map((e) {
+                        final isLast = e.key == users.length - 1;
+                        return Column(
+                          children: [
+                            _buildRow(context, e.value),
+                            if (!isLast) const Divider(height: 1),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
 
           // ── Footer ────────────────────────────────────────────
           Container(
@@ -105,13 +102,9 @@ class UserTable extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'Showing 4 of 2,481 users',
+                  'Showing ${users.length} registered users',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                const Spacer(),
-                _pageBtn(Icons.chevron_left),
-                const SizedBox(width: 6),
-                _pageBtn(Icons.chevron_right),
               ],
             ),
           ),
@@ -135,7 +128,7 @@ class UserTable extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(BuildContext context, Map<String, String> user) {
+  Widget _buildRow(BuildContext context, UserModel user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
@@ -149,7 +142,7 @@ class UserTable extends StatelessWidget {
                   radius: 18,
                   backgroundColor: AppTheme.lightRed,
                   child: Text(
-                    user['initials']!,
+                    user.initials,
                     style: const TextStyle(
                       color: AppTheme.primaryRed,
                       fontWeight: FontWeight.bold,
@@ -163,12 +156,12 @@ class UserTable extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        user['name']!,
+                        user.name,
                         style: Theme.of(context).textTheme.titleSmall,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        user['email']!,
+                        user.email,
                         style: Theme.of(context).textTheme.bodySmall,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -178,25 +171,28 @@ class UserTable extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(child: Text(user['movies']!)),
-          Expanded(child: Text(user['bookings']!)),
-          Expanded(child: Text(user['genre']!)),
-          const Expanded(
-            child: Icon(Icons.more_vert, color: AppTheme.textLight, size: 18),
+          Expanded(child: Text('${user.moviesSeenCount}')),
+          Expanded(child: Text('${user.totalBookingsCount}')),
+          Expanded(child: Text(user.favGenre)),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: user.status == 'ACTIVE' ? AppTheme.successGreenBg : AppTheme.errorRedBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                user.status,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: user.status == 'ACTIVE' ? AppTheme.successGreen : AppTheme.errorRed,
+                ),
+              ),
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _pageBtn(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppTheme.borderLight),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Icon(icon, size: 16, color: AppTheme.textSecondary),
     );
   }
 }

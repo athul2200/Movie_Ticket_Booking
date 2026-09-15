@@ -4,6 +4,8 @@ import 'package:booking/models/seat_row_model.dart';
 
 import 'package:booking/models/theater_model.dart';
 import 'package:booking/models/booking_model.dart';
+import 'package:booking/models/user_model.dart';
+import 'package:booking/models/review_model.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -88,10 +90,117 @@ class MockData {
     ),
   ];
 
-  // ── Mock Bookings (matching Figma Booking Detail screen) ──
-  static final List<BookingModel> bookings = [
+  // ── Mock Bookings ──
+  static final List<BookingModel> bookings = [];
 
+  // ── Application Registered Users ──
+  static List<UserModel> users = [
+    const UserModel(
+      id: 'usr_1',
+      name: 'Julianne Devis',
+      email: 'julianne.d@example.com',
+      phone: '+91 9876543210',
+      status: 'ACTIVE',
+      tier: 'Platinum',
+      lastActive: '2h ago',
+      moviesSeenCount: 45,
+      totalBookingsCount: 32,
+      favGenre: 'Sci-Fi',
+    ),
+    const UserModel(
+      id: 'usr_2',
+      name: 'Marcus Wright',
+      email: 'm.wright@cinema.com',
+      phone: '+91 9876543211',
+      status: 'PENDING',
+      tier: 'Gold',
+      lastActive: '1d ago',
+      moviesSeenCount: 12,
+      totalBookingsCount: 8,
+      favGenre: 'Action',
+    ),
+    const UserModel(
+      id: 'usr_3',
+      name: 'Sarah Chen',
+      email: 'schen.creative@ui.com',
+      phone: '+91 9876543212',
+      status: 'ACTIVE',
+      tier: 'Silver',
+      lastActive: '5m ago',
+      moviesSeenCount: 8,
+      totalBookingsCount: 5,
+      favGenre: 'Drama',
+    ),
+    const UserModel(
+      id: 'usr_4',
+      name: 'Aaron Kessler',
+      email: 'akessler@web.net',
+      phone: '+91 9876543213',
+      status: 'BANNED',
+      tier: 'Standard',
+      lastActive: '12d ago',
+      moviesSeenCount: 0,
+      totalBookingsCount: 0,
+      favGenre: 'N/A',
+    ),
   ];
+
+  // ── Moderation Review Queue ──
+  static List<ReviewModel> reviews = [
+    const ReviewModel(
+      id: 'rev_1',
+      movieTitle: 'Drishyam 3',
+      userName: 'Sandra Muller',
+      userInitials: 'SM',
+      rating: 4,
+      comment: 'The Dolby Atmos sound in Theater 4 was absolutely incredible. Made the movie feel so immersive. Just wish the popcorn was a bit fresher!',
+      timeAgo: '10m ago',
+      isApproved: true,
+    ),
+    const ReviewModel(
+      id: 'rev_2',
+      movieTitle: 'Michael',
+      userName: 'Tom Lewis',
+      userInitials: 'TL',
+      rating: 2,
+      comment: 'Had trouble with the digital ticket scanner. The staff was helpful but it delayed us getting to our seats by 15 minutes.',
+      timeAgo: '1h ago',
+      isApproved: false,
+    ),
+    const ReviewModel(
+      id: 'rev_3',
+      movieTitle: 'Kattalan',
+      userName: 'Riya Kapoor',
+      userInitials: 'RK',
+      rating: 5,
+      comment: 'Cinema Concierge is a game changer. Booked the lounge seats and the service was impeccable. Highly recommended!',
+      timeAgo: '3h ago',
+      isApproved: true,
+    ),
+  ];
+
+  // ── Analytics & Statistics Helpers ──
+  static double get totalRevenue {
+    double total = 0;
+    for (final b in bookings) {
+      if (b.status != 'Cancelled') {
+        total += b.totalAmount;
+      }
+    }
+    return total;
+  }
+
+  static int get todayBookingsCount {
+    final now = DateTime.now();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final todayStr = '${months[now.month - 1]} ${now.day}';
+    return bookings.where((b) {
+      final isTodayDate = b.date.toLowerCase().contains(todayStr.toLowerCase()) || b.date.toLowerCase().contains('today');
+      return isTodayDate && b.status != 'Cancelled';
+    }).length;
+  }
+
+  static int get activeMoviesCount => allMovies.where((m) => m.isActive).length;
 
   // ── Global Movie Schedules (Movie -> DateLabel -> Theater -> Screen -> Times) ──
   static Map<String, Map<String, Map<String, Map<String, List<String>>>>> movieSchedules = {};
@@ -224,6 +333,18 @@ class MockData {
       final List decoded = json.decode(bookingsJson);
       bookings.clear();
       bookings.addAll(decoded.map((e) => BookingModel.fromJson(e)).toList());
+    }
+
+    final usersJson = prefs.getString('users');
+    if (usersJson != null) {
+      final List decoded = json.decode(usersJson);
+      users = decoded.map((e) => UserModel.fromJson(e)).toList();
+    }
+
+    final reviewsJson = prefs.getString('reviews');
+    if (reviewsJson != null) {
+      final List decoded = json.decode(reviewsJson);
+      reviews = decoded.map((e) => ReviewModel.fromJson(e)).toList();
     }
 
     final movieSchedulesJson = prefs.getString('movieSchedules');
@@ -360,6 +481,8 @@ class MockData {
     await prefs.setString('featuredMovies', json.encode(featuredMovies.map((e) => e.toJson()).toList()));
     await prefs.setString('theaters', json.encode(theaters.map((e) => e.toJson()).toList()));
     await prefs.setString('bookings', json.encode(bookings.map((e) => e.toJson()).toList()));
+    await prefs.setString('users', json.encode(users.map((e) => e.toJson()).toList()));
+    await prefs.setString('reviews', json.encode(reviews.map((e) => e.toJson()).toList()));
     await prefs.setString('movieSchedules', json.encode(movieSchedules));
     await prefs.setString('screenPrices', json.encode(screenPrices));
     await prefs.setString('blockedSeats', json.encode(blockedSeats));
@@ -380,3 +503,4 @@ class MockData {
     await prefs.setString('screenLayouts', json.encode(encodedLayouts));
   }
 }
+

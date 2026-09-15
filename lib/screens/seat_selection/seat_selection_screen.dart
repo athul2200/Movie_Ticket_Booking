@@ -534,6 +534,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     cinema: widget.format.isNotEmpty
                         ? '${widget.cinema} • ${widget.format}'
                         : widget.cinema,
+                    screen: widget.screen,
                     seats: seatsList,
                     totalAmount: totalAmount,
                     experience: 'EXPERIENCE',

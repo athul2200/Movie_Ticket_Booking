@@ -506,7 +506,7 @@ class _OwnerLayoutEditorScreenState extends State<OwnerLayoutEditorScreen> {
         _persistToMockData();
       },
       itemBuilder: (context, index) {
-        return _buildRowEditorCard(index, key: ValueKey('row_$index'));
+        return _buildRowEditorCard(index, key: ObjectKey(_rows[index]));
       },
     );
   }

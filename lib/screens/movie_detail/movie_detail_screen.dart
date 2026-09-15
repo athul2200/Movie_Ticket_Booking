@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
@@ -8,6 +9,7 @@ import 'package:booking/core/utils/ist_time_utils.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/models/movie_model.dart';
 import 'package:booking/widgets/rating_badge.dart';
+import 'package:booking/widgets/app_image.dart';
 
 /// ============================================================
 /// Movie Detail Screen — Full movie info page with:
@@ -55,11 +57,23 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       if (!mounted) return;
       if (_selectedShowtime != null &&
           !IstTimeUtils.isShowtimeVisible(_selectedShowtime!)) {
-        setState(() {
-          _selectedScreen = null;
-          _selectedShowtime = null;
-          _selectedFormat = '';
-        });
+        if (WidgetsBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                _selectedScreen = null;
+                _selectedShowtime = null;
+                _selectedFormat = '';
+              });
+            }
+          });
+        } else {
+          setState(() {
+            _selectedScreen = null;
+            _selectedShowtime = null;
+            _selectedFormat = '';
+          });
+        }
       }
     });
   }
@@ -157,10 +171,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         fit: StackFit.expand,
         children: [
           // ── Background image ──
-          Image.network(
-            widget.movie.bannerUrl,
+          AppImage(
+            urlOrPath: widget.movie.bannerUrl.isNotEmpty ? widget.movie.bannerUrl : widget.movie.posterUrl,
             fit: BoxFit.cover,
-            gaplessPlayback: true,
             errorBuilder: (context, error, stackTrace) => Container(
               color: AppColors.textPrimary,
               child: const Center(

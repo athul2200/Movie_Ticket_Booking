@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/models/movie_model.dart';
+
+import 'package:booking/widgets/app_image.dart';
 
 /// ============================================================
 /// Hero Banner — Full-width carousel with movie poster,
@@ -44,9 +47,20 @@ class _HeroBannerState extends State<HeroBanner> {
               autoPlayAnimationDuration: const Duration(milliseconds: 600),
               autoPlayCurve: Curves.easeInOut,
               onPageChanged: (index, reason) {
-                setState(() {
-                  _currentPage = index;
-                });
+                if (!mounted) return;
+                if (WidgetsBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() {
+                        _currentPage = index;
+                      });
+                    }
+                  });
+                } else {
+                  setState(() {
+                    _currentPage = index;
+                  });
+                }
               },
             ),
             items: widget.movies.map((movie) {
@@ -98,10 +112,9 @@ class _BannerSlide extends StatelessWidget {
         // ── Background image ──
         ClipRRect(
           borderRadius: BorderRadius.circular(0),
-          child: Image.network(
-            movie.bannerUrl,
+          child: AppImage(
+            urlOrPath: movie.bannerUrl.isNotEmpty ? movie.bannerUrl : movie.posterUrl,
             fit: BoxFit.cover,
-            gaplessPlayback: true,
             errorBuilder: (context, error, stackTrace) => Container(
               color: AppColors.textPrimary,
               child: const Center(

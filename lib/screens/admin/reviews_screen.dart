@@ -1,12 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:booking/theme/app_theme.dart';
+import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/review_model.dart';
 import 'custom_card.dart';
 
-class ReviewsScreen extends StatelessWidget {
+class ReviewsScreen extends StatefulWidget {
   const ReviewsScreen({super.key});
 
   @override
+  State<ReviewsScreen> createState() => _ReviewsScreenState();
+}
+
+class _ReviewsScreenState extends State<ReviewsScreen> {
+  Future<void> _approveReview(ReviewModel review) async {
+    final idx = MockData.reviews.indexWhere((r) => r.id == review.id);
+    if (idx != -1) {
+      setState(() {
+        MockData.reviews[idx] = review.copyWith(isApproved: true);
+      });
+      await MockData.saveAll();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Review approved successfully.'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteReview(ReviewModel review) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Review'),
+        content: Text('Are you sure you want to delete review by "${review.userName}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorRed),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() {
+      MockData.reviews.removeWhere((r) => r.id == review.id);
+    });
+    await MockData.saveAll();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Review deleted.'),
+          backgroundColor: AppTheme.errorRed,
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final reviews = MockData.reviews;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -23,57 +86,32 @@ class ReviewsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Moderation queue • 12 pending reviews from the last 24 hours.',
+            'Moderation queue • ${reviews.where((r) => !r.isApproved).length} pending reviews requiring action.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
-          const ReviewQueueList(),
+          if (reviews.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: Text(
+                  'No reviews in moderation queue.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textSecondary),
+                ),
+              ),
+            )
+          else
+            Wrap(
+              spacing: 24,
+              runSpacing: 24,
+              children: reviews.map((r) => SizedBox(width: 380, child: _buildReviewCard(r))).toList(),
+            ),
         ],
       ),
     );
   }
-}
 
-class ReviewQueueList extends StatelessWidget {
-  const ReviewQueueList({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> cards = [
-      _buildReviewCard(
-        context,
-        'SM',
-        'Sandra Muller',
-        '10m ago',
-        4,
-        '"The Dolby Atmos sound in Theater 4 was absolutely incredible. Made the new blockbuster feel so immersive. Just wish the popcorn was a bit fresher!"',
-      ),
-      _buildReviewCard(
-        context,
-        'TL',
-        'Tom Lewis',
-        '1h ago',
-        3,
-        '"Had trouble with the digital ticket scanner. The staff was helpful but it delayed us getting to our seats by 15 minutes."',
-      ),
-      _buildReviewCard(
-        context,
-        'RK',
-        'Riya Kapoor',
-        '3h ago',
-        5,
-        '"Cinema Concierge is a game changer. Booked the lounge seats and the service was impeccable. Highly recommended!"',
-      ),
-    ];
-
-    return Wrap(
-      spacing: 24,
-      runSpacing: 24,
-      children: cards.map((c) => SizedBox(width: 380, child: c)).toList(),
-    );
-  }
-
-  Widget _buildReviewCard(BuildContext context, String initials, String name, String time, int rating, String text) {
+  Widget _buildReviewCard(ReviewModel review) {
     return CustomCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -87,17 +125,17 @@ class ReviewQueueList extends StatelessWidget {
                   CircleAvatar(
                     radius: 16,
                     backgroundColor: AppTheme.darkRed,
-                    child: Text(initials, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: Text(review.userInitials, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: Theme.of(context).textTheme.titleSmall),
+                      Text(review.userName, style: Theme.of(context).textTheme.titleSmall),
                       Row(
                         children: List.generate(5, (index) {
                           return Icon(
-                            index < rating ? Icons.star : Icons.star_border,
+                            index < review.rating ? Icons.star : Icons.star_border,
                             color: AppTheme.primaryRed,
                             size: 14,
                           );
@@ -113,35 +151,50 @@ class ReviewQueueList extends StatelessWidget {
                   color: AppTheme.background,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(time, style: Theme.of(context).textTheme.bodySmall),
+                child: Text(review.timeAgo, style: Theme.of(context).textTheme.bodySmall),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
-            text,
+            'Movie: ${review.movieTitle}',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.darkRed),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '"${review.comment}"',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontStyle: FontStyle.italic,
-              color: AppTheme.textPrimary,
-              height: 1.5,
-            ),
+                  fontStyle: FontStyle.italic,
+                  color: AppTheme.textPrimary,
+                  height: 1.5,
+                ),
           ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.check_circle_outline, size: 16, color: AppTheme.textSecondary),
-                label: Text('Approve', style: TextStyle(color: AppTheme.textSecondary)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppTheme.borderLight),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              if (!review.isApproved)
+                OutlinedButton.icon(
+                  onPressed: () => _approveReview(review),
+                  icon: const Icon(Icons.check_circle_outline, size: 16, color: AppTheme.successGreen),
+                  label: const Text('Approve', style: TextStyle(color: AppTheme.successGreen)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppTheme.successGreen),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.successGreenBg,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text('Approved', style: TextStyle(color: AppTheme.successGreen, fontWeight: FontWeight.bold, fontSize: 12)),
                 ),
-              ),
               const SizedBox(width: 12),
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () => _deleteReview(review),
                 icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.errorRed),
                 label: const Text('Delete', style: TextStyle(color: AppTheme.errorRed)),
                 style: ElevatedButton.styleFrom(

@@ -1,38 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:booking/theme/app_theme.dart';
+import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/review_model.dart';
 
-class ReviewSection extends StatelessWidget {
+class ReviewSection extends StatefulWidget {
   const ReviewSection({super.key});
 
-  static const List<Map<String, dynamic>> _reviews = [
-    {
-      'initials': 'SM',
-      'name': 'Sandra Muller',
-      'timeAgo': '10m ago',
-      'rating': 4,
-      'review':
-          '"The Dolby Atmos sound in Theater 4 was absolutely incredible. Made the new blockbuster feel so immersive. Just wish the popcorn was a bit fresher!"',
-    },
-    {
-      'initials': 'TL',
-      'name': 'Tom Lewis',
-      'timeAgo': '1h ago',
-      'rating': 2,
-      'review':
-          '"Had trouble with the digital ticket scanner. The staff was helpful but it delayed us getting to our seats by 15 minutes."',
-    },
-    {
-      'initials': 'RK',
-      'name': 'Riya Kapoor',
-      'timeAgo': '3h ago',
-      'rating': 5,
-      'review':
-          '"Cinema Concierge is a game changer. Booked the lounge seats and the service was impeccable. Highly recommended!"',
-    },
-  ];
+  @override
+  State<ReviewSection> createState() => _ReviewSectionState();
+}
+
+class _ReviewSectionState extends State<ReviewSection> {
+  Future<void> _approveReview(ReviewModel review) async {
+    final idx = MockData.reviews.indexWhere((r) => r.id == review.id);
+    if (idx != -1) {
+      setState(() {
+        MockData.reviews[idx] = review.copyWith(isApproved: true);
+      });
+      await MockData.saveAll();
+    }
+  }
+
+  Future<void> _deleteReview(ReviewModel review) async {
+    setState(() {
+      MockData.reviews.removeWhere((r) => r.id == review.id);
+    });
+    await MockData.saveAll();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final reviews = MockData.reviews;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -55,17 +54,10 @@ class ReviewSection extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: const Text(
-                  'View All →',
-                  style: TextStyle(color: AppTheme.primaryRed, fontSize: 13),
-                ),
-              ),
             ],
           ),
           Text(
-            'Moderation queue • 12 pending reviews from the last 24 hours.',
+            'Moderation queue • ${reviews.where((r) => !r.isApproved).length} pending reviews requiring action.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -74,24 +66,26 @@ class ReviewSection extends StatelessWidget {
           const SizedBox(height: 16),
 
           // ── Review cards — wraps on narrow screens ────────────
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: _reviews
-                .map((r) => LayoutBuilder(
-                      builder: (ctx, constraints) => SizedBox(
-                        width: double.infinity,
+          if (reviews.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text('No pending reviews in queue.'),
+            )
+          else
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              children: reviews
+                  .map((r) => SizedBox(
+                        width: 320,
                         child: _ReviewCard(
-                          initials: r['initials'] as String,
-                          name: r['name'] as String,
-                          timeAgo: r['timeAgo'] as String,
-                          rating: r['rating'] as int,
-                          review: r['review'] as String,
+                          review: r,
+                          onApprove: () => _approveReview(r),
+                          onDelete: () => _deleteReview(r),
                         ),
-                      ),
-                    ))
-                .toList(),
-          ),
+                      ))
+                  .toList(),
+            ),
         ],
       ),
     );
@@ -99,18 +93,14 @@ class ReviewSection extends StatelessWidget {
 }
 
 class _ReviewCard extends StatelessWidget {
-  final String initials;
-  final String name;
-  final String timeAgo;
-  final int rating;
-  final String review;
+  final ReviewModel review;
+  final VoidCallback onApprove;
+  final VoidCallback onDelete;
 
   const _ReviewCard({
-    required this.initials,
-    required this.name,
-    required this.timeAgo,
-    required this.rating,
     required this.review,
+    required this.onApprove,
+    required this.onDelete,
   });
 
   @override
@@ -132,7 +122,7 @@ class _ReviewCard extends StatelessWidget {
                 radius: 18,
                 backgroundColor: AppTheme.primaryRed,
                 child: Text(
-                  initials,
+                  review.userInitials,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -145,33 +135,29 @@ class _ReviewCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(color: AppTheme.textPrimary)),
+                    Text(
+                      review.userName,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppTheme.textPrimary),
+                    ),
                     Row(
                       children: List.generate(
                         5,
                         (i) => Icon(
-                          i < rating ? Icons.star : Icons.star_border,
+                          i < review.rating ? Icons.star : Icons.star_border,
                           size: 13,
-                          color: i < rating
-                              ? AppTheme.primaryRed
-                              : AppTheme.borderLight,
+                          color: i < review.rating ? AppTheme.primaryRed : AppTheme.borderLight,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              Text(timeAgo,
-                  style: Theme.of(context).textTheme.bodySmall),
+              Text(review.timeAgo, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
           const SizedBox(height: 12),
           Text(
-            review,
+            '"${review.comment}"',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
                   color: AppTheme.textSecondary,
@@ -183,16 +169,24 @@ class _ReviewCard extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.check_circle_outline,
-                      size: 15, color: AppTheme.textSecondary),
-                  label: const Text('Approve',
-                      style: TextStyle(
-                          fontSize: 13, color: AppTheme.textSecondary)),
+                  onPressed: review.isApproved ? null : onApprove,
+                  icon: Icon(
+                    Icons.check_circle_outline,
+                    size: 15,
+                    color: review.isApproved ? AppTheme.successGreen : AppTheme.textSecondary,
+                  ),
+                  label: Text(
+                    review.isApproved ? 'Approved' : 'Approve',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: review.isApproved ? AppTheme.successGreen : AppTheme.textSecondary,
+                    ),
+                  ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppTheme.borderLight),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6)),
+                    side: BorderSide(
+                      color: review.isApproved ? AppTheme.successGreen : AppTheme.borderLight,
+                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
                 ),
@@ -200,17 +194,13 @@ class _ReviewCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.delete_outline,
-                      size: 15, color: Colors.white),
-                  label: const Text('Delete',
-                      style:
-                          TextStyle(fontSize: 13, color: Colors.white)),
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline, size: 15, color: Colors.white),
+                  label: const Text('Delete', style: TextStyle(fontSize: 13, color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryRed,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
                 ),
