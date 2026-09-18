@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _updateDisplayedMovies() {
     final uniqueMovies = MockData.deduplicateMovies(MockData.allMovies);
     final selectedCategory = MockData.categories[_selectedCategoryIndex];
-    _displayedMovies = selectedCategory == 'All Movies'
+    _displayedMovies = selectedCategory == 'All'
         ? uniqueMovies
         : uniqueMovies
             .where((m) => m.genres.any((g) => g.trim() == selectedCategory.trim()))
