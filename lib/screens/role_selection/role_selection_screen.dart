@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/core/utils/url_helper.dart';
+import 'package:booking/services/update_service.dart';
 
 
 /// ============================================================
@@ -20,6 +21,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     with TickerProviderStateMixin {
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
+  String _installedVersion = '';
 
   @override
   void initState() {
@@ -33,6 +35,18 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       curve: Curves.easeOut,
     );
     _fadeController.forward();
+
+    UpdateService.instance.getInstalledVersion().then((v) {
+      if (mounted) {
+        setState(() {
+          _installedVersion = 'v$v';
+        });
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.instance.checkAndShowUpdateDialog(context);
+    });
   }
 
   @override
@@ -204,7 +218,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
                   // ── Footer ──
                   Text(
-                    'v1.0.0',
+                    _installedVersion,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textHint,
                       fontSize: 11,
