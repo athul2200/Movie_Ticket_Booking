@@ -41,8 +41,9 @@ class Sidebar extends StatelessWidget {
             child: Text(
               'Admin Panel',
               style: TextStyle(
-                color: AppTheme.textLight,
-                fontSize: 11,
+                color: AppTheme.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
               ),
             ),
@@ -89,9 +90,9 @@ class Sidebar extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          color: AppTheme.textLight,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
+          color: AppTheme.textSecondary,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
           letterSpacing: 1.5,
         ),
       ),
@@ -114,16 +115,16 @@ class Sidebar extends StatelessWidget {
             Icon(
               icon,
               size: 20,
-              color: isActive ? AppTheme.primaryRed : AppTheme.textSecondary,
+              color: isActive ? AppTheme.primaryRed : AppTheme.textPrimary,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
-                  color: isActive ? AppTheme.primaryRed : AppTheme.textSecondary,
+                  color: isActive ? AppTheme.primaryRed : AppTheme.textPrimary,
                   fontSize: 14,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
             ),

@@ -81,7 +81,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
         children: [
           // Back button
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacementNamed(context, '/home');
+              }
+            },
             child: const Icon(
               Icons.arrow_back,
               size: AppSizes.iconLg,

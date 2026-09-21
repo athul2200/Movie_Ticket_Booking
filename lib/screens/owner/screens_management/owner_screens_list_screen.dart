@@ -102,7 +102,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AdminAppBar(title: widget.theaterName, noLeading: true),
+      appBar: AdminAppBar(title: widget.theaterName),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(

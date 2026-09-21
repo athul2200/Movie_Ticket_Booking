@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:booking/theme/app_theme.dart';
 import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/seat_row_model.dart';
+import 'package:booking/models/movie_model.dart';
+import 'package:booking/models/theater_model.dart';
 import 'custom_card.dart';
 
 class SeatBlockingScreen extends StatefulWidget {
@@ -33,16 +36,18 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
 
   // Blocked seats backed by MockData for persistence
   Set<String> get blockedSeats => Set<String>.from(
-        MockData.blockedSeats[_sessionKey] ?? MockData.blockedSeats['admin_default'] ?? {'A1', 'A2'},
+        MockData.blockedSeats[_sessionKey] ?? [],
       );
 
   void toggleSeatSelection(String seatId) {
-    if (bookedSeats.contains(seatId)) {
+    final altId = seatId.contains('-') ? seatId.replaceAll('-', '') : seatId;
+    if (bookedSeats.contains(seatId) || bookedSeats.contains(altId)) {
       return; // Cannot select booked seats
     }
     setState(() {
-      if (selectedSeats.contains(seatId)) {
+      if (selectedSeats.contains(seatId) || selectedSeats.contains(altId)) {
         selectedSeats.remove(seatId);
+        selectedSeats.remove(altId);
       } else {
         selectedSeats.add(seatId);
       }
@@ -52,6 +57,40 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   void clearSelection() {
     setState(() {
       selectedSeats.clear();
+    });
+  }
+
+  void _selectFullRow() {
+    final layout = MockData.getLayout(_selectedCinema, _selectedScreen);
+    if (layout.isEmpty) return;
+    setState(() {
+      for (final r in layout) {
+        for (int i = 1; i <= r.seatCount; i++) {
+          final sId = '${r.rowName}$i';
+          final sIdAlt = '${r.rowName}-$i';
+          if (!bookedSeats.contains(sId) && !bookedSeats.contains(sIdAlt)) {
+            selectedSeats.add(sId);
+          }
+        }
+      }
+    });
+  }
+
+  void _selectOddEven(bool selectOdd) {
+    final layout = MockData.getLayout(_selectedCinema, _selectedScreen);
+    if (layout.isEmpty) return;
+    setState(() {
+      for (final r in layout) {
+        for (int i = 1; i <= r.seatCount; i++) {
+          if ((selectOdd && i % 2 != 0) || (!selectOdd && i % 2 == 0)) {
+            final sId = '${r.rowName}$i';
+            final sIdAlt = '${r.rowName}-$i';
+            if (!bookedSeats.contains(sId) && !bookedSeats.contains(sIdAlt)) {
+              selectedSeats.add(sId);
+            }
+          }
+        }
+      }
     });
   }
 
@@ -156,55 +195,268 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
     );
   }
 
+  List<String> get availableCinemas {
+    final list = MockData.theaters.map((t) => t.name).toList();
+    if (list.isEmpty) return ['Kairali', 'Nila'];
+    return list;
+  }
+
+  List<String> get availableScreens {
+    final screensFromPrices = MockData.screenPrices[_selectedCinema]?.keys.toList();
+    if (screensFromPrices != null && screensFromPrices.isNotEmpty) {
+      return screensFromPrices;
+    }
+    final screensFromLayouts = MockData.screenLayouts[_selectedCinema]?.keys.toList();
+    if (screensFromLayouts != null && screensFromLayouts.isNotEmpty) {
+      return screensFromLayouts;
+    }
+    return ['Screen 01', 'Screen 02'];
+  }
+
+  List<String> get availableShowtimes {
+    final theater = MockData.theaters.firstWhere(
+      (t) => t.name.toLowerCase() == _selectedCinema.toLowerCase(),
+      orElse: () => MockData.theaters.isNotEmpty ? MockData.theaters.first : const TheaterModel(name: 'Kairali', type: '', showtimes: []),
+    );
+    if (theater.showtimes.isNotEmpty) {
+      return theater.showtimes;
+    }
+    return ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '10:30 PM'];
+  }
+
+  List<MovieModel> get moviesForSelectedCinema {
+    final list = <MovieModel>[];
+    final targetCinema = _selectedCinema.trim().toLowerCase();
+
+    for (final movie in MockData.allMovies) {
+      final matchesTheater = movie.theaters.any(
+        (t) => t.trim().toLowerCase().contains(targetCinema),
+      );
+      
+      bool isScheduledInTheater = false;
+      final schedulesForMovie = MockData.movieSchedules[movie.title];
+      if (schedulesForMovie != null) {
+        for (final dateEntry in schedulesForMovie.entries) {
+          if (dateEntry.value.keys.any((k) => k.trim().toLowerCase().contains(targetCinema))) {
+            isScheduledInTheater = true;
+            break;
+          }
+        }
+      }
+
+      if (matchesTheater || isScheduledInTheater) {
+        list.add(movie);
+      }
+    }
+    return list;
+  }
+
+  MovieModel? get scheduledMovie {
+    for (final movieEntry in MockData.movieSchedules.entries) {
+      final movieTitle = movieEntry.key;
+      for (final dateEntry in movieEntry.value.entries) {
+        final theaterMap = dateEntry.value[_selectedCinema];
+        if (theaterMap != null) {
+          final timesList = theaterMap[_selectedScreen];
+          if (timesList != null && timesList.contains(_selectedShowtime)) {
+            try {
+              return MockData.allMovies.firstWhere(
+                (m) => m.title.trim().toLowerCase() == movieTitle.trim().toLowerCase(),
+              );
+            } catch (_) {}
+          }
+        }
+      }
+    }
+
+    for (final movieEntry in MockData.movieSchedules.entries) {
+      final movieTitle = movieEntry.key;
+      for (final dateEntry in movieEntry.value.entries) {
+        final theaterMap = dateEntry.value[_selectedCinema];
+        if (theaterMap != null && theaterMap.containsKey(_selectedScreen)) {
+          try {
+            return MockData.allMovies.firstWhere(
+              (m) => m.title.trim().toLowerCase() == movieTitle.trim().toLowerCase(),
+            );
+          } catch (_) {}
+        }
+      }
+    }
+
+    final theaterMovies = moviesForSelectedCinema;
+    if (theaterMovies.isNotEmpty) {
+      return theaterMovies.first;
+    }
+
+    return null;
+  }
+
   Widget _buildSessionDetails() {
-    final activeMovie = MockData.allMovies.isNotEmpty ? MockData.allMovies.first : null;
+    final activeMovie = scheduledMovie;
+
+    final currentCinema = availableCinemas.contains(_selectedCinema) ? _selectedCinema : availableCinemas.first;
+    final currentScreen = availableScreens.contains(_selectedScreen) ? _selectedScreen : availableScreens.first;
+    final currentShowtime = availableShowtimes.contains(_selectedShowtime) ? _selectedShowtime : availableShowtimes.first;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Session Details', style: Theme.of(context).textTheme.headlineSmall),
+        Text(
+          'Session Details',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+        ),
         const SizedBox(height: 16),
-        Text('Cinema & Screen', style: Theme.of(context).textTheme.bodyMedium),
-        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
-              child: DropdownButtonFormField<String>(
-                value: _selectedCinema,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Kairali', child: Text('Kairali')),
-                  DropdownMenuItem(value: 'Nila', child: Text('Nila')),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Theater',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  DropdownButtonFormField<String>(
+                    value: currentCinema,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      fillColor: Colors.white,
+                      filled: true,
+                    ),
+                    dropdownColor: Colors.white,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    items: availableCinemas.map((cinema) {
+                      return DropdownMenuItem(
+                        value: cinema,
+                        child: Text(
+                          cinema,
+                          style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _selectedCinema = val;
+                          selectedSeats.clear();
+                        });
+                      }
+                    },
+                  ),
                 ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedCinema = val);
-                },
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: DropdownButtonFormField<String>(
-                value: _selectedScreen,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Screen 01', child: Text('Screen 01')),
-                  DropdownMenuItem(value: 'Screen 02', child: Text('Screen 02')),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Screen',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  DropdownButtonFormField<String>(
+                    value: currentScreen,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      fillColor: Colors.white,
+                      filled: true,
+                    ),
+                    dropdownColor: Colors.white,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    items: availableScreens.map((screen) {
+                      return DropdownMenuItem(
+                        value: screen,
+                        child: Text(
+                          screen,
+                          style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _selectedScreen = val;
+                          selectedSeats.clear();
+                        });
+                      }
+                    },
+                  ),
                 ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedScreen = val);
-                },
               ),
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Text(
+          'Showtime',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+        ),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: currentShowtime,
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            fillColor: Colors.white,
+            filled: true,
+          ),
+          dropdownColor: Colors.white,
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          items: availableShowtimes.map((st) {
+            return DropdownMenuItem(
+              value: st,
+              child: Text(
+                st,
+                style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
+              ),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) {
+              setState(() {
+                _selectedShowtime = val;
+                selectedSeats.clear();
+              });
+            }
+          },
+        ),
         const SizedBox(height: 16),
-        Text('Selected Movie', style: Theme.of(context).textTheme.bodyMedium),
+        Text(
+          'Scheduled Movie',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(16),
@@ -233,9 +485,30 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(activeMovie?.title ?? "Feature Movie", style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      activeMovie?.title ?? "Feature Movie",
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                    ),
                     const SizedBox(height: 4),
-                    Text("${activeMovie?.duration ?? '2h 15m'} • ${activeMovie?.genres.join('/') ?? 'Drama'}", style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      "${activeMovie?.duration ?? '2h 15m'} • ${activeMovie?.genres.join('/') ?? 'Drama'}",
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textSecondary,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "$_selectedCinema • $_selectedScreen • $_selectedShowtime",
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.primaryRed,
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -247,7 +520,9 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   }
 
   Widget _buildAuditoriumStatus() {
-    final availableCount = 160 - (bookedSeats.length + blockedSeats.length);
+    final layout = MockData.getLayout(_selectedCinema, _selectedScreen);
+    final totalSeatsCount = layout.fold<int>(0, (sum, r) => sum + r.seatCount);
+    final availableCount = (totalSeatsCount - (bookedSeats.length + blockedSeats.length)).clamp(0, 9999);
 
     return CustomCard(
       child: Padding(
@@ -255,7 +530,14 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('AUDITORIUM STATUS', style: Theme.of(context).textTheme.bodySmall?.copyWith(letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+            Text(
+              'AUDITORIUM STATUS',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                  ),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -280,9 +562,21 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${selectedSeats.length}', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryRed)),
+                        Text(
+                          '${selectedSeats.length}',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: AppTheme.primaryRed,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Selected to\nBlock', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.primaryRed)),
+                        Text(
+                          'Selected to\nBlock',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppTheme.primaryRed,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
                       ],
                     ),
                   ),
@@ -305,9 +599,21 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(count, style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            count,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+          ),
           const SizedBox(height: 4),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+          ),
         ],
       ),
     );
@@ -320,7 +626,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
         ElevatedButton.icon(
           onPressed: selectedSeats.isEmpty ? null : blockSelectedSeats,
           icon: const Icon(Icons.lock_outline),
-          label: const Text('Confirm Block Selection'),
+          label: const Text('Confirm Block Selection', style: TextStyle(fontWeight: FontWeight.bold)),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: AppTheme.darkRed,
@@ -334,7 +640,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
             side: const BorderSide(color: AppTheme.borderLight),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: const Text('Clear Current Selection', style: TextStyle(color: AppTheme.textPrimary)),
+          child: const Text('Clear Current Selection', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
         ),
       ],
     );
@@ -345,7 +651,13 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Interactive Floor\nPlan', style: Theme.of(context).textTheme.headlineSmall),
+        Text(
+          'Interactive Floor\nPlan',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+        ),
         const SizedBox(width: 16),
         Expanded(
           child: Wrap(
@@ -378,7 +690,13 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
           ),
         ),
         const SizedBox(width: 8),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+        ),
       ],
     );
   }
@@ -398,13 +716,30 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Text('SCREEN THIS WAY', style: Theme.of(context).textTheme.bodySmall?.copyWith(letterSpacing: 4, color: AppTheme.textLight)),
+        Text(
+          'SCREEN THIS WAY',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                letterSpacing: 4,
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
       ],
     );
   }
 
   Widget _buildSeatGrid() {
-    final rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    final layout = MockData.getLayout(_selectedCinema, _selectedScreen);
+
+    if (layout.isEmpty) {
+      return const Center(
+        child: Text(
+          'No seats configured for this screen by owner.',
+          style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -413,7 +748,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
             child: ConstrainedBox(
               constraints: BoxConstraints(minWidth: constraints.maxWidth),
               child: Column(
-                children: rows.map((row) => _buildSeatRow(row)).toList(),
+                children: layout.map((seatRow) => _buildSeatRowFromOwnerLayout(seatRow)).toList(),
               ),
             ),
           ),
@@ -422,7 +757,20 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
     );
   }
 
-  Widget _buildSeatRow(String rowLetter) {
+  Widget _buildSeatRowFromOwnerLayout(SeatRow seatRow) {
+    final rowLetter = seatRow.rowName;
+    final totalSeats = seatRow.seatCount;
+
+    int leftCount = 0;
+    int rightCount = 0;
+    int centerCount = totalSeats;
+
+    if (totalSeats >= 8) {
+      leftCount = (totalSeats * 0.25).round();
+      rightCount = (totalSeats * 0.25).round();
+      centerCount = totalSeats - leftCount - rightCount;
+    }
+
     List<Widget> children = [
       SizedBox(
         width: 32,
@@ -430,20 +778,36 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
           child: Text(
             rowLetter,
             style: const TextStyle(
-              color: Color(0xFF9CA3AF),
+              color: AppTheme.textPrimary,
               fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
       ),
+      const SizedBox(width: 8),
     ];
 
-    for (int i = 1; i <= 14; i++) {
-      if (i == 3) {
-        children.add(const SizedBox(width: 36)); // Aisle between 2 and 3
+    int seatNum = 1;
+    if (leftCount > 0) {
+      for (int i = 0; i < leftCount; i++) {
+        children.add(_buildSeat(rowLetter, seatNum));
+        seatNum++;
       }
-      children.add(_buildSeat(rowLetter, i));
+      children.add(const SizedBox(width: 24));
+    }
+
+    for (int i = 0; i < centerCount; i++) {
+      children.add(_buildSeat(rowLetter, seatNum));
+      seatNum++;
+    }
+
+    if (rightCount > 0) {
+      children.add(const SizedBox(width: 24));
+      for (int i = 0; i < rightCount; i++) {
+        children.add(_buildSeat(rowLetter, seatNum));
+        seatNum++;
+      }
     }
 
     return Padding(
@@ -456,14 +820,12 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   }
 
   Widget _buildSeat(String rowLetter, int seatNumber) {
-    if (rowLetter != 'E' && (seatNumber == 9 || seatNumber == 10)) {
-      return const SizedBox(width: 36);
-    }
+    final seatId1 = '$rowLetter$seatNumber';
+    final seatId2 = '$rowLetter-$seatNumber';
 
-    final seatId = '$rowLetter$seatNumber';
-    final isBooked = bookedSeats.contains(seatId);
-    final isBlocked = blockedSeats.contains(seatId);
-    final isSelected = selectedSeats.contains(seatId);
+    final isBooked = bookedSeats.contains(seatId1) || bookedSeats.contains(seatId2);
+    final isBlocked = blockedSeats.contains(seatId1) || blockedSeats.contains(seatId2);
+    final isSelected = selectedSeats.contains(seatId1) || selectedSeats.contains(seatId2);
 
     Color bgColor = Colors.white;
     Color textColor = AppTheme.textPrimary;
@@ -471,10 +833,10 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
 
     if (isBooked) {
       bgColor = const Color(0xFFE5E7EB);
-      textColor = Colors.white;
+      textColor = const Color(0xFF374151);
       borderColor = Colors.transparent;
     } else if (isBlocked) {
-      bgColor = const Color(0xFF6B7280);
+      bgColor = const Color(0xFF4B5563);
       textColor = Colors.white;
       borderColor = Colors.transparent;
     } else if (isSelected) {
@@ -484,7 +846,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
     }
 
     return GestureDetector(
-      onTap: () => toggleSeatSelection(seatId),
+      onTap: () => toggleSeatSelection(seatId1),
       child: Container(
         width: 28,
         height: 28,
@@ -502,7 +864,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   color: textColor,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
       ),
@@ -515,11 +877,30 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
       runSpacing: 12,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        _buildFooterButton('Select Full\nRow'),
-        _buildFooterButton('Select\nOdd/Even'),
+        InkWell(
+          onTap: _selectFullRow,
+          borderRadius: BorderRadius.circular(8),
+          child: _buildFooterButton('Select All\nSeats'),
+        ),
+        InkWell(
+          onTap: () => _selectOddEven(true),
+          borderRadius: BorderRadius.circular(8),
+          child: _buildFooterButton('Select\nOdd Seats'),
+        ),
+        InkWell(
+          onTap: () => _selectOddEven(false),
+          borderRadius: BorderRadius.circular(8),
+          child: _buildFooterButton('Select\nEven Seats'),
+        ),
         const SizedBox(width: 4),
-        const Icon(Icons.info_outline, size: 16, color: AppTheme.textLight),
-        Text('Click any seat to select and toggle block/unblock status.', style: Theme.of(context).textTheme.bodySmall),
+        const Icon(Icons.info_outline, size: 16, color: AppTheme.textPrimary),
+        Text(
+          'Click any seat to select and toggle block/unblock status.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+        ),
       ],
     );
   }
@@ -531,7 +912,14 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
         color: const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(text, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
+            ),
+      ),
     );
   }
 

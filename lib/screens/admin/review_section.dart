@@ -51,7 +51,7 @@ class _ReviewSectionState extends State<ReviewSection> {
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                      ?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                 ),
               ),
             ],
@@ -61,7 +61,7 @@ class _ReviewSectionState extends State<ReviewSection> {
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
-                ?.copyWith(color: AppTheme.textSecondary),
+                ?.copyWith(color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
 
@@ -69,7 +69,7 @@ class _ReviewSectionState extends State<ReviewSection> {
           if (reviews.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
-              child: Text('No pending reviews in queue.'),
+              child: Text('No pending reviews in queue.', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
             )
           else
             Wrap(
@@ -137,7 +137,7 @@ class _ReviewCard extends StatelessWidget {
                   children: [
                     Text(
                       review.userName,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppTheme.textPrimary),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
                     ),
                     Row(
                       children: List.generate(
@@ -152,15 +152,21 @@ class _ReviewCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Text(review.timeAgo, style: Theme.of(context).textTheme.bodySmall),
+              Text(review.timeAgo, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          Text(
+            'Movie: ${review.movieTitle}',
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.darkRed),
+          ),
+          const SizedBox(height: 8),
           Text(
             '"${review.comment}"',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w600,
                   height: 1.5,
                 ),
           ),
@@ -173,13 +179,14 @@ class _ReviewCard extends StatelessWidget {
                   icon: Icon(
                     Icons.check_circle_outline,
                     size: 15,
-                    color: review.isApproved ? AppTheme.successGreen : AppTheme.textSecondary,
+                    color: review.isApproved ? AppTheme.successGreen : AppTheme.textPrimary,
                   ),
                   label: Text(
                     review.isApproved ? 'Approved' : 'Approve',
                     style: TextStyle(
                       fontSize: 13,
-                      color: review.isApproved ? AppTheme.successGreen : AppTheme.textSecondary,
+                      fontWeight: FontWeight.bold,
+                      color: review.isApproved ? AppTheme.successGreen : AppTheme.textPrimary,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -196,7 +203,7 @@ class _ReviewCard extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_outline, size: 15, color: Colors.white),
-                  label: const Text('Delete', style: TextStyle(fontSize: 13, color: Colors.white)),
+                  label: const Text('Delete', style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryRed,
                     elevation: 0,

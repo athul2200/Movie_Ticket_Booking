@@ -341,12 +341,18 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
                 children: [
                   Text(
                     'Movie Management',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Manage total catalog, visibility, details, and schedules.',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ],
               ),
@@ -490,20 +496,20 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
                                     ),
                                     Text(
                                       '${movie.duration} • ${movie.certification}',
-                                      style: Theme.of(context).textTheme.bodySmall,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
                                     ),
                                     const SizedBox(height: 6),
                                     Row(
                                       children: [
                                         const Icon(Icons.star, size: 14, color: Colors.amber),
                                         const SizedBox(width: 4),
-                                        Text('${movie.rating}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                        Text('${movie.rating}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textPrimary)),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        const Text('Visible:', style: TextStyle(fontSize: 12)),
+                                        const Text('Visible:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                                         const SizedBox(width: 4),
                                         Transform.scale(
                                           scale: 0.75,
@@ -525,7 +531,7 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
                             movie.description,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w500),
                           ),
                           const Spacer(),
                           const Divider(),

@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _updateDisplayedMovies() {
     final uniqueMovies = MockData.deduplicateMovies(MockData.allMovies);
     final selectedCategory = MockData.categories[_selectedCategoryIndex];
-    _displayedMovies = selectedCategory == 'All'
+    _displayedMovies = selectedCategory == 'All Movies'
         ? uniqueMovies
         : uniqueMovies
             .where((m) => m.genres.any((g) => g.trim() == selectedCategory.trim()))
@@ -178,10 +178,16 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // ── Back Button ──
           GestureDetector(
-            onTap: () => Navigator.pushReplacementNamed(context, '/'),
+            onTap: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacementNamed(context, '/');
+              }
+            },
             child: const Icon(
               Icons.arrow_back,
-              size: AppSizes.iconMd,
+              size: AppSizes.iconLg,
               color: AppColors.textPrimary,
             ),
           ),

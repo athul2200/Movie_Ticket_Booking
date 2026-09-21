@@ -119,9 +119,9 @@ class UserTable extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: AppTheme.textSecondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: AppTheme.textPrimary,
           letterSpacing: 0.5,
         ),
       ),
@@ -157,12 +157,17 @@ class UserTable extends StatelessWidget {
                     children: [
                       Text(
                         user.name,
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         user.email,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.textSecondary,
+                            ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -171,21 +176,37 @@ class UserTable extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(child: Text('${user.moviesSeenCount}')),
-          Expanded(child: Text('${user.totalBookingsCount}')),
-          Expanded(child: Text(user.favGenre)),
+          Expanded(
+            child: Text(
+              '${user.moviesSeenCount}',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              '${user.totalBookingsCount}',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              user.favGenre,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
+            ),
+          ),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: user.status == 'ACTIVE' ? AppTheme.successGreenBg : AppTheme.errorRedBg,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 user.status,
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
                   color: user.status == 'ACTIVE' ? AppTheme.successGreen : AppTheme.errorRed,
                 ),
               ),

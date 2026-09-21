@@ -156,6 +156,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Row(
         children: [
+          GestureDetector(
+            onTap: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacementNamed(context, '/');
+              }
+            },
+            child: const Icon(
+              Icons.arrow_back,
+              size: AppSizes.iconLg,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
           // Red Location icon & Movix centered
           const Icon(
             Icons.location_on,

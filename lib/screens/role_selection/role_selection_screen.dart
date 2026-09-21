@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
-import 'package:booking/core/utils/url_helper.dart';
+import 'package:booking/navigation/app_router.dart';
 import 'package:booking/services/update_service.dart';
 
 
@@ -211,7 +211,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                       const Color(0xFF00C9A7),
                       const Color(0xFF00C9A7).withValues(alpha: 0.7),
                     ],
-                    onTap: openAdminWebPage,
+                    onTap: () => Navigator.pushReplacementNamed(context, AppRouter.admin),
                   ),
 
                   const Spacer(),

@@ -17,27 +17,25 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget? leadingWidget;
-    if (noLeading) {
-      leadingWidget = const SizedBox.shrink();
-    } else if (showBackButton) {
-      leadingWidget = IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-        onPressed: () => Navigator.pop(context),
-      );
-    } else {
-      leadingWidget = IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-        onPressed: () => Navigator.pushReplacementNamed(context, '/'),
-      );
-    }
+    Widget leadingWidget = IconButton(
+      icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+      onPressed: () {
+        if (showBackButton && Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else {
+          Navigator.pushReplacementNamed(context, '/');
+        }
+      },
+    );
 
     return AppBar(
       backgroundColor: AppColors.background,
       elevation: 0,
       centerTitle: true,
       automaticallyImplyLeading: false,
-      leading: noLeading ? null : leadingWidget,
+      leading: leadingWidget,
       actions: actions,
       title: Text(
         title,

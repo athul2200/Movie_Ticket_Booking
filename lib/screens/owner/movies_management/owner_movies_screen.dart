@@ -343,7 +343,7 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AdminAppBar(title: widget.theaterName, noLeading: true),
+      appBar: AdminAppBar(title: widget.theaterName),
       body: SingleChildScrollView(
         controller: _scrollController,
         padding: const EdgeInsets.all(AppSpacing.lg),

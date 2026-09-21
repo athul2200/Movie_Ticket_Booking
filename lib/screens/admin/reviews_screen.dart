@@ -80,14 +80,14 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             children: [
               Text(
                 'Full Review Queue',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             'Moderation queue • ${reviews.where((r) => !r.isApproved).length} pending reviews requiring action.',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 24),
           if (reviews.isEmpty)
@@ -96,7 +96,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 40),
                 child: Text(
                   'No reviews in moderation queue.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textSecondary),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
                 ),
               ),
             )
@@ -131,7 +131,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(review.userName, style: Theme.of(context).textTheme.titleSmall),
+                      Text(review.userName, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                       Row(
                         children: List.generate(5, (index) {
                           return Icon(
@@ -151,14 +151,14 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   color: AppTheme.background,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(review.timeAgo, style: Theme.of(context).textTheme.bodySmall),
+                child: Text(review.timeAgo, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             'Movie: ${review.movieTitle}',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.darkRed),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.darkRed),
           ),
           const SizedBox(height: 8),
           Text(
@@ -166,6 +166,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontStyle: FontStyle.italic,
                   color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w600,
                   height: 1.5,
                 ),
           ),

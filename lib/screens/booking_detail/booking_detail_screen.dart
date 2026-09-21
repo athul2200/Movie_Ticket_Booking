@@ -162,7 +162,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacementNamed(context, '/home');
+              }
+            },
             child: const Icon(
               Icons.arrow_back,
               size: AppSizes.iconLg,

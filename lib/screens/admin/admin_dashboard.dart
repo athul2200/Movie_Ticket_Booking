@@ -157,12 +157,18 @@ class _HomeDashboard extends StatelessWidget {
         children: [
           Text(
             'Executive Overview',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
           ),
           const SizedBox(height: 4),
           Text(
             'Real-time metrics and system activity across all cinema operations.',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 24),
 
@@ -233,7 +239,13 @@ class _HomeDashboard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppTheme.textSecondary)),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
                 Icon(icon, size: 20, color: accentColor),
               ],
             ),
@@ -279,18 +291,17 @@ class _AdminHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Hamburger on mobile, back arrow on desktop
+          // Always show back arrow icon at top left
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+            onPressed: onBackTap,
+            tooltip: 'Back',
+          ),
           if (showMenuButton)
             IconButton(
               icon: const Icon(Icons.menu, color: AppTheme.textPrimary),
               onPressed: onMenuTap,
               tooltip: 'Menu',
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
-              onPressed: onBackTap,
-              tooltip: 'Back',
             ),
           const SizedBox(width: 8),
           Text(
@@ -306,7 +317,10 @@ class _AdminHeader extends StatelessWidget {
           const SizedBox(width: 16),
           Text(
             title,
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
           ),
           const Spacer(),
           // Search (hidden on very small screens)

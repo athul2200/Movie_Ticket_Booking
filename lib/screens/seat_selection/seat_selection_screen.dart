@@ -172,7 +172,11 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               for (final seatId in _selectedSeats) {
                 SeatReservationService.instance.releaseSeat(_screenKey, seatId);
               }
-              Navigator.pop(context);
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacementNamed(context, '/home');
+              }
             },
             child: const Icon(
               Icons.arrow_back,

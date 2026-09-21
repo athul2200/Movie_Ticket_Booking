@@ -190,12 +190,18 @@ class _ShowManagementScreenState extends State<ShowManagementScreen> {
                 children: [
                   Text(
                     'Daily Show Schedule',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
-                    'Today: $today',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    'Manage daily movie showtimes, screen assignments, and scheduling. Today: $today',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ],
               ),
@@ -318,7 +324,8 @@ class _ShowManagementScreenState extends State<ShowManagementScreen> {
                 child: Text(
                   title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.bold,
                     letterSpacing: 1.1,
                   ),
                 ),
@@ -390,13 +397,13 @@ class _ShowManagementScreenState extends State<ShowManagementScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(time, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+                  Text(time, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(title, style: Theme.of(context).textTheme.titleMedium),
-                      const Icon(Icons.more_vert, size: 18, color: AppTheme.textSecondary),
+                      Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                      const Icon(Icons.more_vert, size: 18, color: AppTheme.textPrimary),
                     ],
                   ),
                   const SizedBox(height: 12),

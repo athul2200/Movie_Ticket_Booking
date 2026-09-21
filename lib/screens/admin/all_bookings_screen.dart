@@ -440,8 +440,9 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
 
   TextStyle? _headerStyle(BuildContext context) {
     return Theme.of(context).textTheme.bodySmall?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: AppTheme.textSecondary,
+          fontWeight: FontWeight.w800,
+          color: AppTheme.textPrimary,
+          fontSize: 12,
         );
   }
 
@@ -477,7 +478,7 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
                 Expanded(
                   child: Text(
                     booking.userName,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -490,8 +491,8 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(booking.movieTitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                Text('${booking.date}, ${booking.time}', style: Theme.of(context).textTheme.bodySmall),
+                Text(booking.movieTitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                Text('${booking.date}, ${booking.time}', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
               ],
             ),
           ),
@@ -501,9 +502,9 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(booking.cinema, style: Theme.of(context).textTheme.bodyMedium),
+                Text(booking.cinema, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
                 if (booking.screen.isNotEmpty)
-                  Text(booking.screen, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary)),
+                  Text(booking.screen, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -517,7 +518,7 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
                   .map((seat) => Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(color: AppTheme.borderLight, borderRadius: BorderRadius.circular(4)),
-                        child: Text(seat, style: Theme.of(context).textTheme.bodySmall),
+                        child: Text(seat, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
                       ))
                   .toList(),
             ),

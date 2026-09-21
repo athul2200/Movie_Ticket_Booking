@@ -214,7 +214,13 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   children: [
                     // Back button
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        } else {
+                          Navigator.pushReplacementNamed(context, '/home');
+                        }
+                      },
                       child: const Icon(
                         Icons.arrow_back,
                         color: Colors.white,
