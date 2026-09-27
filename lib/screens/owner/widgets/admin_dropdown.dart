@@ -21,6 +21,7 @@ class AdminDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
+      // ignore: deprecated_member_use
       value: value,
       isExpanded: true,
       items: items,

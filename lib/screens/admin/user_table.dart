@@ -34,7 +34,7 @@ class UserTable extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Active member directory focusing on tier status and engagement.',
+                  'Active member directory focusing on user activity and engagement.',
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
@@ -68,7 +68,6 @@ class UserTable extends StatelessWidget {
                             _headerCell('MEMBER', flex: 3),
                             _headerCell('MOVIES SEEN'),
                             _headerCell('TOTAL BOOKINGS'),
-                            _headerCell('FAV GENRE'),
                             _headerCell('STATUS'),
                           ],
                         ),
@@ -188,12 +187,7 @@ class UserTable extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
             ),
           ),
-          Expanded(
-            child: Text(
-              user.favGenre,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary),
-            ),
-          ),
+
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

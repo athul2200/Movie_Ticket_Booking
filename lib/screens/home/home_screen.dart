@@ -33,7 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _updateDisplayedMovies() {
-    final uniqueMovies = MockData.deduplicateMovies(MockData.allMovies);
+    final scheduledMovies = MockData.activeScheduledMovies;
+    final uniqueMovies = MockData.deduplicateMovies(scheduledMovies);
     final selectedCategory = MockData.categories[_selectedCategoryIndex];
     _displayedMovies = selectedCategory == 'All Movies'
         ? uniqueMovies
@@ -45,9 +46,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     _updateDisplayedMovies();
-    final featured = MockData.deduplicateMovies(
-      MockData.featuredMovies.isNotEmpty ? MockData.featuredMovies : MockData.allMovies,
-    );
+    final scheduledMovies = MockData.activeScheduledMovies;
+    final activeScheduledTitles = scheduledMovies.map((m) => m.title.trim().toLowerCase()).toSet();
+    
+    // Cross-reference featuredMovies with latest allMovies data to enforce isActive & scheduled filters
+    final scheduledFeatured = MockData.featuredMovies
+        .map((m) {
+          return MockData.allMovies.firstWhere(
+            (am) => am.id == m.id || am.title.trim().toLowerCase() == m.title.trim().toLowerCase(),
+            orElse: () => m,
+          );
+        })
+        .where((m) => m.isActive && activeScheduledTitles.contains(m.title.trim().toLowerCase()))
+        .toList();
+
+    final featuredRaw = scheduledFeatured.isNotEmpty ? scheduledFeatured : scheduledMovies;
+    final featured = MockData.deduplicateMovies(featuredRaw);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -62,11 +76,13 @@ class _HomeScreenState extends State<HomeScreen> {
               child: HeroBanner(
                 movies: featured,
                 onBookNow: (movie) {
-                  Navigator.pushNamed(
-                    context,
-                    '/movie-detail',
-                    arguments: movie,
-                  );
+                  if (movie.isActive) {
+                    Navigator.pushNamed(
+                      context,
+                      '/movie-detail',
+                      arguments: movie,
+                    );
+                  }
                 },
               ),
             ),

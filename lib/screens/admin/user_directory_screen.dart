@@ -76,8 +76,6 @@ class _UserDirectoryScreenState extends State<UserDirectoryScreen> {
                     children: [
                       Expanded(flex: 3, child: _headerText('NAME & EMAIL')),
                       Expanded(flex: 2, child: _headerText('PHONE')),
-                      Expanded(flex: 2, child: _headerText('TIER')),
-                      Expanded(flex: 2, child: _headerText('FAV GENRE')),
                       Expanded(flex: 2, child: _headerText('STATUS')),
                     ],
                   ),
@@ -179,22 +177,6 @@ class _UserDirectoryScreenState extends State<UserDirectoryScreen> {
             flex: 2,
             child: Text(
               user.phone,
-              style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary, fontSize: 13),
-            ),
-          ),
-          // Tier
-          Expanded(
-            flex: 2,
-            child: Text(
-              user.tier,
-              style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary, fontSize: 13),
-            ),
-          ),
-          // Fav Genre
-          Expanded(
-            flex: 2,
-            child: Text(
-              user.favGenre,
               style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary, fontSize: 13),
             ),
           ),

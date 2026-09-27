@@ -141,6 +141,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
                       // ── Rating Scores ──
                       _buildRatingScores(context),
+                      const SizedBox(height: AppSpacing.xxl),
+
+                      // ── User Reviews Section ──
+                      _buildMovieReviewsSection(context),
 
                       // Bottom padding for the fixed CTA button
                       const SizedBox(height: 100),
@@ -825,6 +829,157 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             ),
           ],
         ),
+      ],
+    );
+  }
+
+  /// ── User Reviews for this selected movie ──
+  Widget _buildMovieReviewsSection(BuildContext context) {
+    final movieReviews = MockData.reviews.where((r) {
+      return r.movieTitle.trim().toLowerCase() == widget.movie.title.trim().toLowerCase();
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'User Reviews (${movieReviews.length})',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+            ),
+            Row(
+              children: [
+                const Icon(Icons.star, color: Color(0xFFFFD600), size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  '${MockData.getAverageRating(widget.movie)} / 5',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                      ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        // List of reviews for this selected movie
+        if (movieReviews.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: AppColors.divider),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.rate_review_outlined, size: 36, color: AppColors.textHint),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'No reviews for "${widget.movie.title}" yet.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Be the first to share your experience!',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textHint,
+                      ),
+                ),
+              ],
+            ),
+          )
+        else
+          Column(
+            children: movieReviews.map((review) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: AppColors.primary,
+                          child: Text(
+                            review.userInitials,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                review.userName,
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                      fontSize: 13,
+                                    ),
+                              ),
+                              Row(
+                                children: List.generate(
+                                  5,
+                                  (index) => Icon(
+                                    index < review.rating ? Icons.star : Icons.star_border,
+                                    color: const Color(0xFFFFD600),
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          review.timeAgo,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '"${review.comment}"',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: AppColors.textPrimary,
+                            height: 1.4,
+                            fontSize: 13,
+                          ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }

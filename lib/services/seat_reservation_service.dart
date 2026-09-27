@@ -1,10 +1,9 @@
-
-/// ============================================================
-/// Seat Reservation Service — Singleton
-///
-/// Tracks temporarily reserved seats per screen key.
-/// Each reservation auto-expires after 5 minutes.
-/// ============================================================
+/*
+ * Seat Reservation Service — Singleton
+ *
+ * Tracks temporarily reserved seats per screen key.
+ * Each reservation auto-expires after 5 minutes.
+ */
 
 class SeatReservation {
   final String seatId;

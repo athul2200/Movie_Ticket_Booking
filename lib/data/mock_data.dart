@@ -47,6 +47,27 @@ class MockData {
   // ── All movies for the grid ──
   static List<MovieModel> allMovies = [];
 
+  /// Syncs featuredMovies items with the latest MovieModel objects in allMovies
+  static void syncFeaturedMovies() {
+    for (int i = 0; i < featuredMovies.length; i++) {
+      final feat = featuredMovies[i];
+      final matchIndex = allMovies.indexWhere(
+        (m) => m.id == feat.id || m.title.trim().toLowerCase() == feat.title.trim().toLowerCase(),
+      );
+      if (matchIndex != -1) {
+        featuredMovies[i] = allMovies[matchIndex];
+      }
+    }
+  }
+
+  /// Only movies with isActive == true — use this in ALL user-facing screens.
+  static List<MovieModel> get activeMovies =>
+      allMovies.where((m) => m.isActive).toList();
+
+  /// Active movies that also have at least one scheduled showtime.
+  static List<MovieModel> get activeScheduledMovies =>
+      allMovies.where((m) => m.isActive && isMovieScheduled(m.title)).toList();
+
   // ── Category filters ──
   static List<String> categories = [
     'All Movies',
@@ -205,6 +226,57 @@ class MockData {
   // ── Global Movie Schedules (Movie -> DateLabel -> Theater -> Screen -> Times) ──
   static Map<String, Map<String, Map<String, Map<String, List<String>>>>> movieSchedules = {};
 
+  /// Checks if a movie has at least 1 active scheduled showtime in any theater/screen/date.
+  static bool isMovieScheduled(String movieTitle) {
+    if (movieSchedules.isEmpty) return false;
+    final target = movieTitle.trim().toLowerCase();
+    for (final entry in movieSchedules.entries) {
+      if (entry.key.trim().toLowerCase() == target) {
+        final dates = entry.value;
+        for (final dateEntry in dates.values) {
+          for (final theaterEntry in dateEntry.values) {
+            for (final timesList in theaterEntry.values) {
+              if (timesList.isNotEmpty) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  static void _seedDefaultSchedulesIfNeeded() {
+    if (movieSchedules.isNotEmpty) return;
+
+    final now = DateTime.now();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final dates = List.generate(3, (i) {
+      final d = now.add(Duration(days: i));
+      return '${months[d.month - 1]} ${d.day}';
+    });
+
+    final defaultMovies = ['Drishyam 3', 'Michael', 'Kattalan', 'Karuppu'];
+    final showtimes = ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '10:30 PM'];
+
+    for (final movie in defaultMovies) {
+      movieSchedules[movie] = {};
+      for (final date in dates) {
+        movieSchedules[movie]![date] = {
+          'Kairali': {
+            'Screen 01': List<String>.from(showtimes),
+            'Screen 02': List<String>.from(showtimes),
+          },
+          'Nila': {
+            'Screen 01': List<String>.from(showtimes),
+            'Screen 02': List<String>.from(showtimes),
+          },
+        };
+      }
+    }
+  }
+
   // ── Per-Movie Cast (Movie title -> List<CastModel>) ──
   static Map<String, List<cast_model.CastModel>> movieCast = {};
 
@@ -245,7 +317,52 @@ class MockData {
   };
 
   // ── Global Blocked Seats (AuditoriumKey -> List of seat IDs) ──
+  // Key format: "cinema|||screen|||showtime"  (triple-pipe to avoid clashes with spaces/colons)
   static Map<String, List<String>> blockedSeats = {};
+
+  /// Canonical key used to store/lookup blocked seats for a specific slot.
+  static String blockedSeatKey(String cinema, String screen, String showtime) =>
+      '${cinema.trim().toLowerCase()}|||${screen.trim().toLowerCase()}|||${showtime.trim().toLowerCase()}';
+
+  /// Returns blocked seat IDs for an exact cinema + screen + showtime combination.
+  /// If [showtime] is omitted, returns all blocked seats for cinema + screen across
+  /// every showtime (used by owner module overview).
+  static Set<String> getBlockedSeats(String cinema, String screen, [String? showtime]) {
+    final result = <String>{};
+    final targetCinema = cinema.trim().toLowerCase();
+    final targetScreen = screen.trim().toLowerCase();
+    final targetShowtime = showtime?.trim().toLowerCase();
+
+    for (final entry in blockedSeats.entries) {
+      // Support both old underscore-separated keys and new pipe-separated keys
+      final key = entry.key.trim().toLowerCase();
+      String c, s, t;
+
+      if (key.contains('|||')) {
+        final parts = key.split('|||');
+        c = parts.isNotEmpty ? parts[0] : '';
+        s = parts.length >= 2 ? parts[1] : '';
+        t = parts.length >= 3 ? parts[2] : '';
+      } else {
+        // Legacy underscore key: "cinema_screen_showtime"
+        final parts = key.split('_');
+        c = parts.isNotEmpty ? parts[0] : '';
+        s = parts.length >= 2 ? parts[1] : '';
+        t = parts.length >= 3 ? parts.sublist(2).join('_') : '';
+      }
+
+      final matchesCinema = c == targetCinema;
+      final matchesScreen = s == targetScreen;
+      // If no showtime requested → include all showtimes (owner overview).
+      // If showtime requested → must match exactly.
+      final matchesTime = targetShowtime == null || t == targetShowtime;
+
+      if (matchesCinema && matchesScreen && matchesTime) {
+        result.addAll(entry.value);
+      }
+    }
+    return result;
+  }
 
   // ── Seating Layouts (Theater -> Screen -> List<SeatRow>) ──
   // Held purely in memory; mutated live by the layout editor.
@@ -378,6 +495,7 @@ class MockData {
         // Fallback to empty if parse fails
       }
     }
+    _seedDefaultSchedulesIfNeeded();
 
     final movieCastJson = prefs.getString('movieCast');
     if (movieCastJson != null) {
@@ -475,6 +593,7 @@ class MockData {
   }
 
   static Future<void> saveAll() async {
+    syncFeaturedMovies();
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.setString('allMovies', json.encode(allMovies.map((e) => e.toJson()).toList()));

@@ -8,7 +8,6 @@ import 'show_management_screen.dart';
 import 'seat_blocking_screen.dart';
 import 'user_directory_screen.dart';
 import 'reviews_screen.dart';
-import 'user_table.dart';
 import 'review_section.dart';
 import 'custom_card.dart';
 
@@ -213,8 +212,6 @@ class _HomeDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 32),
 
-          const UserTable(),
-          const SizedBox(height: 24),
           const ReviewSection(),
         ],
       ),

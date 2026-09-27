@@ -16,11 +16,85 @@ class SeatBlockingScreen extends StatefulWidget {
 class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   Set<String> selectedSeats = {};
 
-  String _selectedCinema = 'Kairali';
+  String _selectedCinema = 'Nila';
   String _selectedScreen = 'Screen 01';
-  String _selectedShowtime = '07:30 PM';
+  String _selectedShowtime = '10:00 AM';
 
-  String get _sessionKey => '${_selectedCinema}_${_selectedScreen}_$_selectedShowtime';
+  @override
+  void initState() {
+    super.initState();
+    _initDefaultSession();
+  }
+
+  void _initDefaultSession() {
+    String? scheduledTheater;
+    String? scheduledScreen;
+    String? scheduledTime;
+
+    bool foundNilaScreen01 = false;
+
+    for (final movieEntry in MockData.movieSchedules.entries) {
+      for (final dateEntry in movieEntry.value.entries) {
+        for (final theaterEntry in dateEntry.value.entries) {
+          final tName = theaterEntry.key;
+          for (final screenEntry in theaterEntry.value.entries) {
+            final sName = screenEntry.key;
+            final times = screenEntry.value;
+
+            if (times.isNotEmpty) {
+              final isNila = tName.trim().toLowerCase() == 'nila';
+              final isScreen01 = sName.trim().toLowerCase() == 'screen 01' ||
+                  sName.trim().toLowerCase() == 'screen 1';
+
+              if (isNila && isScreen01) {
+                scheduledTheater = tName;
+                scheduledScreen = sName;
+                scheduledTime = times.first;
+                foundNilaScreen01 = true;
+                break;
+              } else if (!foundNilaScreen01 && scheduledTheater == null) {
+                scheduledTheater = tName;
+                scheduledScreen = sName;
+                scheduledTime = times.first;
+              }
+            }
+          }
+          if (foundNilaScreen01) break;
+        }
+        if (foundNilaScreen01) break;
+      }
+      if (foundNilaScreen01) break;
+    }
+
+    final cinList = availableCinemas;
+    if (scheduledTheater != null && cinList.any((c) => c.toLowerCase() == scheduledTheater!.toLowerCase())) {
+      _selectedCinema = cinList.firstWhere((c) => c.toLowerCase() == scheduledTheater!.toLowerCase());
+    } else {
+      final nilaMatch = cinList.where((c) => c.toLowerCase() == 'nila');
+      _selectedCinema = nilaMatch.isNotEmpty ? nilaMatch.first : (cinList.isNotEmpty ? cinList.first : 'Nila');
+    }
+
+    final scrList = availableScreens;
+    if (scheduledScreen != null && scrList.any((s) => s.toLowerCase() == scheduledScreen!.toLowerCase())) {
+      _selectedScreen = scrList.firstWhere((s) => s.toLowerCase() == scheduledScreen!.toLowerCase());
+    } else {
+      final scr01Match = scrList.where((s) => s.toLowerCase().contains('01') || s.toLowerCase().contains('1'));
+      _selectedScreen = scr01Match.isNotEmpty ? scr01Match.first : (scrList.isNotEmpty ? scrList.first : 'Screen 01');
+    }
+
+    final timesList = availableShowtimes;
+    if (scheduledTime != null && timesList.contains(scheduledTime)) {
+      _selectedShowtime = scheduledTime;
+    } else if (timesList.isNotEmpty) {
+      _selectedShowtime = timesList.first;
+    }
+  }
+
+  String get _sessionKey => MockData.blockedSeatKey(
+        _selectedCinema,
+        _selectedScreen,
+        _selectedShowtime,
+      );
 
   // Booked seats dynamically calculated from real user bookings
   Set<String> get bookedSeats {
@@ -196,12 +270,46 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   }
 
   List<String> get availableCinemas {
+    final scheduledCinemas = <String>{};
+    for (final movieEntry in MockData.movieSchedules.entries) {
+      if (MockData.isMovieScheduled(movieEntry.key)) {
+        for (final dateEntry in movieEntry.value.entries) {
+          for (final theaterEntry in dateEntry.value.entries) {
+            final hasTimes = theaterEntry.value.values.any((times) => times.isNotEmpty);
+            if (hasTimes) {
+              scheduledCinemas.add(theaterEntry.key);
+            }
+          }
+        }
+      }
+    }
+    if (scheduledCinemas.isNotEmpty) {
+      return scheduledCinemas.toList();
+    }
     final list = MockData.theaters.map((t) => t.name).toList();
     if (list.isEmpty) return ['Kairali', 'Nila'];
     return list;
   }
 
   List<String> get availableScreens {
+    final scheduledScreens = <String>{};
+    for (final movieEntry in MockData.movieSchedules.entries) {
+      if (MockData.isMovieScheduled(movieEntry.key)) {
+        for (final dateEntry in movieEntry.value.entries) {
+          final theaterMap = dateEntry.value[_selectedCinema];
+          if (theaterMap != null) {
+            for (final screenEntry in theaterMap.entries) {
+              if (screenEntry.value.isNotEmpty) {
+                scheduledScreens.add(screenEntry.key);
+              }
+            }
+          }
+        }
+      }
+    }
+    if (scheduledScreens.isNotEmpty) {
+      return scheduledScreens.toList();
+    }
     final screensFromPrices = MockData.screenPrices[_selectedCinema]?.keys.toList();
     if (screensFromPrices != null && screensFromPrices.isNotEmpty) {
       return screensFromPrices;
@@ -214,6 +322,24 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   }
 
   List<String> get availableShowtimes {
+    final scheduledTimes = <String>{};
+    for (final movieEntry in MockData.movieSchedules.entries) {
+      if (MockData.isMovieScheduled(movieEntry.key)) {
+        for (final dateEntry in movieEntry.value.entries) {
+          final theaterMap = dateEntry.value[_selectedCinema];
+          if (theaterMap != null) {
+            final times = theaterMap[_selectedScreen];
+            if (times != null && times.isNotEmpty) {
+              scheduledTimes.addAll(times);
+            }
+          }
+        }
+      }
+    }
+    if (scheduledTimes.isNotEmpty) {
+      return scheduledTimes.toList();
+    }
+
     final theater = MockData.theaters.firstWhere(
       (t) => t.name.toLowerCase() == _selectedCinema.toLowerCase(),
       orElse: () => MockData.theaters.isNotEmpty ? MockData.theaters.first : const TheaterModel(name: 'Kairali', type: '', showtimes: []),
@@ -229,22 +355,28 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
     final targetCinema = _selectedCinema.trim().toLowerCase();
 
     for (final movie in MockData.allMovies) {
-      final matchesTheater = movie.theaters.any(
-        (t) => t.trim().toLowerCase().contains(targetCinema),
-      );
-      
+      if (!movie.isActive || !MockData.isMovieScheduled(movie.title)) {
+        continue;
+      }
+
       bool isScheduledInTheater = false;
       final schedulesForMovie = MockData.movieSchedules[movie.title];
       if (schedulesForMovie != null) {
         for (final dateEntry in schedulesForMovie.entries) {
-          if (dateEntry.value.keys.any((k) => k.trim().toLowerCase().contains(targetCinema))) {
-            isScheduledInTheater = true;
-            break;
+          for (final theaterEntry in dateEntry.value.entries) {
+            if (theaterEntry.key.trim().toLowerCase() == targetCinema) {
+              final hasTimes = theaterEntry.value.values.any((times) => times.isNotEmpty);
+              if (hasTimes) {
+                isScheduledInTheater = true;
+                break;
+              }
+            }
           }
+          if (isScheduledInTheater) break;
         }
       }
 
-      if (matchesTheater || isScheduledInTheater) {
+      if (isScheduledInTheater) {
         list.add(movie);
       }
     }
@@ -254,6 +386,8 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
   MovieModel? get scheduledMovie {
     for (final movieEntry in MockData.movieSchedules.entries) {
       final movieTitle = movieEntry.key;
+      if (!MockData.isMovieScheduled(movieTitle)) continue;
+
       for (final dateEntry in movieEntry.value.entries) {
         final theaterMap = dateEntry.value[_selectedCinema];
         if (theaterMap != null) {
@@ -261,7 +395,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
           if (timesList != null && timesList.contains(_selectedShowtime)) {
             try {
               return MockData.allMovies.firstWhere(
-                (m) => m.title.trim().toLowerCase() == movieTitle.trim().toLowerCase(),
+                (m) => m.title.trim().toLowerCase() == movieTitle.trim().toLowerCase() && m.isActive,
               );
             } catch (_) {}
           }
@@ -271,21 +405,26 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
 
     for (final movieEntry in MockData.movieSchedules.entries) {
       final movieTitle = movieEntry.key;
+      if (!MockData.isMovieScheduled(movieTitle)) continue;
+
       for (final dateEntry in movieEntry.value.entries) {
         final theaterMap = dateEntry.value[_selectedCinema];
         if (theaterMap != null && theaterMap.containsKey(_selectedScreen)) {
-          try {
-            return MockData.allMovies.firstWhere(
-              (m) => m.title.trim().toLowerCase() == movieTitle.trim().toLowerCase(),
-            );
-          } catch (_) {}
+          final timesList = theaterMap[_selectedScreen];
+          if (timesList != null && timesList.isNotEmpty) {
+            try {
+              return MockData.allMovies.firstWhere(
+                (m) => m.title.trim().toLowerCase() == movieTitle.trim().toLowerCase() && m.isActive,
+              );
+            } catch (_) {}
+          }
         }
       }
     }
 
-    final theaterMovies = moviesForSelectedCinema;
-    if (theaterMovies.isNotEmpty) {
-      return theaterMovies.first;
+    final scheduledMoviesInCinema = moviesForSelectedCinema;
+    if (scheduledMoviesInCinema.isNotEmpty) {
+      return scheduledMoviesInCinema.first;
     }
 
     return null;
@@ -324,6 +463,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
+                    // ignore: deprecated_member_use
                     value: currentCinema,
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -351,6 +491,10 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                         setState(() {
                           _selectedCinema = val;
                           selectedSeats.clear();
+                          final times = availableShowtimes;
+                          if (times.isNotEmpty) {
+                            _selectedShowtime = times.first;
+                          }
                         });
                       }
                     },
@@ -372,6 +516,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
+                    // ignore: deprecated_member_use
                     value: currentScreen,
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -399,6 +544,10 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                         setState(() {
                           _selectedScreen = val;
                           selectedSeats.clear();
+                          final times = availableShowtimes;
+                          if (times.isNotEmpty) {
+                            _selectedShowtime = times.first;
+                          }
                         });
                       }
                     },
@@ -418,6 +567,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
+          // ignore: deprecated_member_use
           value: currentShowtime,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -476,7 +626,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                 child: activeMovie != null && activeMovie.posterUrl.isNotEmpty
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(activeMovie.posterUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.movie, color: Colors.white)),
+                        child: Image.network(activeMovie.posterUrl, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie, color: Colors.white)),
                       )
                     : const Icon(Icons.movie, color: Colors.white, size: 24),
               ),
@@ -486,7 +636,7 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      activeMovie?.title ?? "Feature Movie",
+                      activeMovie?.title ?? "No Movie Scheduled",
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppTheme.textPrimary,
@@ -494,7 +644,9 @@ class _SeatBlockingScreenState extends State<SeatBlockingScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "${activeMovie?.duration ?? '2h 15m'} • ${activeMovie?.genres.join('/') ?? 'Drama'}",
+                      activeMovie != null
+                          ? "${activeMovie.duration} • ${activeMovie.genres.join('/')}"
+                          : "No active schedule for this showtime",
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textSecondary,

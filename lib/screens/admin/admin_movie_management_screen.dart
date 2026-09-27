@@ -40,6 +40,12 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
     if (index != -1) {
       setState(() {
         MockData.allMovies[index] = updated;
+        final featIndex = MockData.featuredMovies.indexWhere(
+          (m) => m.id == movie.id || m.title.trim().toLowerCase() == movie.title.trim().toLowerCase(),
+        );
+        if (featIndex != -1) {
+          MockData.featuredMovies[featIndex] = updated;
+        }
       });
       await MockData.saveAll();
       if (mounted) {
@@ -55,46 +61,7 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
     }
   }
 
-  Future<void> _deleteMovie(MovieModel movie) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Movie'),
-        content: Text('Are you sure you want to delete "${movie.title}"? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorRed),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
 
-    if (confirm != true) return;
-
-    setState(() {
-      MockData.allMovies.removeWhere((m) => m.id == movie.id);
-      MockData.featuredMovies.removeWhere((m) => m.id == movie.id);
-      MockData.movieSchedules.remove(movie.title);
-      MockData.movieCast.remove(movie.title);
-    });
-
-    await MockData.saveAll();
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('"${movie.title}" deleted successfully.'),
-          backgroundColor: AppTheme.errorRed,
-        ),
-      );
-    }
-  }
 
   void _showMovieDetails(MovieModel movie) {
     showDialog(
@@ -190,138 +157,7 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
     );
   }
 
-  void _showAddEditMovieDialog([MovieModel? existingMovie]) {
-    final isEditing = existingMovie != null;
-    final titleCtrl = TextEditingController(text: existingMovie?.title ?? '');
-    final descCtrl = TextEditingController(text: existingMovie?.description ?? '');
-    final durationCtrl = TextEditingController(text: existingMovie?.duration ?? '02:15');
-    final posterCtrl = TextEditingController(text: existingMovie?.posterUrl ?? '');
-    final bannerCtrl = TextEditingController(text: existingMovie?.bannerUrl ?? '');
-    final certCtrl = TextEditingController(text: existingMovie?.certification ?? 'UA');
-    final genreCtrl = TextEditingController(text: existingMovie?.genres.join(', ') ?? 'Action, Drama');
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isEditing ? 'Edit Movie' : 'Add New Movie'),
-        content: SizedBox(
-          width: 450,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(labelText: 'Movie Title'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: descCtrl,
-                  maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: durationCtrl,
-                        decoration: const InputDecoration(labelText: 'Duration (e.g. 02:15)'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: certCtrl,
-                        decoration: const InputDecoration(labelText: 'Certification (U/UA/A)'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: genreCtrl,
-                  decoration: const InputDecoration(labelText: 'Genres (comma-separated)'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: posterCtrl,
-                  decoration: const InputDecoration(labelText: 'Poster Image URL/Path'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: bannerCtrl,
-                  decoration: const InputDecoration(labelText: 'Banner Image URL/Path'),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (titleCtrl.text.trim().isEmpty) return;
-
-              final genresList = genreCtrl.text
-                  .split(',')
-                  .map((g) => g.trim())
-                  .where((g) => g.isNotEmpty)
-                  .toList();
-
-              final poster = posterCtrl.text.trim().isNotEmpty
-                  ? posterCtrl.text.trim()
-                  : 'https://picsum.photos/seed/${titleCtrl.text.trim()}/300/450';
-
-              final banner = bannerCtrl.text.trim().isNotEmpty
-                  ? bannerCtrl.text.trim()
-                  : poster;
-
-              if (isEditing) {
-                final updated = existingMovie.copyWith(
-                  title: titleCtrl.text.trim(),
-                  description: descCtrl.text.trim(),
-                  duration: durationCtrl.text.trim(),
-                  certification: certCtrl.text.trim(),
-                  genres: genresList,
-                  posterUrl: poster,
-                  bannerUrl: banner,
-                );
-                final idx = MockData.allMovies.indexWhere((m) => m.id == existingMovie.id);
-                if (idx != -1) {
-                  MockData.allMovies[idx] = updated;
-                }
-              } else {
-                final newMovie = MovieModel(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  title: titleCtrl.text.trim(),
-                  description: descCtrl.text.trim(),
-                  duration: durationCtrl.text.trim(),
-                  rating: 4.5,
-                  certification: certCtrl.text.trim().isNotEmpty ? certCtrl.text.trim() : 'UA',
-                  posterUrl: poster,
-                  bannerUrl: banner,
-                  genres: genresList.isNotEmpty ? genresList : ['Action'],
-                  theaters: const ['Kairali', 'Nila'],
-                  isActive: true,
-                );
-                MockData.allMovies.insert(0, newMovie);
-              }
-
-              await MockData.saveAll();
-              setState(() {});
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRed),
-            child: Text(isEditing ? 'Save Changes' : 'Add Movie'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -332,35 +168,24 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header & Action Row ──
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // ── Header ──
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Movie Management',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Manage total catalog, visibility, details, and schedules.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ],
+              Text(
+                'Movie Management',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
               ),
-              ElevatedButton.icon(
-                onPressed: () => _showAddEditMovieDialog(),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add New Movie'),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRed),
+              const SizedBox(height: 4),
+              Text(
+                'Manage total catalog, visibility, details, and schedules.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ],
           ),
@@ -515,7 +340,7 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
                                           scale: 0.75,
                                           child: Switch(
                                             value: movie.isActive,
-                                            activeColor: AppTheme.primaryRed,
+                                            activeThumbColor: AppTheme.primaryRed,
                                             onChanged: (_) => _toggleMovieStatus(movie),
                                           ),
                                         ),
@@ -534,22 +359,6 @@ class _AdminMovieManagementScreenState extends State<AdminMovieManagementScreen>
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w500),
                           ),
                           const Spacer(),
-                          const Divider(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () => _showAddEditMovieDialog(movie),
-                                icon: const Icon(Icons.edit, size: 16),
-                                label: const Text('Edit'),
-                              ),
-                              TextButton.icon(
-                                onPressed: () => _deleteMovie(movie),
-                                icon: const Icon(Icons.delete, size: 16, color: AppTheme.errorRed),
-                                label: const Text('Delete', style: TextStyle(color: AppTheme.errorRed)),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     );

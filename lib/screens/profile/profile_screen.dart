@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
+import 'package:booking/models/review_model.dart';
 import 'package:booking/widgets/bottom_nav_bar.dart';
 import 'package:booking/screens/my_bookings/my_bookings_screen.dart';
 
@@ -564,6 +565,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
+            // ignore: deprecated_member_use
             value: _selectedReviewMovieTitle,
             isExpanded: true,
             decoration: InputDecoration(
@@ -580,7 +582,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderSide: BorderSide.none,
               ),
             ),
-            items: MockData.allMovies.map((movie) {
+            items: MockData.activeMovies.map((movie) {
               return DropdownMenuItem<String>(
                 value: movie.title,
                 child: Text(
@@ -704,10 +706,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   return;
                 }
 
+                final newReview = ReviewModel(
+                  id: 'rev_${DateTime.now().millisecondsSinceEpoch}',
+                  movieTitle: _selectedReviewMovieTitle!,
+                  userName: _nameController.text.trim().isNotEmpty
+                      ? _nameController.text.trim()
+                      : 'Alexander Sterling',
+                  userInitials: 'AS',
+                  rating: _reviewStars,
+                  comment: _reviewController.text.trim(),
+                  timeAgo: 'Just now',
+                  isApproved: true,
+                );
+
+                MockData.reviews.insert(0, newReview);
                 await MockData.addMovieRating(
                   _selectedReviewMovieTitle!,
                   _reviewStars.toDouble(),
                 );
+                await MockData.saveAll();
 
                 setState(() => _reviewSubmitted = true);
               },

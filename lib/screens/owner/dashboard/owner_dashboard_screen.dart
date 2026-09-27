@@ -3,7 +3,7 @@ import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
-import 'package:booking/screens/owner/movies_management/owner_movies_screen.dart';
+import 'package:booking/screens/owner/movies_management/add_movie_screen.dart';
 import 'package:booking/screens/owner/schedule_management/owner_schedule_screen.dart';
 import 'package:booking/screens/owner/screens_management/owner_screens_status_screen.dart';
 import 'package:booking/data/mock_data.dart';
@@ -60,16 +60,12 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                   child: AdminButton(
                     text: 'Add Movie',
                     onPressed: () {
-                      if (widget.onNavigateToMovies != null) {
-                        widget.onNavigateToMovies!();
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OwnerMoviesScreen(theaterName: widget.theaterName),
-                          ),
-                        );
-                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AddMovieScreen(theaterName: widget.theaterName),
+                        ),
+                      );
                     },
                     icon: Icons.add,
                   ),

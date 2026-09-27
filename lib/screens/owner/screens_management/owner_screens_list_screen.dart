@@ -580,6 +580,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
   }
 
   Widget _buildCompactPreviewRow(SeatRow row) {
+    final blockedSeats = MockData.getBlockedSeats(widget.theaterName, _activeScreen);
     return Padding(
       padding: const EdgeInsets.only(bottom: 5),
       child: Row(
@@ -599,21 +600,26 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
           const SizedBox(width: 4),
           // Seat boxes
           ...List.generate(row.seatCount, (i) {
+            final seatNum = i + 1;
+            final seatId = '${row.rowName}-$seatNum';
+            final formattedId = '${row.rowName}$seatNum';
+            final isBlocked = blockedSeats.contains(formattedId) || blockedSeats.contains(seatId);
+
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 2),
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: isBlocked ? AppColors.primaryDark : AppColors.background,
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: AppColors.divider),
+                border: isBlocked ? null : Border.all(color: AppColors.divider),
               ),
               child: Center(
                 child: Text(
-                  '${i + 1}',
-                  style: const TextStyle(
+                  '$seatNum',
+                  style: TextStyle(
                     fontSize: 6,
-                    color: AppColors.textSecondary,
+                    color: isBlocked ? Colors.white : AppColors.textSecondary,
                   ),
                 ),
               ),

@@ -11,6 +11,7 @@ import 'package:booking/screens/owner/main/owner_main_screen.dart';
 import 'package:booking/screens/admin/admin_dashboard.dart';
 import 'package:booking/screens/splash/splash_screen.dart';
 import 'package:booking/screens/network/no_internet_screen.dart';
+import 'package:booking/data/mock_data.dart';
 /// ============================================================
 /// App Router — Named route definitions
 /// ============================================================
@@ -53,8 +54,31 @@ class AppRouter {
 
       case movieDetail:
         final movie = settings.arguments as MovieModel;
+        final currentMovie = MockData.allMovies.firstWhere(
+          (m) => m.id == movie.id || m.title.trim().toLowerCase() == movie.title.trim().toLowerCase(),
+          orElse: () => movie,
+        );
+        if (!currentMovie.isActive) {
+          return FastPageRoute(
+            builder: (_) => Scaffold(
+              backgroundColor: const Color(0xFF0F172A),
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                iconTheme: const IconThemeData(color: Colors.white),
+              ),
+              body: const Center(
+                child: Text(
+                  'This movie is currently unavailable.',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ),
+            settings: settings,
+          );
+        }
         return FastPageRoute(
-          builder: (_) => MovieDetailScreen(movie: movie),
+          builder: (_) => MovieDetailScreen(movie: currentMovie),
           settings: settings,
         );
 

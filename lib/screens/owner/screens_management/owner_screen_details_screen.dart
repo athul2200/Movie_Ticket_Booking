@@ -52,6 +52,10 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
             b.cinema.startsWith('${widget.theaterName} •'))
         .expand((b) => b.seats)
         .toSet();
+
+    _permanentlyBooked.addAll(
+      MockData.getBlockedSeats(widget.theaterName, widget.screenName),
+    );
   }
 
   List<MovieModel> get _theaterMovies =>
@@ -578,7 +582,8 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
             final formattedId = '${row.rowName}$seatNum';
 
             final isPermanentlyBooked =
-                _permanentlyBooked.contains(formattedId);
+                _permanentlyBooked.contains(formattedId) ||
+                _permanentlyBooked.contains(seatId);
             final isReserved =
                 !isPermanentlyBooked && reservedSeats.contains(seatId);
 

@@ -48,7 +48,25 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   // Key used for this specific show in the reservation service
   late final String _screenKey;
   late final double _seatPrice;
-  late final Set<String> _permanentlyBookedSeats;
+
+  /// Seats that cannot be selected: confirmed bookings + admin-blocked seats.
+  /// Computed as a getter so it stays live with MockData changes.
+  Set<String> get _permanentlyBlockedSeats {
+    final result = MockData.bookings
+        .where((b) =>
+            b.movieTitle == widget.movieTitle &&
+            b.date == widget.date &&
+            b.time == widget.showtime &&
+            (b.cinema == widget.cinema ||
+                b.cinema.startsWith('${widget.cinema} •')))
+        .expand((b) => b.seats)
+        .toSet();
+    // Add all admin-blocked seats for this cinema/screen/showtime
+    result.addAll(
+      MockData.getBlockedSeats(widget.cinema, widget.screen, widget.showtime),
+    );
+    return result;
+  }
 
   @override
   void initState() {
@@ -73,23 +91,13 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     }
     _seatPrice = price;
 
-    // Compute permanently booked seats once
-    _permanentlyBookedSeats = MockData.bookings
-        .where((b) =>
-            b.movieTitle == widget.movieTitle &&
-            b.date == widget.date &&
-            b.time == widget.showtime &&
-            (b.cinema == widget.cinema || b.cinema.startsWith('${widget.cinema} •')))
-        .expand((b) => b.seats)
-        .toSet();
-
     // Listen to reservation changes (other users releasing seats, expiry, etc.)
-    // SeatReservationService.instance.addListener(_screenKey, _onReservationChanged);
+    SeatReservationService.instance.addListener(_screenKey, _onReservationChanged);
   }
 
   @override
   void dispose() {
-  // SeatReservationService.instance.removeListener(_screenKey, _onReservationChanged);
+    SeatReservationService.instance.removeListener(_screenKey, _onReservationChanged);
     super.dispose();
   }
 
@@ -105,6 +113,11 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
   void _onSeatTap(String seatId) {
     final service = SeatReservationService.instance;
+    final formattedId = seatId.replaceAll('-', '');
+
+    // Extra safety guard: ignore taps on blocked/booked seats
+    final blocked = _permanentlyBlockedSeats;
+    if (blocked.contains(seatId) || blocked.contains(formattedId)) return;
 
     if (_selectedSeats.contains(seatId)) {
       // Deselect → release reservation
@@ -282,6 +295,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   Widget _buildSeatGrid(BuildContext context) {
     final reservedSeats = SeatReservationService.instance.reservedSeats(_screenKey);
     final layout = MockData.getLayout(widget.cinema, widget.screen);
+    // Compute once per build — includes both bookings and admin-blocked seats
+    final permanentlyBlocked = _permanentlyBlockedSeats;
 
     if (layout.isEmpty) {
       return const Padding(
@@ -330,13 +345,13 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 ),
                 const SizedBox(width: 3),
                 if (leftCount > 0) ...[
-                  _buildBlock(context, row, 'L', leftCount, 1, reservedSeats, _permanentlyBookedSeats),
+                  _buildBlock(context, row, 'L', leftCount, 1, reservedSeats, permanentlyBlocked),
                   const SizedBox(width: 10),
                 ],
-                _buildBlock(context, row, 'C', centerCount, leftCount + 1, reservedSeats, _permanentlyBookedSeats),
+                _buildBlock(context, row, 'C', centerCount, leftCount + 1, reservedSeats, permanentlyBlocked),
                 if (rightCount > 0) ...[
                   const SizedBox(width: 10),
-                  _buildBlock(context, row, 'R', rightCount, leftCount + centerCount + 1, reservedSeats, _permanentlyBookedSeats),
+                  _buildBlock(context, row, 'R', rightCount, leftCount + centerCount + 1, reservedSeats, permanentlyBlocked),
                 ],
                 const SizedBox(width: 3),
                 SizedBox(
@@ -378,7 +393,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         final formattedSeatId = '$row$seatNumber';
 
         final isSelectedByMe = _selectedSeats.contains(seatId);
-        final isPermanentlyBooked = permanentlyBookedSeats.contains(formattedSeatId);
+        final isPermanentlyBooked =
+            permanentlyBookedSeats.contains(formattedSeatId) ||
+            permanentlyBookedSeats.contains(seatId);
         // A seat is "booked" if someone else reserved it (not this user) or it is permanently booked
         final isBookedByOther = (!isSelectedByMe && reservedSeats.contains(seatId)) || isPermanentlyBooked;
 
