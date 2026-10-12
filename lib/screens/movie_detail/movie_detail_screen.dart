@@ -501,7 +501,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     child: Text(
                       date,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        color: isSelected ? Colors.black : AppColors.textPrimary,
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                       ),
                     ),
@@ -783,7 +783,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   child: Text(
                     time,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: isTimeSelected ? Colors.white : AppColors.textPrimary,
+                      color: isTimeSelected ? Colors.black : AppColors.textPrimary,
                       fontWeight: isTimeSelected ? FontWeight.w700 : FontWeight.w500,
                       fontSize: 12,
                     ),
@@ -923,7 +923,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           child: Text(
                             review.userInitials,
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: Colors.black,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1031,7 +1031,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       ? AppColors.primary
                       : AppColors.surface,
                   foregroundColor: _selectedShowtime != null
-                      ? AppColors.textWhite
+                      ? AppColors.textBlack
                       : AppColors.textSecondary,
                   disabledBackgroundColor: AppColors.surface,
                   disabledForegroundColor: AppColors.textSecondary,

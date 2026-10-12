@@ -135,7 +135,7 @@ class _ShowtimeCardState extends State<ShowtimeCard> {
                         widget.theater.showtimes[index],
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isSelected
-                              ? AppColors.textWhite
+                              ? AppColors.textOnYellow
                               : AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,

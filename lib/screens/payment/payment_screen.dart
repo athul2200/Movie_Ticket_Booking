@@ -206,7 +206,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             child: Icon(
               icon,
               size: 16,
-              color: isActive ? AppColors.textWhite : AppColors.textSecondary,
+              color: isActive ? AppColors.textOnYellow : AppColors.textSecondary,
             ),
           ),
         ),
@@ -575,7 +575,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textWhite,
+          foregroundColor: AppColors.textOnYellow,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),

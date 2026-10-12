@@ -6,11 +6,14 @@ import 'package:booking/models/movie_model.dart';
 import 'package:booking/widgets/hero_banner.dart';
 import 'package:booking/widgets/category_chips.dart';
 import 'package:booking/widgets/movie_card.dart';
+import 'package:booking/widgets/app_image.dart';
+import 'package:booking/screens/upcoming/upcoming_screen.dart';
 
 /// ============================================================
 /// Home Screen — Main landing screen with:
 /// - Custom app bar (location, logo, search)
 /// - Hero carousel banner
+/// - Upcoming movies card
 /// - Category filter chips
 /// - Movie grid (2 columns)
 /// ============================================================
@@ -63,6 +66,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final featuredRaw = scheduledFeatured.isNotEmpty ? scheduledFeatured : scheduledMovies;
     final featured = MockData.deduplicateMovies(featuredRaw);
 
+    // Active unscheduled movies for the Upcoming Movies section
+    final unscheduledMovies = MockData.allMovies.where((m) {
+      final isOwnerAddedActive = m.isActive;
+      final isNotScheduled = !MockData.isMovieScheduled(m.title);
+      return isOwnerAddedActive && isNotScheduled;
+    }).toList();
+    final upcomingMovies = MockData.deduplicateMovies(unscheduledMovies);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -88,6 +99,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // ── Spacing ──
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
+
+            // ── Upcoming Movies Card ──
+            SliverToBoxAdapter(
+              child: _buildUpcomingMoviesCard(context, upcomingMovies),
+            ),
+
             const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
 
             // ── Category Chips ──
@@ -256,6 +274,191 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Upcoming Movies Section represented as a sleek Card
+  Widget _buildUpcomingMoviesCard(BuildContext context, List<MovieModel> movies) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const UpcomingScreen(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.25),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadowColor.withValues(alpha: 0.12),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Top Header Row ──
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primary.withValues(alpha: 0.75),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.upcoming,
+                      color: Colors.black,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Upcoming Movies',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textPrimary,
+                                    fontSize: 16,
+                                  ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(AppRadius.full),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Text(
+                                '${movies.length}',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 11,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          movies.isNotEmpty
+                              ? '${movies.length} ${movies.length == 1 ? "movie" : "movies"} coming soon to theaters'
+                              : 'Explore releases coming soon to theaters',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
+
+              // ── Preview Posters Row (if movies exist) ──
+              if (movies.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                const Divider(color: AppColors.divider, height: 1),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    // Preview posters
+                    Expanded(
+                      child: Row(
+                        children: movies.take(4).map((m) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(AppRadius.sm),
+                              child: SizedBox(
+                                width: 44,
+                                height: 58,
+                                child: AppImage(
+                                  urlOrPath: m.posterUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => Container(
+                                    color: AppColors.cardBackground,
+                                    child: const Icon(
+                                      Icons.movie,
+                                      size: 16,
+                                      color: AppColors.textHint,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'View All',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

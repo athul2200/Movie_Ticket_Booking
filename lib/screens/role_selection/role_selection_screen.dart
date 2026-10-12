@@ -350,7 +350,7 @@ class _RoleCardState extends State<_RoleCard>
                     ),
                     child: Icon(
                       widget.icon,
-                      color: Colors.white,
+                      color: AppColors.textOn(widget.gradientColors[0]),
                       size: 26,
                     ),
                   ),

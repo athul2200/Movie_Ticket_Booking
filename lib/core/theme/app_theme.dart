@@ -17,10 +17,25 @@ class AppColors {
   static const Color cardBackground = Color(0xFF2C2C2C);
 
   // Text colors
-  static const Color textPrimary = Color(0xFFFFFFFF); // White
+  static const Color textPrimary = Color(0xFFFFFFFF); // White text on black/dark background
   static const Color textSecondary = Color(0xFFBDBDBD);
-  static const Color textWhite = Color(0xFF000000); // Black text on yellow background
+  static const Color textWhite = Color(0xFFFFFFFF); // White
+  static const Color textBlack = Color(0xFF000000); // Black
+  static const Color textOnYellow = Color(0xFF000000); // Black text on yellow background
+  static const Color textOnWhite = Color(0xFF000000); // Black text on white background
+  static const Color textOnDark = Color(0xFFFFFFFF); // White text on black/dark background
   static const Color textHint = Color(0xFF757575);
+
+  /// Returns the contrasting text color according to the app rules:
+  /// - Yellow / light backgrounds: Black text
+  /// - Black / dark backgrounds: White text
+  /// - White backgrounds: Black text
+  static Color textOn(Color background) {
+    if (background.computeLuminance() > 0.45) {
+      return textBlack;
+    }
+    return textWhite;
+  }
 
   // Accent colors
   static const Color starYellow = Color(0xFFFFD700);
@@ -50,7 +65,7 @@ class AppTheme {
         seedColor: AppColors.primary,
         brightness: Brightness.dark,
         primary: AppColors.primary,
-        onPrimary: AppColors.textWhite,
+        onPrimary: AppColors.textOnYellow,
         surface: AppColors.background,
         onSurface: AppColors.textPrimary,
       ),
@@ -71,7 +86,7 @@ class AppTheme {
         headlineLarge: GoogleFonts.poppins(
           fontSize: 28,
           fontWeight: FontWeight.w800,
-          color: AppColors.textWhite,
+          color: AppColors.textPrimary,
         ),
         // Section headers
         headlineMedium: GoogleFonts.poppins(
@@ -110,7 +125,7 @@ class AppTheme {
         labelLarge: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: AppColors.textWhite,
+          color: AppColors.textPrimary,
         ),
         labelMedium: GoogleFonts.poppins(
           fontSize: 12,

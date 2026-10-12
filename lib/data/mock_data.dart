@@ -13,6 +13,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Mock Data — Static data matching the Figma design exactly
 /// ============================================================
 
+/// Data model representing a scheduled movie and its showtimes for a specific screen
+class ScheduledMovieInfo {
+  final MovieModel movie;
+  final List<String> showtimes;
+
+  const ScheduledMovieInfo({
+    required this.movie,
+    required this.showtimes,
+  });
+}
+
 class MockData {
   // ── Static Default Filters ──
   static final Set<String> _staticDefaultIds = {'1', '2', '3', '4'};
@@ -74,8 +85,6 @@ class MockData {
     'Action',
     'Drama',
     'Crime-Thriller',
-    'Sci-Fi',
-    'Animation',
   ];
 
   // ── Cast & Crew for detail screen ──
@@ -115,90 +124,10 @@ class MockData {
   static final List<BookingModel> bookings = [];
 
   // ── Application Registered Users ──
-  static List<UserModel> users = [
-    const UserModel(
-      id: 'usr_1',
-      name: 'Julianne Devis',
-      email: 'julianne.d@example.com',
-      phone: '+91 9876543210',
-      status: 'ACTIVE',
-      tier: 'Platinum',
-      lastActive: '2h ago',
-      moviesSeenCount: 45,
-      totalBookingsCount: 32,
-      favGenre: 'Sci-Fi',
-    ),
-    const UserModel(
-      id: 'usr_2',
-      name: 'Marcus Wright',
-      email: 'm.wright@cinema.com',
-      phone: '+91 9876543211',
-      status: 'PENDING',
-      tier: 'Gold',
-      lastActive: '1d ago',
-      moviesSeenCount: 12,
-      totalBookingsCount: 8,
-      favGenre: 'Action',
-    ),
-    const UserModel(
-      id: 'usr_3',
-      name: 'Sarah Chen',
-      email: 'schen.creative@ui.com',
-      phone: '+91 9876543212',
-      status: 'ACTIVE',
-      tier: 'Silver',
-      lastActive: '5m ago',
-      moviesSeenCount: 8,
-      totalBookingsCount: 5,
-      favGenre: 'Drama',
-    ),
-    const UserModel(
-      id: 'usr_4',
-      name: 'Aaron Kessler',
-      email: 'akessler@web.net',
-      phone: '+91 9876543213',
-      status: 'BANNED',
-      tier: 'Standard',
-      lastActive: '12d ago',
-      moviesSeenCount: 0,
-      totalBookingsCount: 0,
-      favGenre: 'N/A',
-    ),
-  ];
+  static List<UserModel> users = [];
 
   // ── Moderation Review Queue ──
-  static List<ReviewModel> reviews = [
-    const ReviewModel(
-      id: 'rev_1',
-      movieTitle: 'Drishyam 3',
-      userName: 'Sandra Muller',
-      userInitials: 'SM',
-      rating: 4,
-      comment: 'The Dolby Atmos sound in Theater 4 was absolutely incredible. Made the movie feel so immersive. Just wish the popcorn was a bit fresher!',
-      timeAgo: '10m ago',
-      isApproved: true,
-    ),
-    const ReviewModel(
-      id: 'rev_2',
-      movieTitle: 'Michael',
-      userName: 'Tom Lewis',
-      userInitials: 'TL',
-      rating: 2,
-      comment: 'Had trouble with the digital ticket scanner. The staff was helpful but it delayed us getting to our seats by 15 minutes.',
-      timeAgo: '1h ago',
-      isApproved: false,
-    ),
-    const ReviewModel(
-      id: 'rev_3',
-      movieTitle: 'Kattalan',
-      userName: 'Riya Kapoor',
-      userInitials: 'RK',
-      rating: 5,
-      comment: 'Cinema Concierge is a game changer. Booked the lounge seats and the service was impeccable. Highly recommended!',
-      timeAgo: '3h ago',
-      isApproved: true,
-    ),
-  ];
+  static List<ReviewModel> reviews = [];
 
   // ── Analytics & Statistics Helpers ──
   static double get totalRevenue {
@@ -226,18 +155,37 @@ class MockData {
   // ── Global Movie Schedules (Movie -> DateLabel -> Theater -> Screen -> Times) ──
   static Map<String, Map<String, Map<String, Map<String, List<String>>>>> movieSchedules = {};
 
-  /// Checks if a movie has at least 1 active scheduled showtime in any theater/screen/date.
-  static bool isMovieScheduled(String movieTitle) {
+  /// Case-insensitive, resilient theater name comparison that also handles
+  /// trailing "Theater" or "• Screen" prefixes/suffixes.
+  static bool theaterMatches(String t1, String t2) {
+    String clean(String s) => s
+        .split('•')
+        .first
+        .replaceAll(RegExp(r'\btheater\b', caseSensitive: false), '')
+        .trim()
+        .toLowerCase();
+    final c1 = clean(t1);
+    final c2 = clean(t2);
+    return c1 == c2 || t1.trim().toLowerCase() == t2.trim().toLowerCase();
+  }
+
+  /// Checks if a movie has at least 1 active scheduled showtime in any theater/screen/date (or in a specific theater if provided).
+  static bool isMovieScheduled(String movieTitle, [String? theaterName]) {
     if (movieSchedules.isEmpty) return false;
     final target = movieTitle.trim().toLowerCase();
     for (final entry in movieSchedules.entries) {
       if (entry.key.trim().toLowerCase() == target) {
         final dates = entry.value;
         for (final dateEntry in dates.values) {
-          for (final theaterEntry in dateEntry.values) {
-            for (final timesList in theaterEntry.values) {
-              if (timesList.isNotEmpty) {
-                return true;
+          for (final theaterEntry in dateEntry.entries) {
+            final matchesTheater = theaterName == null ||
+                theaterName.trim().toLowerCase() == 'all' ||
+                theaterMatches(theaterEntry.key, theaterName);
+            if (matchesTheater) {
+              for (final timesList in theaterEntry.value.values) {
+                if (timesList.isNotEmpty) {
+                  return true;
+                }
               }
             }
           }
@@ -247,34 +195,206 @@ class MockData {
     return false;
   }
 
-  static void _seedDefaultSchedulesIfNeeded() {
-    if (movieSchedules.isNotEmpty) return;
+  /// Returns a list of [ScheduledMovieInfo] containing all movies and their
+  /// scheduled showtimes for a specific theater and screen name.
+  static List<ScheduledMovieInfo> getScheduledMoviesForScreen(
+    String theaterName,
+    String screenName,
+  ) {
+    if (movieSchedules.isEmpty) return [];
 
-    final now = DateTime.now();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final dates = List.generate(3, (i) {
-      final d = now.add(Duration(days: i));
-      return '${months[d.month - 1]} ${d.day}';
+    final targetScreen = screenName.trim().toLowerCase();
+    final Map<String, Set<String>> movieShowtimesMap = {};
+
+    movieSchedules.forEach((movieTitle, datesMap) {
+      datesMap.forEach((dateLabel, theatersMap) {
+        theatersMap.forEach((thName, screensMap) {
+          if (theaterMatches(thName, theaterName)) {
+            screensMap.forEach((scName, times) {
+              if (scName.trim().toLowerCase() == targetScreen && times.isNotEmpty) {
+                movieShowtimesMap.putIfAbsent(movieTitle, () => <String>{});
+                movieShowtimesMap[movieTitle]!.addAll(times);
+              }
+            });
+          }
+        });
+      });
     });
 
-    final defaultMovies = ['Drishyam 3', 'Michael', 'Kattalan', 'Karuppu'];
-    final showtimes = ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '10:30 PM'];
+    final List<ScheduledMovieInfo> result = [];
+    movieShowtimesMap.forEach((title, timesSet) {
+      final movie = allMovies.firstWhere(
+        (m) => m.title.trim().toLowerCase() == title.trim().toLowerCase(),
+        orElse: () => MovieModel(
+          id: title,
+          title: title,
+          description: '',
+          genres: ['Drama'],
+          duration: '120 mins',
+          rating: 4.5,
+          certification: 'UA',
+          posterUrl:
+              'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop',
+          bannerUrl:
+              'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop',
+          theaters: [theaterName],
+        ),
+      );
+      final sortedTimes = timesSet.toList()..sort();
+      result.add(ScheduledMovieInfo(
+        movie: movie,
+        showtimes: sortedTimes,
+      ));
+    });
 
-    for (final movie in defaultMovies) {
-      movieSchedules[movie] = {};
-      for (final date in dates) {
-        movieSchedules[movie]![date] = {
-          'Kairali': {
-            'Screen 01': List<String>.from(showtimes),
-            'Screen 02': List<String>.from(showtimes),
-          },
-          'Nila': {
-            'Screen 01': List<String>.from(showtimes),
-            'Screen 02': List<String>.from(showtimes),
-          },
-        };
+    return result;
+  }
+
+  /// Updates a movie's schedule entry: optionally moves it to a different
+  /// screen and/or replaces the show timings.  Cleans up empty map nodes so
+  /// subsequent reads stay consistent.  Persists via [saveAll].
+  static Future<void> updateMovieSchedule({
+    required String movieTitle,
+    required String theaterName,
+    required String dateLabel,
+    required String oldScreen,
+    required String newScreen,
+    required List<String> newTimes,
+  }) async {
+    final titleKey = movieTitle.trim().toLowerCase();
+
+    // Find the exact key used in movieSchedules (preserves original casing)
+    final schedKey = movieSchedules.keys.firstWhere(
+      (k) => k.trim().toLowerCase() == titleKey,
+      orElse: () => movieTitle,
+    );
+
+    movieSchedules.putIfAbsent(schedKey, () => {});
+    movieSchedules[schedKey]!.putIfAbsent(dateLabel, () => {});
+
+    // Find the exact theater key stored in the map
+    final dateMap = movieSchedules[schedKey]![dateLabel]!;
+    String? theaterKey;
+    for (final k in dateMap.keys) {
+      if (theaterMatches(k, theaterName)) {
+        theaterKey = k;
+        break;
       }
     }
+    theaterKey ??= theaterName;
+    dateMap.putIfAbsent(theaterKey, () => {});
+
+    final screenMap = dateMap[theaterKey]!;
+
+    // Remove old screen entry (the times are now replaced by newScreen/newTimes)
+    if (oldScreen != newScreen) {
+      screenMap.remove(oldScreen);
+    }
+
+    // Write new times (or clear if empty to allow full removal)
+    if (newTimes.isEmpty) {
+      screenMap.remove(newScreen);
+    } else {
+      screenMap[newScreen] = List<String>.from(newTimes);
+    }
+
+    // Clean up empty nodes
+    if (screenMap.isEmpty) dateMap.remove(theaterKey);
+    if (dateMap.isEmpty) movieSchedules[schedKey]!.remove(dateLabel);
+    if (movieSchedules[schedKey]!.isEmpty) movieSchedules.remove(schedKey);
+
+    await saveAll();
+  }
+
+  /// Returns the list of screens for a theater, defaulting to ['Screen 01', 'Screen 02'].
+  static List<String> getTheaterScreens(String theaterName) {
+    for (final entry in screenPrices.entries) {
+      if (theaterMatches(entry.key, theaterName) && entry.value.isNotEmpty) {
+        return entry.value.keys.toList();
+      }
+    }
+    for (final entry in screenLayouts.entries) {
+      if (theaterMatches(entry.key, theaterName) && entry.value.isNotEmpty) {
+        return entry.value.keys.toList();
+      }
+    }
+    return ['Screen 01', 'Screen 02'];
+  }
+
+  /// Updates or sets schedules for a movie across all screens in a theater for a given date.
+  /// If a screen's times list is empty, that screen is unassigned/removed.
+  static Future<void> saveMovieScheduleMultiScreen({
+    required String movieTitle,
+    required String theaterName,
+    required String dateLabel,
+    required Map<String, List<String>> screenTimes,
+  }) async {
+    final titleKey = movieTitle.trim().toLowerCase();
+
+    final schedKey = movieSchedules.keys.firstWhere(
+      (k) => k.trim().toLowerCase() == titleKey,
+      orElse: () => movieTitle,
+    );
+
+    movieSchedules.putIfAbsent(schedKey, () => {});
+    movieSchedules[schedKey]!.putIfAbsent(dateLabel, () => {});
+
+    final dateMap = movieSchedules[schedKey]![dateLabel]!;
+    String? theaterKey;
+    for (final k in dateMap.keys) {
+      if (theaterMatches(k, theaterName)) {
+        theaterKey = k;
+        break;
+      }
+    }
+    theaterKey ??= theaterName;
+    dateMap.putIfAbsent(theaterKey, () => {});
+
+    final screenMap = dateMap[theaterKey]!;
+
+    screenTimes.forEach((screen, times) {
+      if (times.isEmpty) {
+        screenMap.remove(screen);
+      } else {
+        screenMap[screen] = List<String>.from(times);
+      }
+    });
+
+    // Clean up empty nodes
+    if (screenMap.isEmpty) dateMap.remove(theaterKey);
+    if (dateMap.isEmpty) movieSchedules[schedKey]!.remove(dateLabel);
+    if (movieSchedules[schedKey]!.isEmpty) movieSchedules.remove(schedKey);
+
+    // Keep theater in movie.theaters if it has active schedules, or ensure it's there
+    final movieIdx = allMovies.indexWhere(
+      (m) => m.title.trim().toLowerCase() == titleKey,
+    );
+    if (movieIdx != -1) {
+      final currentMovie = allMovies[movieIdx];
+      final hasActiveSchedules = isMovieScheduled(movieTitle, theaterName);
+      if (hasActiveSchedules) {
+        if (!currentMovie.theaters.any((t) => theaterMatches(t, theaterName))) {
+          final updated = currentMovie.copyWith(
+            theaters: [...currentMovie.theaters, theaterName],
+          );
+          allMovies[movieIdx] = updated;
+          final featIdx = featuredMovies.indexWhere(
+            (m) => m.id == currentMovie.id || m.title.trim().toLowerCase() == titleKey,
+          );
+          if (featIdx != -1) {
+            featuredMovies[featIdx] = updated;
+          }
+        }
+      }
+    }
+
+    await saveAll();
+  }
+
+  static void _seedDefaultSchedulesIfNeeded() {
+    // Do not auto-seed default movies for Screen 01 and Screen 02.
+    // Screen 01 and Screen 02 start empty so that only owner-scheduled movies appear.
+    return;
   }
 
   // ── Per-Movie Cast (Movie title -> List<CastModel>) ──
@@ -424,7 +544,7 @@ class MockData {
     final allMoviesJson = prefs.getString('allMovies');
     if (allMoviesJson != null) {
       final List decoded = json.decode(allMoviesJson);
-      final loaded = decoded.map((e) => MovieModel.fromJson(e)).where((m) => !isDefaultMovie(m)).toList();
+      final loaded = decoded.map((e) => MovieModel.fromJson(e)).toList();
       allMovies = deduplicateMovies(loaded);
     } else {
       allMovies = [];
@@ -433,7 +553,7 @@ class MockData {
     final featuredMoviesJson = prefs.getString('featuredMovies');
     if (featuredMoviesJson != null) {
       final List decoded = json.decode(featuredMoviesJson);
-      final loaded = decoded.map((e) => MovieModel.fromJson(e)).where((m) => !isDefaultMovie(m)).toList();
+      final loaded = decoded.map((e) => MovieModel.fromJson(e)).toList();
       featuredMovies = deduplicateMovies(loaded);
     } else {
       featuredMovies = [];

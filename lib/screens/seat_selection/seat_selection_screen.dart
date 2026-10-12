@@ -421,9 +421,11 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 fontSize: 8,
                 fontWeight: FontWeight.w700,
-                color: isSelectedByMe || isBookedByOther
-                    ? Colors.white
-                    : AppColors.textPrimary,
+                color: isSelectedByMe
+                    ? AppColors.textOnYellow
+                    : isBookedByOther
+                        ? Colors.white
+                        : AppColors.textPrimary,
               ),
             ),
           ),
@@ -571,7 +573,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 label: const Text('Book Tickets Now'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.textWhite,
+                  foregroundColor: AppColors.textOnYellow,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),

@@ -142,45 +142,6 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // ── Screen Selector Tabs ──
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: _screenNames.map((screen) {
-                  final isActive = _activeScreen == screen;
-                  return GestureDetector(
-                    onTap: () => _setActiveScreen(screen),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.only(right: AppSpacing.sm),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isActive ? AppColors.primary : AppColors.surface,
-                        borderRadius: BorderRadius.circular(AppRadius.full),
-                        border: isActive
-                            ? null
-                            : Border.all(color: AppColors.divider),
-                      ),
-                      child: Text(
-                        screen,
-                        style: TextStyle(
-                          color: isActive
-                              ? AppColors.textWhite
-                              : AppColors.textSecondary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
             // ── Screen Cards (one per screen) ──
             ..._screenNames.map((screen) {
               final isActive = _activeScreen == screen;
@@ -217,7 +178,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                               Text(
                                 'NOW EDITING',
                                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: AppColors.textWhite.withValues(alpha: 0.8),
+                                  color: AppColors.textBlack.withValues(alpha: 0.8),
                                   letterSpacing: 1.0,
                                 ),
                               ),
@@ -227,7 +188,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                               screen,
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: isActive
-                                    ? AppColors.textWhite
+                                    ? AppColors.textBlack
                                     : AppColors.textPrimary,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -239,7 +200,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                                   Icons.chair_outlined,
                                   size: AppSizes.iconSm,
                                   color: isActive
-                                      ? AppColors.textWhite
+                                      ? AppColors.textBlack
                                       : AppColors.textSecondary,
                                 ),
                                 const SizedBox(width: AppSpacing.xs),
@@ -247,7 +208,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                                   '${_totalSeatsForScreen(screen)} Seats Total',
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: isActive
-                                        ? AppColors.textWhite
+                                        ? AppColors.textBlack
                                         : AppColors.textSecondary,
                                   ),
                                 ),
@@ -264,7 +225,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                                 ? Icons.grid_view_rounded
                                 : Icons.grid_view_outlined,
                             color: isActive
-                                ? AppColors.textWhite
+                                ? AppColors.textBlack
                                 : AppColors.textSecondary,
                           ),
                           const SizedBox(height: AppSpacing.md),
@@ -272,7 +233,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                             '₹${_getPrice(screen)}',
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: isActive
-                                  ? AppColors.textWhite
+                                  ? AppColors.textBlack
                                   : AppColors.primary,
                               fontWeight: FontWeight.w800,
                             ),
@@ -554,18 +515,18 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                 // Refresh after returning from editor
                 setState(() {});
               },
-              icon: const Icon(Icons.tune, size: 18, color: AppColors.textWhite),
+              icon: const Icon(Icons.tune, size: 18, color: AppColors.textBlack),
               label: const Text(
                 'Customize Layout',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textWhite,
+                  color: AppColors.textBlack,
                 ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.textWhite,
+                foregroundColor: AppColors.textBlack,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -619,7 +580,7 @@ class _OwnerScreensListScreenState extends State<OwnerScreensListScreen> {
                   '$seatNum',
                   style: TextStyle(
                     fontSize: 6,
-                    color: isBlocked ? Colors.white : AppColors.textSecondary,
+                    color: isBlocked ? AppColors.textBlack : AppColors.textSecondary,
                   ),
                 ),
               ),

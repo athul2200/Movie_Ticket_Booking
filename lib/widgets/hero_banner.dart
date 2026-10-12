@@ -202,7 +202,7 @@ class _BannerSlide extends StatelessWidget {
                   onPressed: onBookNow,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.textWhite,
+                    foregroundColor: AppColors.textOnYellow,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
@@ -211,7 +211,10 @@ class _BannerSlide extends StatelessWidget {
                   ),
                   child: Text(
                     'Book Now',
-                    style: Theme.of(context).textTheme.labelLarge,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: AppColors.textOnYellow,
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
                 ),
               ),

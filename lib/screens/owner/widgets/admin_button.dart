@@ -21,7 +21,7 @@ class AdminButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bgColor = backgroundColor ?? AppColors.primary;
-    final textColor = isOutlined ? bgColor : AppColors.textWhite;
+    final textColor = isOutlined ? bgColor : AppColors.textOn(bgColor);
 
     return Opacity(
       opacity: onPressed == null ? 0.5 : 1.0,

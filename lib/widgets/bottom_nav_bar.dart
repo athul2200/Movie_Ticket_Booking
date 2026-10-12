@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/screens/home/home_screen.dart';
+import 'package:booking/screens/theaters/theaters_screen.dart';
 import 'package:booking/screens/my_bookings/my_bookings_screen.dart';
 import 'package:booking/screens/profile/profile_screen.dart';
 
 /// ============================================================
-/// Bottom Navigation Bar — 3-tab navigation
-/// Home (active = red), My Bookings, Profile
+/// Bottom Navigation Bar — 4-tab user navigation
+/// Home, Theaters, My Bookings, Profile
 /// ============================================================
 
 class BottomNavBar extends StatefulWidget {
@@ -28,6 +29,7 @@ class BottomNavBarState extends State<BottomNavBar> {
   // Screens for each tab
   final List<Widget> _screens = const [
     HomeScreen(),
+    TheatersScreen(),
     MyBookingsScreen(),
     ProfileScreen(),
   ];
@@ -50,11 +52,17 @@ class BottomNavBarState extends State<BottomNavBar> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: setIndex,
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.theaters_outlined),
+              activeIcon: Icon(Icons.theaters),
+              label: 'Theaters',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.confirmation_number_outlined),

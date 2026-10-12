@@ -1,30 +1,27 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:booking/main.dart';
+import 'package:booking/models/movie_model.dart';
+import 'package:booking/data/mock_data.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('MockData allMovies loads and stores properly', () {
+    expect(MockData.allMovies, isNotNull);
+    final initialCount = MockData.allMovies.length;
+    final testMovie = MovieModel(
+      id: 'test_123',
+      title: 'Smoke Test Movie',
+      description: 'Test Description',
+      genres: ['Action'],
+      duration: '120 mins',
+      rating: 4.5,
+      certification: 'UA',
+      posterUrl: 'https://example.com/poster.jpg',
+      bannerUrl: 'https://example.com/banner.jpg',
+      theaters: ['Kairali'],
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    MockData.allMovies.add(testMovie);
+    expect(MockData.allMovies.length, initialCount + 1);
+    MockData.allMovies.removeWhere((m) => m.id == 'test_123');
+    expect(MockData.allMovies.length, initialCount);
   });
 }

@@ -258,18 +258,18 @@ class _OwnerLayoutEditorScreenState extends State<OwnerLayoutEditorScreen> {
               flex: 2,
               child: ElevatedButton.icon(
                 onPressed: _saveChanges,
-                icon: const Icon(Icons.check_circle_outline, size: 18, color: AppColors.textWhite),
+                icon: const Icon(Icons.check_circle_outline, size: 18, color: AppColors.textBlack),
                 label: const Text(
                   'Save Changes',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textWhite,
+                    color: AppColors.textBlack,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.textWhite,
+                  foregroundColor: AppColors.textBlack,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.sm),

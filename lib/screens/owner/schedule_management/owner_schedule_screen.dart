@@ -8,6 +8,7 @@ import 'package:booking/screens/owner/widgets/admin_button.dart';
 import 'package:booking/core/utils/ist_time_utils.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/models/movie_model.dart';
+import 'package:booking/screens/owner/schedule_management/edit_schedule_dialog.dart';
 
 class OwnerScheduleScreen extends StatefulWidget {
   final String theaterName;
@@ -59,9 +60,11 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
   final Set<String> _selectedTimes = {};
 
   List<MovieModel> get _availableMovies {
-    return MockData.allMovies
-        .where((m) => m.theaters.contains(widget.theaterName))
+    final forTheater = MockData.allMovies
+        .where((m) => m.theaters.any((t) => MockData.theaterMatches(t, widget.theaterName)))
         .toList();
+    if (forTheater.isNotEmpty) return forTheater;
+    return MockData.allMovies;
   }
 
   @override
@@ -441,7 +444,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                 if (isSelected || isOccupied) ...[
                                   Icon(
                                     Icons.check_circle_rounded,
-                                    color: isSelected ? Colors.white : AppColors.textHint,
+                                    color: isSelected ? AppColors.textBlack : AppColors.textHint,
                                     size: 12,
                                   ),
                                   const SizedBox(width: 3),
@@ -453,7 +456,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                       .bodyMedium
                                       ?.copyWith(
                                         color: isSelected
-                                            ? AppColors.textWhite
+                                            ? AppColors.textBlack
                                             : isOccupied
                                             ? AppColors.textHint
                                             : AppColors.textPrimary,
@@ -512,6 +515,25 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
                                       .compareTo(_timeSlots.indexOf(b));
                                 });
                               MockData.movieSchedules[_selectedMovie]![dateLabel]![_selectedTheater]![_selectedScreen] = sortedGlobalTimes;
+
+                              // Ensure this theater is recorded in the movie's theaters list
+                              final movieIdx = MockData.allMovies.indexWhere(
+                                (m) => m.title.trim().toLowerCase() == _selectedMovie.trim().toLowerCase(),
+                              );
+                              if (movieIdx != -1) {
+                                final currentMovie = MockData.allMovies[movieIdx];
+                                if (!currentMovie.theaters.any((t) => MockData.theaterMatches(t, _selectedTheater))) {
+                                  final updatedTheaters = List<String>.from(currentMovie.theaters)..add(_selectedTheater);
+                                  final updatedMovie = currentMovie.copyWith(theaters: updatedTheaters);
+                                  MockData.allMovies[movieIdx] = updatedMovie;
+                                  final featIdx = MockData.featuredMovies.indexWhere(
+                                    (m) => m.id == currentMovie.id || m.title.trim().toLowerCase() == _selectedMovie.trim().toLowerCase(),
+                                  );
+                                  if (featIdx != -1) {
+                                    MockData.featuredMovies[featIdx] = updatedMovie;
+                                  }
+                                }
+                              }
 
                               // Persist immediately
                               final messenger = ScaffoldMessenger.of(context);
@@ -617,6 +639,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             // Timelines — driven by _schedulePreview and _selectedScreen
             _buildTimelineRow(
               'SCR 01',
+              'Screen 01',
               _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 01']?['movie'] ?? 'No Show Scheduled',
               _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 01']?['time'] ?? '--',
               0.3,
@@ -626,6 +649,7 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             const SizedBox(height: AppSpacing.md),
             _buildTimelineRow(
               'SCR 02',
+              'Screen 02',
               _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 02']?['movie'] ?? 'No Show Scheduled',
               _schedulePreview[IstTimeUtils.formatDateLabel(_selectedDateObj)]?['Screen 02']?['time'] ?? '--',
               0.5,
@@ -712,12 +736,14 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
 
   Widget _buildTimelineRow(
     String screen,
+    String screenName,
     String movieTitle,
     String timeStr,
     double startPct,
     double widthPct,
     bool isSelected,
   ) {
+    final hasSchedule = movieTitle != 'No Show Scheduled';
     return Row(
       children: [
         SizedBox(
@@ -802,6 +828,63 @@ class _OwnerScheduleScreenState extends State<OwnerScheduleScreen> {
             ),
           ),
         ),
+        // Edit button — only visible when a movie is scheduled on this screen
+        if (hasSchedule)
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.sm),
+            child: GestureDetector(
+              onTap: () async {
+                // Find the times for this movie on this screen/date
+                final dateLabel = IstTimeUtils.formatDateLabel(_selectedDateObj);
+                List<String> currentTimes = [];
+                MockData.movieSchedules.forEach((title, dates) {
+                  if (title.trim().toLowerCase() ==
+                      movieTitle.trim().toLowerCase()) {
+                    final theaterMap = dates[dateLabel];
+                    if (theaterMap != null) {
+                      theaterMap.forEach((th, screens) {
+                        if (MockData.theaterMatches(th, _selectedTheater)) {
+                          final times = screens[screenName] ?? [];
+                          if (times.isNotEmpty) currentTimes = List<String>.from(times);
+                        }
+                      });
+                    }
+                  }
+                });
+
+                final saved = await EditScheduleDialog.show(
+                  context,
+                  theaterName: _selectedTheater,
+                  movieTitle: movieTitle,
+                  dateLabel: dateLabel,
+                  currentScreen: screenName,
+                  currentTimes: currentTimes,
+                );
+                if (saved == true && mounted) {
+                  setState(() {
+                    _schedulePreview.clear();
+                    _occupiedSlots.clear();
+                    _loadExistingSchedules();
+                  });
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.edit_calendar_outlined,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }

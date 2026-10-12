@@ -246,7 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: const Icon(
                   Icons.edit,
-                  color: AppColors.textWhite,
+                  color: Colors.black,
                   size: 14,
                 ),
               ),
@@ -354,7 +354,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textWhite,
+          foregroundColor: AppColors.textBlack,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
@@ -384,8 +384,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         GestureDetector(
           onTap: () {
-            // Route to My Bookings tab (index 1 of BottomNavBar)
-            context.findAncestorStateOfType<BottomNavBarState>()?.setIndex(1);
+            // Route to My Bookings tab (index 2 of BottomNavBar)
+            context.findAncestorStateOfType<BottomNavBarState>()?.setIndex(2);
           },
           child: Text(
             'View History',
@@ -735,7 +735,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.textWhite,
+                foregroundColor: AppColors.textBlack,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.md),

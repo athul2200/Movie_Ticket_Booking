@@ -39,10 +39,20 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
   late final TextEditingController _trailerCtrl;
   late final TextEditingController _posterUrlCtrl;
 
-  String _selectedLanguage = 'English';
+  static const List<String> _languageOptions = [
+    'Malayalam',
+    'Tamil',
+    'Telugu',
+    'Kannada',
+    'Hindi',
+    'English',
+  ];
+
+  String _selectedLanguage = 'Malayalam';
   String _selectedCertification = 'UA';
   String _posterSource = 'URL';
   String? _uploadedPosterPath;
+  late final Set<String> _selectedTheaters;
 
   final List<_CastEntry> _castMembers = [];
 
@@ -50,6 +60,10 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
   void initState() {
     super.initState();
     final movie = widget.movieToEdit;
+
+    _selectedTheaters = movie != null
+        ? Set<String>.from(movie.theaters)
+        : {widget.theaterName};
 
     _titleCtrl = TextEditingController(text: movie?.title ?? '');
     _descriptionCtrl = TextEditingController(text: movie?.description ?? '');
@@ -73,8 +87,8 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
 
       if (movie.genres.isNotEmpty) {
         _selectedLanguage = movie.genres.first;
-        if (!['English', 'Malayalam', 'Tamil', 'Hindi', 'Telugu'].contains(_selectedLanguage)) {
-          _selectedLanguage = 'English';
+        if (!_languageOptions.contains(_selectedLanguage)) {
+          _selectedLanguage = 'Malayalam';
         }
       }
       if (movie.certification.isNotEmpty) {
@@ -156,11 +170,13 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
           : _uploadedPosterPath!;
       final String updatedTitle = _titleCtrl.text.trim();
 
+      final theatersToSave = _selectedTheaters.isNotEmpty
+          ? _selectedTheaters.toList()
+          : [widget.theaterName];
+
       if (widget.movieToEdit != null) {
         final movieToEdit = widget.movieToEdit!;
         final existingIndex = MockData.allMovies.indexWhere((m) => m.id == movieToEdit.id);
-        final currentTheaters = existingIndex != -1 ? MockData.allMovies[existingIndex].theaters : [widget.theaterName];
-        final updatedTheaters = Set<String>.from(currentTheaters)..add(widget.theaterName);
 
         final updatedMovie = MovieModel(
           id: movieToEdit.id,
@@ -173,7 +189,7 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
           posterUrl: poster,
           bannerUrl: poster,
           trailerUrl: _trailerCtrl.text.trim(),
-          theaters: updatedTheaters.toList(),
+          theaters: theatersToSave,
           isActive: movieToEdit.isActive,
         );
 
@@ -213,7 +229,6 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
 
         if (existingIdx != -1) {
           final existing = MockData.allMovies[existingIdx];
-          final updatedTheaters = Set<String>.from(existing.theaters)..add(widget.theaterName);
           final updated = existing.copyWith(
             description: _descriptionCtrl.text.trim(),
             genres: [_selectedLanguage],
@@ -222,7 +237,7 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
             posterUrl: poster,
             bannerUrl: poster,
             trailerUrl: _trailerCtrl.text.trim(),
-            theaters: updatedTheaters.toList(),
+            theaters: theatersToSave,
           );
           MockData.allMovies[existingIdx] = updated;
           final featIdx = MockData.featuredMovies.indexWhere((m) => m.id == existing.id);
@@ -241,7 +256,7 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
             posterUrl: poster,
             bannerUrl: poster,
             trailerUrl: _trailerCtrl.text.trim(),
-            theaters: [widget.theaterName],
+            theaters: theatersToSave,
             isActive: true,
           );
 
@@ -446,11 +461,12 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
                         AdminDropdown<String>(
                           value: _selectedLanguage,
                           items: const [
-                            DropdownMenuItem(value: 'English', child: Text('English')),
                             DropdownMenuItem(value: 'Malayalam', child: Text('Malayalam')),
                             DropdownMenuItem(value: 'Tamil', child: Text('Tamil')),
-                            DropdownMenuItem(value: 'Hindi', child: Text('Hindi')),
                             DropdownMenuItem(value: 'Telugu', child: Text('Telugu')),
+                            DropdownMenuItem(value: 'Kannada', child: Text('Kannada')),
+                            DropdownMenuItem(value: 'Hindi', child: Text('Hindi')),
+                            DropdownMenuItem(value: 'English', child: Text('English')),
                           ],
                           onChanged: (val) {
                             if (val != null) setState(() => _selectedLanguage = val);
@@ -506,6 +522,8 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
                 prefixIcon: const Icon(Icons.play_circle_outline, color: AppColors.textSecondary, size: 20),
               ),
               const SizedBox(height: AppSpacing.md),
+
+
 
               // ── Cast Members ──
               Row(
@@ -568,7 +586,7 @@ class _AddMovieScreenState extends State<AddMovieScreen> {
                   onPressed: _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.textWhite,
+                    foregroundColor: AppColors.textBlack,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                   ),

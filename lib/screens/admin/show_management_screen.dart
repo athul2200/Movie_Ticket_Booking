@@ -478,8 +478,9 @@ class _ShowManagementScreenState extends State<ShowManagementScreen> {
                     label: Text(date),
                     selected: isSelected,
                     selectedColor: AppTheme.primaryRed,
+                    backgroundColor: Colors.white,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppTheme.textPrimary,
+                      color: isSelected ? Colors.white : Colors.black,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                     onSelected: (selected) {

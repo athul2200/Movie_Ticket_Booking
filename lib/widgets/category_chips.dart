@@ -53,7 +53,7 @@ class CategoryChips extends StatelessWidget {
                   categories[index],
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: isSelected
-                        ? AppColors.textWhite
+                        ? AppColors.textOnYellow
                         : AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,

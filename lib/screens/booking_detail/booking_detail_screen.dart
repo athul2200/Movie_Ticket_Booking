@@ -550,14 +550,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.textWhite,
+                  color: AppColors.textBlack,
                 ),
               )
             : const Icon(Icons.download, size: 20),
         label: Text(_isDownloading ? 'Downloading...' : 'Download Ticket'),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textWhite,
+          foregroundColor: AppColors.textBlack,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),

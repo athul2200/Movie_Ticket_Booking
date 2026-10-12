@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
-import 'package:booking/models/movie_model.dart';
 import 'package:booking/models/seat_row_model.dart';
 import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/seat_selection/seat_selection_screen.dart';
 import 'package:booking/services/seat_reservation_service.dart';
+import 'package:booking/widgets/app_image.dart';
 
 /// Detailed view for a single cinema screen in the Owner module.
 ///
@@ -58,8 +58,8 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
     );
   }
 
-  List<MovieModel> get _theaterMovies =>
-      MockData.allMovies.where((m) => m.theaters.contains(widget.theaterName)).toList();
+  List<ScheduledMovieInfo> get _scheduledMovies =>
+      MockData.getScheduledMoviesForScreen(widget.theaterName, widget.screenName);
 
   List<SeatRow> get _rows =>
       MockData.getLayout(widget.theaterName, widget.screenName);
@@ -109,125 +109,81 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
-                _buildBadge('LIVE NOW', AppColors.primary, AppColors.textWhite),
-                const SizedBox(width: AppSpacing.sm),
+                if (_scheduledMovies.isNotEmpty) ...[
+                  _buildBadge('LIVE NOW', AppColors.primary, AppColors.textOnYellow),
+                  const SizedBox(width: AppSpacing.sm),
+                ] else
+                  _buildBadge('NO SHOWS', AppColors.divider, AppColors.textSecondary),
                 _buildBadge('2D', AppColors.divider, AppColors.textSecondary),
               ],
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // ── Movie Card ──
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.shadowColor.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(AppRadius.lg),
-                    ),
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1000&auto=format&fit=crop',
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _theaterMovies.isNotEmpty
-                                  ? _theaterMovies.first.title
-                                  : 'No Movie Listed',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.primaryDark,
-                                  ),
-                            ),
-                            Row(
-                              children: [
-                                const Icon(Icons.star,
-                                    color: AppColors.primary, size: 16),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '4.9',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(
-                                        color: AppColors.primaryDark,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time,
-                                color: AppColors.textSecondary, size: 18),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              '10:00 AM - 01:00 PM',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              '(165 mins)',
-                              style:
-                                  Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Row(
-                          children: [
-                            const Icon(Icons.masks_outlined,
-                                color: AppColors.textSecondary, size: 18),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              'Sci-Fi, Adventure, Drama',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                      color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            // ── Scheduled Movies ──
+            Text(
+              'NOW RUNNING',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
               ),
             ),
+            const SizedBox(height: AppSpacing.sm),
+            if (_scheduledMovies.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.xxl,
+                  horizontal: AppSpacing.xl,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(
+                    color: AppColors.divider.withValues(alpha: 0.5),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.movie_creation_outlined,
+                        size: 40,
+                        color: AppColors.textHint,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'No Movies Scheduled',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'This screen has no active shows.\nUse Schedule Management to assign movies.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textHint,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ..._scheduledMovies.map((info) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildMovieCard(context, info),
+                  )),
             const SizedBox(height: AppSpacing.xl),
 
             // ── Revenue Card ──
@@ -252,7 +208,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                     child: Icon(
                       Icons.local_activity,
                       size: 100,
-                      color: AppColors.textWhite.withValues(alpha: 0.1),
+                      color: AppColors.textBlack.withValues(alpha: 0.1),
                     ),
                   ),
                   Column(
@@ -261,7 +217,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                       Text(
                         'SHOW REVENUE',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textWhite.withValues(alpha: 0.8),
+                          color: AppColors.textBlack.withValues(alpha: 0.8),
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -270,7 +226,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         '\$2,450.00',
                         style:
                             Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                  color: AppColors.textWhite,
+                                  color: AppColors.textBlack,
                                   fontWeight: FontWeight.w800,
                                   fontSize: 32,
                                 ),
@@ -285,7 +241,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                                 .textTheme
                                 .labelSmall
                                 ?.copyWith(
-                                  color: AppColors.textWhite
+                                  color: AppColors.textBlack
                                       .withValues(alpha: 0.8),
                                 ),
                           ),
@@ -295,7 +251,7 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                                 .textTheme
                                 .labelSmall
                                 ?.copyWith(
-                                  color: AppColors.textWhite,
+                                  color: AppColors.textBlack,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
@@ -304,9 +260,9 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                       const SizedBox(height: AppSpacing.xs),
                       LinearProgressIndicator(
                         value: 0.82,
-                        backgroundColor: AppColors.primaryDark,
+                        backgroundColor: AppColors.textBlack.withValues(alpha: 0.2),
                         valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.textWhite,
+                          AppColors.textBlack,
                         ),
                         minHeight: 6,
                         borderRadius: BorderRadius.circular(3),
@@ -439,10 +395,13 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => SeatSelectionScreen(
-                            movieTitle: MockData.allMovies.isNotEmpty
-                                ? MockData.allMovies.first.title
-                                : 'No Movie Listed',
-                            showtime: '10:00 AM',
+                            movieTitle: _scheduledMovies.isNotEmpty
+                                ? _scheduledMovies.first.movie.title
+                                : 'No Movie Scheduled',
+                            showtime: _scheduledMovies.isNotEmpty &&
+                                    _scheduledMovies.first.showtimes.isNotEmpty
+                                ? _scheduledMovies.first.showtimes.first
+                                : '10:00 AM',
                             cinema: widget.theaterName,
                             screen: widget.screenName,
                             format: '2D',
@@ -663,6 +622,138 @@ class _OwnerScreenDetailsScreenState extends State<OwnerScreenDetailsScreen> {
           color: textColor,
           fontWeight: FontWeight.w800,
         ),
+      ),
+    );
+  }
+
+  Widget _buildMovieCard(BuildContext context, ScheduledMovieInfo info) {
+    final movie = info.movie;
+    final showtimesStr = info.showtimes.isNotEmpty
+        ? info.showtimes.join(', ')
+        : 'No showtimes set';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowColor.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppRadius.lg),
+            ),
+            child: AppImage(
+              urlOrPath: movie.bannerUrl.isNotEmpty ? movie.bannerUrl : movie.posterUrl,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (ctx, err, stack) => Container(
+                height: 180,
+                color: AppColors.divider,
+                child: const Center(
+                  child: Icon(Icons.movie, size: 48, color: AppColors.textHint),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        movie.title,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primaryDark,
+                            ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.star,
+                            color: AppColors.primary, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          movie.rating.toStringAsFixed(1),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                color: AppColors.primaryDark,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    const Icon(Icons.access_time,
+                        color: AppColors.textSecondary, size: 18),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        showtimesStr,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                    if (movie.duration.isNotEmpty) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        '(${movie.duration})',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ],
+                ),
+                if (movie.genres.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    children: [
+                      const Icon(Icons.masks_outlined,
+                          color: AppColors.textSecondary, size: 18),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          movie.genres.join(', '),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

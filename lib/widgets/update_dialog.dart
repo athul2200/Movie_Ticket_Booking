@@ -127,7 +127,7 @@ class UpdateDialog extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.system_update_rounded,
-                  color: AppColors.textWhite,
+                  color: AppColors.textOnYellow,
                   size: 32,
                 ),
               ),
@@ -252,7 +252,7 @@ class UpdateDialog extends StatelessWidget {
                     onPressed: () => _handleUpdate(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.textWhite,
+                      foregroundColor: AppColors.textOnYellow,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       elevation: 4,
                       shadowColor: AppColors.primary.withValues(alpha: 0.4),
@@ -266,14 +266,14 @@ class UpdateDialog extends StatelessWidget {
                         Icon(
                           Icons.download_rounded,
                           size: 18,
-                          color: AppColors.textWhite,
+                          color: AppColors.textOnYellow,
                         ),
                         SizedBox(width: 6),
                         Text(
                           'Update Now',
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textWhite,
+                            color: AppColors.textOnYellow,
                           ),
                         ),
                       ],

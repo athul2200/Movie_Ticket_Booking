@@ -14,20 +14,6 @@ class OwnerMainScreen extends StatefulWidget {
 
 class _OwnerMainScreenState extends State<OwnerMainScreen> {
   int _currentIndex = 0;
-  late final List<Widget> _screens;
-
-  @override
-  void initState() {
-    super.initState();
-    _screens = [
-      OwnerDashboardScreen(
-        theaterName: widget.theaterName,
-        onNavigateToMovies: () => setIndex(1),
-      ),
-      OwnerMoviesScreen(theaterName: widget.theaterName),
-      OwnerScreensListScreen(theaterName: widget.theaterName),
-    ];
-  }
 
   void setIndex(int index) {
     setState(() {
@@ -39,7 +25,19 @@ class _OwnerMainScreenState extends State<OwnerMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          OwnerDashboardScreen(
+            theaterName: widget.theaterName,
+            onNavigateToMovies: () => setIndex(1),
+          ),
+          OwnerMoviesScreen(
+            theaterName: widget.theaterName,
+          ),
+          OwnerScreensListScreen(theaterName: widget.theaterName),
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.background,

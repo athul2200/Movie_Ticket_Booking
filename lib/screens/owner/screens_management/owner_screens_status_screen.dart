@@ -37,30 +37,37 @@ class OwnerScreensStatusScreen extends StatefulWidget {
 
 class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
   List<_ScreenSchedule> get _schedules {
-    final theaterMovies = MockData.allMovies.where((m) => m.theaters.contains(widget.theaterName)).toList();
-    final movie1 = theaterMovies.isNotEmpty ? theaterMovies.first.title : 'No Movie Scheduled';
-    final movie2 = theaterMovies.length > 1 ? theaterMovies[1].title : (theaterMovies.isNotEmpty ? theaterMovies.first.title : 'No Movie Scheduled');
+    final prices = MockData.screenPrices[widget.theaterName];
+    final screenNames = (prices != null && prices.isNotEmpty)
+        ? (prices.keys.toList()..sort())
+        : ['Screen 01', 'Screen 02'];
 
-    return [
-      _ScreenSchedule(
-        screenName: 'Screen 01',
-        movieTitle: movie1,
-        genre: 'Active Listing',
-        currentShowTime: '10:00 AM',
-        allShowTimes: const ['10:00 AM', '01:30 PM', '04:30 PM', '07:30 PM', '09:30 PM'],
-        occupancy: theaterMovies.isNotEmpty ? 0.73 : 0.0,
-        isActive: theaterMovies.isNotEmpty,
-      ),
-      _ScreenSchedule(
-        screenName: 'Screen 02',
-        movieTitle: movie2,
-        genre: 'Active Listing',
-        currentShowTime: '11:00 AM',
-        allShowTimes: const ['11:00 AM', '02:30 PM', '05:30 PM', '08:30 PM', '11:20 PM'],
-        occupancy: theaterMovies.length > 1 ? 0.45 : 0.0,
-        isActive: theaterMovies.length > 1,
-      ),
-    ];
+    return screenNames.map((screenName) {
+      final scheduled = MockData.getScheduledMoviesForScreen(widget.theaterName, screenName);
+      final hasScheduled = scheduled.isNotEmpty;
+      final movieTitle = hasScheduled
+          ? scheduled.map((s) => s.movie.title).join(', ')
+          : 'No Movie Scheduled';
+      final genre = hasScheduled
+          ? (scheduled.first.movie.genres.isNotEmpty
+              ? scheduled.first.movie.genres.join(', ')
+              : 'Active Listing')
+          : 'No Movie Scheduled';
+      final allTimes = hasScheduled
+          ? scheduled.expand((s) => s.showtimes).toSet().toList()
+          : <String>[];
+      final currentTime = allTimes.isNotEmpty ? allTimes.first : '--';
+
+      return _ScreenSchedule(
+        screenName: screenName,
+        movieTitle: movieTitle,
+        genre: genre,
+        currentShowTime: currentTime,
+        allShowTimes: allTimes,
+        occupancy: hasScheduled ? 0.73 : 0.0,
+        isActive: hasScheduled,
+      );
+    }).toList();
   }
 
   @override
@@ -349,7 +356,7 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
                                 .textTheme
                                 .labelSmall
                                 ?.copyWith(
-                                  color: AppColors.textWhite,
+                                  color: AppColors.textBlack,
                                   fontWeight: FontWeight.w800,
                                   fontSize: 9,
                                   letterSpacing: 0.8,
@@ -479,7 +486,7 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
           if (isNow) ...[
             const Icon(
               Icons.play_circle_filled,
-              color: AppColors.textWhite,
+              color: AppColors.textBlack,
               size: 11,
             ),
             const SizedBox(width: 3),
@@ -487,7 +494,7 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
           Text(
             time,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: isNow ? AppColors.textWhite : AppColors.textSecondary,
+              color: isNow ? AppColors.textBlack : AppColors.textSecondary,
               fontWeight: isNow ? FontWeight.w700 : FontWeight.w500,
               fontSize: 11,
             ),
@@ -508,7 +515,7 @@ class _OwnerScreensStatusScreenState extends State<OwnerScreensStatusScreen> {
       ),
       child: Icon(
         icon,
-        color: filled ? AppColors.textWhite : AppColors.textPrimary,
+        color: filled ? AppColors.textBlack : AppColors.textPrimary,
         size: 20,
       ),
     );
