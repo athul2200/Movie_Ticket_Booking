@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "595001879376",
+    "project_id": "movix-294da",
+    "storage_bucket": "movix-294da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:595001879376:android:74d4e2faef346ccfc91a55",
+        "android_client_info": {
+          "package_name": "com.example.booking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq-wmdG0mHNlboVxjFcvi2sEZBI8Q5SRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

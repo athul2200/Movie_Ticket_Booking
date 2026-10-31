@@ -15,7 +15,11 @@ import 'custom_card.dart';
 const double _kSidebarBreakpoint = 800;
 
 class AdminDashboard extends StatefulWidget {
-  const AdminDashboard({super.key});
+  /// Optional logout callback provided by [AdminAuthGate] for the web app.
+  /// When null (mobile), the back button uses the existing navigation target.
+  final VoidCallback? onLogout;
+
+  const AdminDashboard({super.key, this.onLogout});
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
@@ -122,8 +126,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     title: _sectionTitle,
                     showMenuButton: !isWide,
                     onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-                    onBackTap: () =>
-                        Navigator.pushReplacementNamed(context, '/'),
+                    onBackTap: () {
+                      if (widget.onLogout != null) {
+                        // Web context: AdminAuthGate provides a logout callback.
+                        widget.onLogout!();
+                      } else {
+                        // Mobile context: navigate back to login.
+                        Navigator.pushReplacementNamed(context, '/login');
+                      }
+                    },
                   ),
                   _buildContent(),
                 ],

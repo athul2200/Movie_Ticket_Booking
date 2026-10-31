@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
+import 'package:booking/navigation/app_router.dart';
 
 class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -25,7 +26,7 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
         } else if (Navigator.canPop(context)) {
           Navigator.pop(context);
         } else {
-          Navigator.pushReplacementNamed(context, '/');
+          Navigator.pushReplacementNamed(context, AppRouter.login);
         }
       },
     );

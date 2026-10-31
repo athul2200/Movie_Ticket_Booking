@@ -1,0 +1,15 @@
+{
+  "name": "movix-privileged-account-setup",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Trusted Admin SDK tool for assigning Movix Admin and Owner claims",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "provision": "node provision.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.4.0"
+  }
+}

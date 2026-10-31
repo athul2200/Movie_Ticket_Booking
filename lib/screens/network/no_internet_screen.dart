@@ -28,7 +28,7 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
     });
 
     if (hasConnection) {
-      Navigator.pushReplacementNamed(context, AppRouter.roleSelection);
+      Navigator.pushReplacementNamed(context, AppRouter.splash);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -57,7 +57,7 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
                     if (Navigator.canPop(context)) {
                       Navigator.pop(context);
                     } else {
-                      Navigator.pushReplacementNamed(context, AppRouter.roleSelection);
+                      Navigator.pushReplacementNamed(context, AppRouter.login);
                     }
                   },
                 ),

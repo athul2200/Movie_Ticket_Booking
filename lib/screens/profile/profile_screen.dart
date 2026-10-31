@@ -6,6 +6,8 @@ import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
 import 'package:booking/data/mock_data.dart';
 import 'package:booking/models/review_model.dart';
+import 'package:booking/navigation/app_router.dart';
+import 'package:booking/services/auth_service.dart';
 import 'package:booking/widgets/bottom_nav_bar.dart';
 import 'package:booking/screens/my_bookings/my_bookings_screen.dart';
 
@@ -137,6 +139,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // ── Review Section ──
                     _buildReviewSection(context),
 
+                    const SizedBox(height: AppSpacing.xxl),
+
+                    // ── Log Out button ──
+                    _buildLogoutButton(context),
+
                     const SizedBox(height: AppSpacing.xl),
                   ],
                 ),
@@ -162,7 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (Navigator.canPop(context)) {
                 Navigator.pop(context);
               } else {
-                Navigator.pushReplacementNamed(context, '/');
+                Navigator.pushReplacementNamed(context, AppRouter.login);
               }
             },
             child: const Icon(
@@ -244,11 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   shape: BoxShape.circle,
                   border: Border.all(color: AppColors.background, width: 2.0),
                 ),
-                child: const Icon(
-                  Icons.edit,
-                  color: Colors.black,
-                  size: 14,
-                ),
+                child: const Icon(Icons.edit, color: Colors.black, size: 14),
               ),
             ),
           ),
@@ -483,7 +486,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Color(0xFFB8860B), size: 20),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFB8860B),
+                size: 20,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -512,7 +519,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: Column(
               children: [
-                const Icon(Icons.check_circle_outline, color: AppColors.greenAccent, size: 36),
+                const Icon(
+                  Icons.check_circle_outline,
+                  color: AppColors.greenAccent,
+                  size: 36,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Thank you for your review!',
@@ -576,7 +587,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               filled: true,
               fillColor: AppColors.surface,
-              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: BorderSide.none,
@@ -618,7 +632,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: Icon(
-                      _reviewStars >= starIndex ? Icons.star : Icons.star_border,
+                      _reviewStars >= starIndex
+                          ? Icons.star
+                          : Icons.star_border,
                       color: _reviewStars >= starIndex
                           ? const Color(0xFFFFD600)
                           : AppColors.textHint,
@@ -663,7 +679,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1.5,
+                ),
               ),
             ),
           ),
@@ -675,7 +694,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: 50,
             child: ElevatedButton.icon(
               onPressed: () async {
-                if (_selectedReviewMovieTitle == null || _selectedReviewMovieTitle!.isEmpty) {
+                if (_selectedReviewMovieTitle == null ||
+                    _selectedReviewMovieTitle!.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Please select a movie to review.'),
@@ -747,6 +767,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         const SizedBox(height: AppSpacing.xxl),
       ],
+    );
+  }
+
+  /// Log Out button — signs out Firebase session and navigates to /login.
+  Widget _buildLogoutButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton.icon(
+        icon: const Icon(Icons.logout, size: 18),
+        label: const Text('Log Out'),
+        onPressed: () async {
+          await AuthService.instance.logout();
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRouter.login,
+              (r) => false,
+            );
+          }
+        },
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+      ),
     );
   }
 }

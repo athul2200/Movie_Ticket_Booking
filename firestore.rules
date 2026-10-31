@@ -1,0 +1,114 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsProfile(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function profileIsActive() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isActive == true;
+    }
+
+    function isMovixAdmin() {
+      return profileIsActive()
+        && 'movixRole' in request.auth.token
+        && request.auth.token.movixRole == 'admin';
+    }
+
+    function isAssignedTheaterOwner(theaterId) {
+      return profileIsActive()
+        && theaterId in ['Kairali', 'Nila']
+        && 'movixRole' in request.auth.token
+        && request.auth.token.movixRole == 'owner'
+        && 'theaterId' in request.auth.token
+        && request.auth.token.theaterId == theaterId;
+    }
+
+    function validNewUserProfile() {
+      return request.resource.data.keys().hasAll([
+          'role',
+          'email',
+          'displayName',
+          'phoneNumber',
+          'assignedTheater',
+          'createdAt',
+          'isActive'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'role',
+          'email',
+          'displayName',
+          'phoneNumber',
+          'assignedTheater',
+          'createdAt',
+          'isActive'
+        ])
+        && request.resource.data.role == 'user'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 2
+        && request.resource.data.displayName.size() <= 100
+        && request.resource.data.phoneNumber is string
+        && request.resource.data.phoneNumber.size() >= 1
+        && request.resource.data.phoneNumber.size() <= 32
+        && request.resource.data.assignedTheater == null
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.isActive == true
+        && (!('movixRole' in request.auth.token)
+          || request.auth.token.movixRole == 'user');
+    }
+
+    function validProfileUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['email', 'displayName', 'phoneNumber'])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 2
+        && request.resource.data.displayName.size() <= 100
+        && request.resource.data.phoneNumber is string
+        && request.resource.data.phoneNumber.size() >= 1
+        && request.resource.data.phoneNumber.size() <= 32;
+    }
+
+    match /users/{uid} {
+      // Users may read their own profile; trusted Admins may manage the
+      // administrative user directory.
+      allow get: if ownsProfile(uid) || isMovixAdmin();
+      allow list: if isMovixAdmin();
+
+      // Self-registration can create only a standard user profile.
+      allow create: if ownsProfile(uid) && validNewUserProfile();
+
+      // Users may edit only their own contact/profile fields. Role, active
+      // status, theater assignment, and creation time stay server controlled.
+      allow update: if ownsProfile(uid) && validProfileUpdate();
+      allow delete: if false;
+    }
+
+    // Owner-controlled theater documents must be stored below their canonical
+    // theater key. The app currently persists Owner data locally; these rules
+    // become authoritative for any corresponding Firestore data.
+    match /theaters/{theaterId} {
+      allow read, write: if isMovixAdmin()
+        || isAssignedTheaterOwner(theaterId);
+    }
+
+    match /theaters/{theaterId}/{document=**} {
+      allow read, write: if isMovixAdmin()
+        || isAssignedTheaterOwner(theaterId);
+    }
+
+    // The one-owner-per-theater registry is written only by the Admin SDK
+    // provisioning tool. Clients cannot enumerate or edit assignments.
+    match /theaterOwners/{theaterId} {
+      allow read, write: if false;
+    }
+  }
+}

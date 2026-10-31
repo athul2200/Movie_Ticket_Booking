@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:booking/core/theme/app_theme.dart';
 import 'package:booking/core/constants/app_constants.dart';
+import 'package:booking/navigation/app_router.dart';
+import 'package:booking/services/auth_service.dart';
 import 'package:booking/screens/owner/widgets/admin_app_bar.dart';
 import 'package:booking/screens/owner/widgets/admin_button.dart';
 import 'package:booking/screens/owner/movies_management/add_movie_screen.dart';
@@ -27,7 +29,25 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AdminAppBar(title: widget.theaterName),
+      appBar: AdminAppBar(
+        title: widget.theaterName,
+        // Logout icon injected via the existing 'actions' parameter.
+        // No bottom-nav restructuring required.
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: AppColors.textSecondary),
+            tooltip: 'Sign Out',
+            onPressed: () async {
+              await AuthService.instance.logout();
+              if (context.mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context, AppRouter.login, (r) => false,
+                );
+              }
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
