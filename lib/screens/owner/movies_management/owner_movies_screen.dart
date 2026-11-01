@@ -203,12 +203,10 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
           await MockData.loadData();
           if (mounted) setState(() {});
         },
-        child: SingleChildScrollView(
+        child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          children: [
               // ── Header with Add Movie Action ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -252,27 +250,24 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
 
               // ── Schedule Status Filters ──
               if (_theaterMovieCount > 0) ...[
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildScheduleFilterChip('All', _theaterMovieCount),
-                      const SizedBox(width: AppSpacing.sm),
-                      _buildScheduleFilterChip(
-                        'Scheduled',
-                        _scheduledCount,
-                        icon: Icons.check_circle_outline,
-                        activeColor: const Color(0xFF16A34A),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _buildScheduleFilterChip(
-                        'Not Scheduled',
-                        _notScheduledCount,
-                        icon: Icons.schedule,
-                        activeColor: const Color(0xFF64748B),
-                      ),
-                    ],
-                  ),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    _buildScheduleFilterChip('All', _theaterMovieCount),
+                    _buildScheduleFilterChip(
+                      'Scheduled',
+                      _scheduledCount,
+                      icon: Icons.check_circle_outline,
+                      activeColor: const Color(0xFF16A34A),
+                    ),
+                    _buildScheduleFilterChip(
+                      'Not Scheduled',
+                      _notScheduledCount,
+                      icon: Icons.schedule,
+                      activeColor: const Color(0xFF64748B),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
               ],
@@ -442,7 +437,6 @@ class _OwnerMoviesScreenState extends State<OwnerMoviesScreen> {
                 }),
               const SizedBox(height: AppSpacing.xxl),
             ],
-          ),
         ),
       ),
     );

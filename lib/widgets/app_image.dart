@@ -12,6 +12,7 @@ class AppImage extends StatelessWidget {
   final double? width;
   final double? height;
   final BoxFit? fit;
+  final bool diagnosticLogging;
   final Widget Function(BuildContext, Object, StackTrace?)? errorBuilder;
 
   const AppImage({
@@ -20,11 +21,15 @@ class AppImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit,
+    this.diagnosticLogging = false,
     this.errorBuilder,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (diagnosticLogging) {
+      debugPrint('[OWNER_MOVIES_DIAG] AppImage build: path=$urlOrPath');
+    }
     if (urlOrPath.trim().isEmpty) {
       return _buildFallback(context, 'Empty path');
     }
@@ -43,6 +48,10 @@ class AppImage extends StatelessWidget {
         fit: fit,
         gaplessPlayback: true,
         errorBuilder: (context, error, stackTrace) {
+          if (diagnosticLogging) {
+            debugPrint('[OWNER_MOVIES_DIAG] network image failed: $error');
+            if (stackTrace != null) debugPrintStack(stackTrace: stackTrace);
+          }
           return _buildFallback(context, error, stackTrace);
         },
       );
@@ -53,6 +62,10 @@ class AppImage extends StatelessWidget {
         height: height,
         fit: fit,
         errorBuilder: (context, error, stackTrace) {
+          if (diagnosticLogging) {
+            debugPrint('[OWNER_MOVIES_DIAG] asset image failed: $error');
+            if (stackTrace != null) debugPrintStack(stackTrace: stackTrace);
+          }
           return _buildFallback(context, error, stackTrace);
         },
       );
@@ -62,7 +75,12 @@ class AppImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
+        diagnosticLogging: diagnosticLogging,
         errorBuilder: (context, error, stackTrace) {
+          if (diagnosticLogging) {
+            debugPrint('[OWNER_MOVIES_DIAG] local image failed: $error');
+            if (stackTrace != null) debugPrintStack(stackTrace: stackTrace);
+          }
           return _buildFallback(context, error, stackTrace);
         },
       );

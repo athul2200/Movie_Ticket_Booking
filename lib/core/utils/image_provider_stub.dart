@@ -10,6 +10,7 @@ Widget getFileImageWidget(
   double? height,
   BoxFit? fit,
   Widget Function(BuildContext, Object, StackTrace?)? errorBuilder,
+  bool diagnosticLogging = false,
 }) {
   return Image.network(
     path,
